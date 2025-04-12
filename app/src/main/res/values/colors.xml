@@ -11,4 +11,8 @@
     <color name="blue_700">#FF5584B0</color>
     <color name="blue_400">#FF81C2E6</color>
     <color name="blue_100">#FFCBE3EF</color>
+    <color name="b_green">#FF03b205</color>
+    <color name="b_yellow">#FFF5A200</color>
+    <color name="b_blue">#FF0174F5</color>
+    <color name="b_gray">#FFF0F0F0</color>
 </resources>

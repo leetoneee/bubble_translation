@@ -1,7 +1,11 @@
 package com.bteamcoding.bubbletranslation.app.presentation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.outlined.Bookmark
+import androidx.compose.material.icons.outlined.Camera
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -30,9 +34,10 @@ fun BottomBar(navController: NavController) {
             unselectedIcon = Icons.Outlined.Home
         ),
         BottomNavItem(
-            route = NavRoutes.CAPTURE, title = "Capture", selectedIcon = ImageVector.vectorResource(
-                R.drawable.baseline_camera_alt_24
-            ), unselectedIcon = ImageVector.vectorResource(R.drawable.outline_camera_alt_24)
+            route = NavRoutes.CAPTURE,
+            title = "Capture",
+            selectedIcon = Icons.Default.Camera,
+            unselectedIcon = Icons.Outlined.Camera
         ),
         BottomNavItem(
             route = NavRoutes.DICTIONARY,
@@ -43,8 +48,8 @@ fun BottomBar(navController: NavController) {
         BottomNavItem(
             route = NavRoutes.FLASH_CARD,
             title = "Bookmark",
-            selectedIcon = ImageVector.vectorResource(R.drawable.baseline_bookmark_24),
-            unselectedIcon = ImageVector.vectorResource(R.drawable.outline_bookmark_border_24)
+            selectedIcon = Icons.Default.Bookmark,
+            unselectedIcon = Icons.Outlined.Bookmark
         )
     )
 

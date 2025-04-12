@@ -2,6 +2,7 @@ package com.bteamcoding.bubbletranslation.app.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,10 +18,8 @@ fun AppNavHost(navController: NavHostController) {
     ) {
         composable(route = NavRoutes.HOME) {
             val startFWUseCase = StartFloatingWidgetUseCase(LocalContext.current)
-            val viewModel = FloatingWidgetViewModel();
 
             HomeScreenRoot(
-                viewModel = viewModel,
                 startUseCase = startFWUseCase
             )
         }

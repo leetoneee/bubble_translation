@@ -11,6 +11,7 @@ import android.view.WindowManager
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -23,8 +24,10 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetAction
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModel
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.TranslateMode
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.DraggableFloatingWidget
 
 class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
@@ -64,16 +67,22 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
             Log.d("FloatingWidgetService", "Creating ComposeView")
 
             setContent {
-                val viewModel: FloatingWidgetViewModel = ViewModelProvider(this@FloatingWidgetService)[FloatingWidgetViewModel::class.java]
+                val viewModel: FloatingWidgetViewModel =
+                    ViewModelProvider(this@FloatingWidgetService)[FloatingWidgetViewModel::class.java]
                 val state by viewModel.state.collectAsState()
+                val stopFWUseCase = StopFloatingWidgetUseCase(LocalContext.current)
 
                 DraggableFloatingWidget(
-                    isExpanded = state.isExpanded,
+                    state = state,
                     onClose = {
                         viewModel.onAction(FloatingWidgetAction.OnClose)
+                        stopFWUseCase()
                         stopSelf()
                     },
                     onToggleExpand = { viewModel.onAction(FloatingWidgetAction.OnToggleExpand) },
+                    onModeChange = {
+                        viewModel.onAction(FloatingWidgetAction.OnModeChange(it))
+                    },
                     onDrag = { offsetX, offsetY ->
                         // Cập nhật vị trí và layout
                         val params = layoutParams as WindowManager.LayoutParams
@@ -84,6 +93,9 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
                         // Log vị trí mới
 //                        Log.d("FloatingWidgetService", "Drag - New position: x=${layoutParams.width}, y=${layoutParams.height}")
+                    },
+                    onClick = {
+                        handleTranslateService(state.translateMode)
                     }
                 )
             }
@@ -157,4 +169,21 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
     // Implement SavedStateRegistryOwner
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryController.savedStateRegistry
+
+    private fun handleTranslateService(translateMode: TranslateMode) {
+        when (translateMode) {
+            TranslateMode.FULLSCREEN -> {
+                Log.i("Translate Service", "Full screen mode")
+//                TODO()
+            }
+            TranslateMode.CROP -> {
+                Log.i("Translate Service", "Crop screen mode")
+//                TODO()
+            }
+            TranslateMode.AUTO -> {
+                Log.i("Translate Service", "Auto mode")
+//                TODO()
+            }
+        }
+    }
 }

@@ -21,6 +21,12 @@ class FloatingWidgetViewModel() : ViewModel() {
                     it.copy(isExpanded = false)
                 }
             }
+
+            is FloatingWidgetAction.OnModeChange -> {
+                _state.update {
+                    it.copy(translateMode = action.newMode)
+                }
+            }
         }
     }
 }
