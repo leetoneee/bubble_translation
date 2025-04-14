@@ -8,5 +8,5 @@ enum class TranslateMode {
 
 data class FloatingWidgetState(
     val isExpanded: Boolean = false,
-    val translateMode: TranslateMode = TranslateMode.CROP
+    val translateMode: TranslateMode = TranslateMode.FULLSCREEN
 )

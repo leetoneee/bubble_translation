@@ -48,8 +48,8 @@ fun BottomBar(navController: NavController) {
         BottomNavItem(
             route = NavRoutes.FLASH_CARD,
             title = "Bookmark",
-            selectedIcon = Icons.Default.Bookmark,
-            unselectedIcon = Icons.Outlined.Bookmark
+            selectedIcon = Icons.Filled.Bookmark,
+            unselectedIcon = ImageVector.vectorResource(R.drawable.outline_bookmark_border_24)
         )
     )
 
