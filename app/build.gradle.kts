@@ -70,4 +70,10 @@ dependencies {
     implementation(libs.ktor.client.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
 
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.datastore)
+
+    implementation (libs.text.recognition)
+    implementation (libs.translate)
+    implementation (libs.kotlinx.coroutines.android)
 }

@@ -11,6 +11,7 @@ import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
+import android.widget.Toast
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
@@ -27,6 +28,7 @@ import androidx.savedstate.SavedStateRegistry
 import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
+import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissionHolder
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetAction
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModel
@@ -218,7 +220,19 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
         when (translateMode) {
             TranslateMode.FULLSCREEN -> {
                 Log.i("Translate Service", "Full screen mode")
-//                TODO()
+                val resultCode = MediaProjectionPermissionHolder.resultCode
+                val resultData = MediaProjectionPermissionHolder.resultData
+
+                if (resultData != null) {
+                    val intent = Intent(this, FullscreenModeService::class.java).apply {
+                        putExtra("resultCode", resultCode)
+                        putExtra("resultData", resultData)
+                    }
+                    startService(intent)
+                } else {
+                    Toast.makeText(this, "Bạn cần cấp quyền ghi màn hình trước", Toast.LENGTH_SHORT)
+                        .show()
+                }
             }
 
             TranslateMode.CROP -> {
