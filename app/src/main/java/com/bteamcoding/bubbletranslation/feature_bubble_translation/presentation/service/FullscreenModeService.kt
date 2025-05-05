@@ -248,10 +248,10 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         val height = metrics.heightPixels
         val density = metrics.densityDpi
 
-//        Tạo ImageReader
+//      Tạo ImageReader
         val imageReader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 2)
 
-        val virtualDisplay = mediaProjection?.createVirtualDisplay(
+        var virtualDisplay = mediaProjection?.createVirtualDisplay(
             "ScreenCapture",
             width, height, density,
             DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
@@ -260,30 +260,38 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
         imageReader.setOnImageAvailableListener({ reader ->
             val image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
-            val planes = image.planes
-            val buffer = planes[0].buffer
-            val pixelStride = planes[0].pixelStride
-            val rowStride = planes[0].rowStride
-            val rowPadding = rowStride - pixelStride * width
 
-//          Tạo ảnh Bitmap
-            val bitmap = Bitmap.createBitmap(
-                width + rowPadding / pixelStride,
-                height,
-                Bitmap.Config.ARGB_8888
-            )
-            bitmap.copyPixelsFromBuffer(buffer)
+            try {
+                val planes = image.planes
+                val buffer = planes[0].buffer
+                val pixelStride = planes[0].pixelStride
+                val rowStride = planes[0].rowStride
+                val rowPadding = rowStride - pixelStride * width
 
-//          Dọn dẹp
-            image.close()
-            reader.close()
-            virtualDisplay?.release()
-            if (mediaProjection != null) {
+                //          Tạo ảnh Bitmap
+                val bitmap = Bitmap.createBitmap(
+                    width + rowPadding / pixelStride,
+                    height,
+                    Bitmap.Config.ARGB_8888
+                )
+                bitmap.copyPixelsFromBuffer(buffer)
+
+                processBitmap(bitmap)
+            } catch (e: Exception) {
+                Log.e("FullScreenOCR", "Error during bitmap processing: ${e.message}")
+            } finally {
+//                Dọn dẹp
+                image.close() // ✅ BẮT BUỘC phải đóng image
+                reader.setOnImageAvailableListener(null, null) // ✅ Tránh callback nhiều lần
+                reader.close() // ✅ Giải phóng resource của ImageReader
+
+                virtualDisplay?.release()
+                virtualDisplay = null
+
                 mediaProjection?.stop()
+                mediaProjection = null
             }
 
-            processBitmap(bitmap)
-//            stopSelf()
         }, Handler(Looper.getMainLooper()))
     }
 
