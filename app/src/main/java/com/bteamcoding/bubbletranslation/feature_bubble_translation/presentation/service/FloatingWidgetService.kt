@@ -241,7 +241,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 if (resultData != null) {
                     Log.i("Translate Service", "Crop screen mode in")
 
-                    val intentCrop = Intent(this, PartialscreenModeService::class.java).apply {
+                    val intentCrop = Intent(this, PartialScreenModeService::class.java).apply {
                         putExtra("resultCode", resultCode)
                         putExtra("resultData", resultData)
                     }

@@ -42,7 +42,7 @@
             android:exported="false"
             android:foregroundServiceType="mediaProjection"/>
         <service
-            android:name=".feature_bubble_translation.presentation.service.PartialscreenModeService"
+            android:name=".feature_bubble_translation.presentation.service.PartialScreenModeService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="mediaProjection"/>
