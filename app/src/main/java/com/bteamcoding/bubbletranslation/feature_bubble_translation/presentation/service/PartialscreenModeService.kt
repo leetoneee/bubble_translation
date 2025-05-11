@@ -49,9 +49,11 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.core.utils.recognizeTextFromImage
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.CaptureRegion
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FullscreenModeAction
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FullscreenModeViewModel
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.CoatingLayer
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.CropArea
 import kotlin.math.abs
 
 class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
@@ -122,28 +124,41 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 val state by viewModel.state.collectAsState()
                 val params = layoutParams as WindowManager.LayoutParams
 
-                state.visionText?.let {
-                    Log.d("PartialScreenModeService", "Creating ComposeView ${it.text}")
-                    CoatingLayer(
-                        text = it,
-                        onDrag = { offsetY ->
-                            // Cập nhật vị trí và layout
-                            params.y += offsetY.toInt()
-
-                            params.y = if (params.y > 0) 0 else params.y
-                            windowManager.updateViewLayout(floatingView, layoutParams)
-                        },
-                        onDragEnd = {
-                            if (abs(params.y - 0) > 50) {
-                                viewModel.onAction(PartialScreenModeAction.OnReset)
-                                stopSelf()
-                            } else {
-                                params.y = 0
-                                windowManager.updateViewLayout(floatingView, layoutParams)
-                            }
+                // Kiểm tra captureRegion và gọi startScreenshot nếu có
+                state.captureRegion?.let { captureRegion ->
+                    // Logic Crop Area: sử dụng captureRegion để cắt màn hình
+                    CropArea(
+                        captureRegion = captureRegion,
+                        onCaptureRegionChange = { newRegion ->
+                            // Cập nhật captureRegion qua ViewModel
+                            viewModel.onAction(PartialScreenModeAction.SetCaptureRegion(newRegion))
                         }
                     )
+                    startScreenshot(captureRegion)
                 }
+
+//                state.visionText?.let {
+//                    Log.d("PartialScreenModeService", "Creating ComposeView ${it.text}")
+//                    CoatingLayer(
+//                        text = it,
+//                        onDrag = { offsetY ->
+//                            // Cập nhật vị trí và layout
+//                            params.y += offsetY.toInt()
+//
+//                            params.y = if (params.y > 0) 0 else params.y
+//                            windowManager.updateViewLayout(floatingView, layoutParams)
+//                        },
+//                        onDragEnd = {
+//                            if (abs(params.y - 0) > 50) {
+//                                viewModel.onAction(PartialScreenModeAction.OnReset)
+//                                stopSelf()
+//                            } else {
+//                                params.y = 0
+//                                windowManager.updateViewLayout(floatingView, layoutParams)
+//                            }
+//                        }
+//                    )
+//                }
             }
         }
 
@@ -198,8 +213,23 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             Log.d("PartialScreenModeService", "Using existing MediaProjection instance.")
         }
 
-        // Tiến hành chụp màn hình
-        startScreenshot()
+        // Kiểm tra captureRegion từ ViewModel và gọi startScreenshot khi có giá trị
+        try {
+            val captureRegion = if (::viewModel.isInitialized) {
+                // Nếu viewModel đã được khởi tạo, lấy captureRegion từ viewModel
+                viewModel.state.value.captureRegion
+            } else {
+                // Nếu viewModel là null, sử dụng giá trị mặc định
+                CaptureRegion(50, 50, 100, 100)
+            }
+            captureRegion?.let {
+                startScreenshot(it)
+            }
+            // Tiến hành xử lý khi captureRegion có giá trị hợp lệ
+        } catch (e: Exception) {
+            // Xử lý lỗi khi không thể truy cập captureRegion
+            Log.e("PartialScreenModeService", "Error accessing captureRegion: ${e.message}")
+        }
 
         return START_NOT_STICKY
     }
@@ -235,7 +265,7 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryController.savedStateRegistry
 
-    private fun startScreenshot() {
+    private fun startScreenshot(captureRegion: CaptureRegion) {
 //      Lấy thông tin về màn hình
         val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         val display = windowManager.defaultDisplay
@@ -312,12 +342,18 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             )
             bitmap.copyPixelsFromBuffer(buffer)
 
+            // Crop the image based on CaptureRegion
+            val croppedBitmap = Bitmap.createBitmap(
+                bitmap, captureRegion.startX, captureRegion.startY,
+                captureRegion.endX - captureRegion.startX, captureRegion.endY - captureRegion.startY
+            )
+
 //          Dọn dẹp
             image.close()
             reader.close()
             //releaseResources()
 
-            processBitmap(bitmap)
+            processBitmap(croppedBitmap)
 //            stopSelf()
         }, Handler(Looper.getMainLooper()))
     }
