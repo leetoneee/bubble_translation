@@ -6,9 +6,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,9 +40,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -110,16 +116,34 @@ fun CameraScreen(
             TopBar("Image Recognition")
         }
 
-        Box(
+        Column(
             modifier = Modifier
                 .constrainAs(image) {
                     top.linkTo(topBar.bottom)
                     bottom.linkTo(controller.top)
                     height = Dimension.fillToConstraints
                 }
-                .fillMaxWidth(), contentAlignment = Alignment.Center
+                .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement =Arrangement.Center
         ) {
-
+            Box(
+                modifier = Modifier
+                    .size(120.dp)
+                    .background(
+                        color = colorResource(R.color.blue_400).copy(0.5f),
+                        shape = RoundedCornerShape(30.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Image,
+                    contentDescription = null,
+                    modifier = Modifier.size(40.dp),
+                    tint = colorResource(R.color.blue_900)
+                )
+            }
+            Text(text = "Take a picture or\nChoose image from library", fontWeight = FontWeight.Bold, fontSize = 18.sp, textAlign = TextAlign.Center, lineHeight = 20.sp, color = colorResource(R.color.bold_text), modifier = Modifier.padding(top = 30.dp, bottom = 10.dp))
+            Text(text = "Text in the image will be translated\n and displayed here", fontSize = 14.sp, fontWeight = FontWeight.Thin, textAlign = TextAlign.Center, color = colorResource(R.color.normal_text))
         }
 
         Row(
