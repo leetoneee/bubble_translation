@@ -2,12 +2,11 @@ package com.bteamcoding.bubbletranslation.app.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StartFloatingWidgetUseCase
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModel
+import com.bteamcoding.bubbletranslation.feature_camera.presentation.CameraScreenRoot
 import com.bteamcoding.bubbletranslation.feature_home.presentation.HomeScreenRoot
 
 @Composable
@@ -25,6 +24,7 @@ fun AppNavHost(navController: NavHostController) {
         }
         composable(route = NavRoutes.CAPTURE) {
 
+            CameraScreenRoot()
         }
         composable(route = NavRoutes.DICTIONARY) {
 
