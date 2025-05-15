@@ -2,6 +2,7 @@ package com.bteamcoding.bubbletranslation.feature_camera.presentation.activity
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
@@ -35,23 +36,28 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
+import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.app.presentation.BaseActivity
+import java.io.File
 
 class PreviewImageActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        supportActionBar?.hide() // Ẩn ActionBar
+//        supportActionBar?.hide() // Ẩn ActionBar
 
         setContent {
             val imageUriString = intent.getStringExtra("imageUri")
+            val capturedImageUriString = intent.getStringExtra("capturedImageUri")
             val imageUri = remember { imageUriString?.let { Uri.parse(it) } }
+            val capturedImageUri = remember { capturedImageUriString?.let { Uri.parse(it) } }
 
             PreviewImageView(
-                imageUri = imageUri,
+                imageUri = imageUri ?: capturedImageUri,
+                isCapturedImage = capturedImageUri != null,
                 onBack = {
                     finish()
                 },
@@ -62,6 +68,7 @@ class PreviewImageActivity : BaseActivity() {
 
                 }
             )
+
         }
     }
 }
@@ -69,13 +76,14 @@ class PreviewImageActivity : BaseActivity() {
 @Composable
 fun PreviewImageView(
     imageUri: Uri?,
+    isCapturedImage: Boolean,
     onBack: () -> Unit,
     onViewResultText: () -> Unit,
     onCompareResult: () -> Unit
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize().background(color = colorResource(R.color.white_background))
-    )
+//    Box(
+//        modifier = Modifier.fillMaxSize().background(color = colorResource(R.color.white_background))
+//    )
 
     ConstraintLayout(
         modifier = Modifier
@@ -165,12 +173,27 @@ fun PreviewImageView(
 
         if (imageUri != null) {
             //Use Coil to display the selected image
-            val painter = rememberAsyncImagePainter(
-                ImageRequest
-                    .Builder(LocalContext.current)
-                    .data(data = imageUri)
-                    .build()
-            )
+            var painter: AsyncImagePainter? = null
+
+            if (isCapturedImage) {
+                val file = File(imageUri.path ?: "")
+                painter = rememberAsyncImagePainter(
+                    ImageRequest
+                        .Builder(LocalContext.current)
+                        .data(file)
+                        .crossfade(true)
+                        .allowHardware(false)
+                        .build()
+                )
+            } else
+                painter = rememberAsyncImagePainter(
+                    ImageRequest
+                        .Builder(LocalContext.current)
+                        .data(data = imageUri)
+                        .crossfade(true)
+                        .allowHardware(false)
+                        .build()
+                )
 
             Box(
                 modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
@@ -179,7 +202,8 @@ fun PreviewImageView(
                     painter = painter,
                     contentDescription = null,
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .zIndex(50f),
                     contentScale = ContentScale.Crop
                 )
             }

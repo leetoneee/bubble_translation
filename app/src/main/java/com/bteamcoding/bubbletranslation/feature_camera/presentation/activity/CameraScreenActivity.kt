@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.PickVisualMediaRequest
@@ -13,12 +14,15 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
@@ -35,18 +39,25 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.bteamcoding.bubbletranslation.app.presentation.BaseActivity
+import com.bteamcoding.bubbletranslation.core.utils.CameraFileUtils.takePicture
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.CameraScreenAction
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.CameraScreenViewModel
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.component.CameraPreview
+import java.util.concurrent.Executors
 
 class CameraScreenActivity : BaseActivity() {
     private lateinit var viewModel: CameraScreenViewModel
@@ -59,7 +70,7 @@ class CameraScreenActivity : BaseActivity() {
             )
         }
 
-        supportActionBar?.hide() // Ẩn ActionBar
+//        supportActionBar?.hide() // Ẩn ActionBar
 
 //        WindowCompat.setDecorFitsSystemWindows(window, false) // Full màn hình
         setContent {
@@ -83,7 +94,10 @@ class CameraScreenActivity : BaseActivity() {
                         } else CameraSelector.DEFAULT_BACK_CAMERA
                 },
                 onCaptureImage = {
-
+                    viewModel.onAction(CameraScreenAction.SetUri(it))
+                    val intent = Intent(context, PreviewImageActivity::class.java)
+                    intent.putExtra("capturedImageUri", it.toString())
+                    context.startActivity(intent)
                 },
                 onBack = {
                     finish()
@@ -119,10 +133,16 @@ class CameraScreenActivity : BaseActivity() {
 fun CameraScreenView(
     controller: LifecycleCameraController,
     onSwitchCamera: () -> Unit,
-    onCaptureImage: () -> Unit,
+    onCaptureImage: (Uri) -> Unit,
     onBack: () -> Unit,
     onImageChosen: (Uri) -> Unit,
 ) {
+    val context = LocalContext.current
+    // State to hold the URI of the captured image. Initially null, updated after image capture
+    var capturedImageUri: Uri? by remember { mutableStateOf(null) }
+    // Executor for background tasks, specifically for taking pictures in this context
+    val executor = remember { Executors.newSingleThreadExecutor() }
+
     //The URI of the photo that the user has picked
     var photoUri: Uri? by remember { mutableStateOf(null) }
 
@@ -137,8 +157,8 @@ fun CameraScreenView(
             }
         }
 
-    LaunchedEffect(photoUri) {
-        photoUri?.let { onImageChosen(it) }
+    LaunchedEffect(capturedImageUri) {
+        capturedImageUri?.let { onCaptureImage(it) }
     }
 
     ConstraintLayout(
@@ -252,7 +272,16 @@ fun CameraScreenView(
             }
 
             OutlinedIconButton(
-                onClick = onCaptureImage,
+                onClick = {
+                    // Calls a utility function to take a picture, handling success and error scenarios
+                    takePicture(controller, context, executor, { uri ->
+                        Log.d("Image captured Uri", uri.toString())
+                        capturedImageUri = uri // Update state with the URI of the captured image on success
+                    }, { exception ->
+                        // Error handling logic for image capture failures
+                        exception.printStackTrace()
+                    })
+                },
                 border = BorderStroke(3.dp, Color.White),
                 modifier = Modifier
                     .size(70.dp)

@@ -19,7 +19,12 @@ fun CameraPreview(
             PreviewView(it).apply {
                 this.controller = controller
                 controller.bindToLifecycle(lifecycleOwner)
+                scaleType = PreviewView.ScaleType.FILL_START
+                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
             }
+        },
+        onRelease = {
+            controller.unbind()
         }
     )
 }
