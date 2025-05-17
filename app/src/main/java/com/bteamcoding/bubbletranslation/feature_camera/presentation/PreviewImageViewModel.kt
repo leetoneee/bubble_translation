@@ -11,12 +11,26 @@ class PreviewImageViewModel : ViewModel() {
 
     fun onAction(action: PreviewImageAction) {
         when (action) {
-            is PreviewImageAction.SetUri -> {
-                _state.update { it.copy(photoUri = action.uri) }
+            is PreviewImageAction.OnChange -> {
+                _state.update { it.copy(visionText = action.newText) }
+            }
+
+            is PreviewImageAction.OnChangeTextVisibility -> {
+                _state.update { it.copy(isTextVisibility = action.newState) }
+            }
+
+            is PreviewImageAction.SetImageBitmap -> {
+                _state.update { it.copy(imageBitmap = action.newBitmap) }
             }
 
             is PreviewImageAction.OnReset -> {
-                _state.update { it.copy(photoUri = null) }
+                _state.update {
+                    it.copy(
+                        visionText = null,
+                        imageBitmap = null,
+                        isTextVisibility = false
+                    )
+                }
             }
         }
     }
