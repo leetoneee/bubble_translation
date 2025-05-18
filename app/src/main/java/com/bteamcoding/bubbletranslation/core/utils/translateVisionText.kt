@@ -18,5 +18,5 @@ suspend fun translateVisionText(visionText: Text): TranslatedVisionText = corout
         }
     }.awaitAll()
 
-    TranslatedVisionText(textBlocks = translatedBlocks)
+    TranslatedVisionText(text = visionText.text, textBlocks = translatedBlocks)
 }

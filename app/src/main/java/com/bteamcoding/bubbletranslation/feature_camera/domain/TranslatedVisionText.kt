@@ -8,5 +8,6 @@ data class TranslatedBlock(
 )
 
 data class TranslatedVisionText(
-    val textBlocks: List<TranslatedBlock>
+    val textBlocks: List<TranslatedBlock>,
+    val text: String,
 )

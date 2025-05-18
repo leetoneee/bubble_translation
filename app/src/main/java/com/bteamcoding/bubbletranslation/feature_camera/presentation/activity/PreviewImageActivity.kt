@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Compare
@@ -23,6 +25,7 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,8 +41,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.graphics.drawable.toBitmap
@@ -152,6 +158,7 @@ class PreviewImageActivity : BaseActivity() {
             try {
                 val result = recognizeTextFromImage(bitmap)
                 Log.d("PreviewImageActivity OCR", "Detected text: ${result.text}")
+
                 val translatedResult = translateVisionText(result)
                 viewModel.onAction(PreviewImageAction.OnChange(result))
                 viewModel.onAction(PreviewImageAction.OnChangeTranslatedVisionText(translatedResult))
@@ -298,7 +305,7 @@ fun PreviewImageView(
                     contentScale = ContentScale.Fit
                 )
 
-                if (bitmap != null && visionText != null && isTextVisibility) {
+                if (bitmap != null && visionText != null && visionText.text != "" && isTextVisibility) {
                     val originalImageSize = Size(bitmap.width.toFloat(), bitmap.height.toFloat())
 
                     TextOverlayOnImage(
@@ -319,6 +326,29 @@ fun PreviewImageView(
                             color = MaterialTheme.colorScheme.secondary,
                             trackColor = MaterialTheme.colorScheme.surfaceVariant,
                         )
+                    }
+                } else if (visionText.text == "") {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF0A0D12).copy(alpha = 0.2f))
+                            .zIndex(30f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .wrapContentSize()
+                                .background(Color(0xFF0A0D12).copy(alpha = 0.7f), shape = RoundedCornerShape(16.dp))
+                                .padding(8.dp)
+                        ) {
+                            Text(
+                                text = "No text detected.",
+                                color = Color.White,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 24.sp,
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
             }
