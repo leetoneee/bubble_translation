@@ -24,12 +24,13 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.bteamcoding.bubbletranslation.core.utils.translateText
+import com.bteamcoding.bubbletranslation.feature_camera.domain.TranslatedVisionText
 import com.google.mlkit.vision.text.Text
 import kotlin.math.pow
 
 @Composable
 fun TextOverlayOnImage(
-    visionText: Text,
+    visionText: TranslatedVisionText,
     imageSize: IntSize,
     originalImageSize: Size,
     modifier: Modifier = Modifier
@@ -51,7 +52,8 @@ fun TextOverlayOnImage(
 
         visionText.textBlocks.forEach { block ->
             BlockOverlayOnImage(
-                block = block,
+                block = block.originalBlock,
+                translatedTextBlock =block.translatedText,
                 scale = scale,
                 offsetX = offsetX,
                 offsetY = offsetY
@@ -63,6 +65,7 @@ fun TextOverlayOnImage(
 @Composable
 fun BlockOverlayOnImage(
     block: Text.TextBlock,
+    translatedTextBlock: String,
     scale: Float,
     offsetX: Float,
     offsetY: Float
@@ -101,10 +104,10 @@ fun BlockOverlayOnImage(
     val scaledWidthPx = (maxWidthPx + idealTextSizePx) * scale
     val scaledHeightPx = (totalHeightPx + idealTextSizePx) * scale
 
-    var translated by remember(block.text) { mutableStateOf("") }
-    LaunchedEffect(block.text) {
-        translated = translateText(block.text)
-    }
+//    var translated by remember(block.text) { mutableStateOf("") }
+//    LaunchedEffect(block.text) {
+//        translated = translateText(block.text)
+//    }
 
     Box(
         modifier = Modifier
@@ -122,7 +125,7 @@ fun BlockOverlayOnImage(
             .zIndex(10f)
     ) {
         Text(
-            text = translated,
+            text = translatedTextBlock,
             style = TextStyle(
                 color = Color.Black,
                 fontWeight = FontWeight.Normal,

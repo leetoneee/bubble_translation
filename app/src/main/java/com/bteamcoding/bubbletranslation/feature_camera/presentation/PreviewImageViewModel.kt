@@ -23,6 +23,12 @@ class PreviewImageViewModel : ViewModel() {
                 _state.update { it.copy(imageBitmap = action.newBitmap) }
             }
 
+            is PreviewImageAction.OnChangeTranslatedVisionText -> {
+                _state.update {
+                    it.copy(translatedVisionText = action.newText)
+                }
+            }
+
             is PreviewImageAction.OnReset -> {
                 _state.update {
                     it.copy(

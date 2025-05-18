@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.setContent
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -14,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.outlined.Compare
@@ -22,11 +22,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -52,11 +51,12 @@ import coil.request.ImageRequest
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.app.presentation.BaseActivity
 import com.bteamcoding.bubbletranslation.core.utils.recognizeTextFromImage
+import com.bteamcoding.bubbletranslation.core.utils.translateVisionText
+import com.bteamcoding.bubbletranslation.feature_camera.domain.TranslatedVisionText
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.PreviewImageAction
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.PreviewImageState
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.PreviewImageViewModel
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.component.TextOverlayOnImage
-import com.google.mlkit.vision.text.Text
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -130,7 +130,7 @@ class PreviewImageActivity : BaseActivity() {
 
             PreviewImageView(
                 painter = painter,
-                visionText = state.visionText,
+                visionText = state.translatedVisionText,
                 bitmap = state.imageBitmap,
                 isTextVisibility = state.isTextVisibility,
                 onBack = {
@@ -152,7 +152,9 @@ class PreviewImageActivity : BaseActivity() {
             try {
                 val result = recognizeTextFromImage(bitmap)
                 Log.d("PreviewImageActivity OCR", "Detected text: ${result.text}")
+                val translatedResult = translateVisionText(result)
                 viewModel.onAction(PreviewImageAction.OnChange(result))
+                viewModel.onAction(PreviewImageAction.OnChangeTranslatedVisionText(translatedResult))
                 viewModel.onAction(PreviewImageAction.OnChangeTextVisibility(true))
             } catch (e: Exception) {
                 Log.e("PreviewImageActivity OCR", "Error: ${e.message}")
@@ -165,7 +167,7 @@ class PreviewImageActivity : BaseActivity() {
 fun PreviewImageView(
     painter: AsyncImagePainter?,
     bitmap: Bitmap?,
-    visionText: Text?,
+    visionText: TranslatedVisionText?,
     isTextVisibility: Boolean,
     onBack: () -> Unit,
     onViewResultText: () -> Unit,
@@ -304,18 +306,21 @@ fun PreviewImageView(
                         imageSize = imageSize,
                         originalImageSize = originalImageSize
                     )
+                } else if (visionText == null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color(0xFF0A0D12).copy(alpha = 0.4f))
+                            .zIndex(30f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.width(64.dp),
+                            color = MaterialTheme.colorScheme.secondary,
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                        )
+                    }
                 }
-            }
-        } else {
-            val progress by remember { mutableFloatStateOf(0.1f) }
-            val animatedProgress by
-            animateFloatAsState(
-                targetValue = progress,
-                animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
-            )
-
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(progress = { animatedProgress })
             }
         }
     }
