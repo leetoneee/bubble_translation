@@ -8,7 +8,12 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -29,13 +34,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
@@ -45,6 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.offset
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -287,33 +296,97 @@ fun PreviewImageView(
             }
         }
 
-
-
         if (painter != null) {
-            Box(
+            // Zoom in/out, Pinch
+            var scale by remember {
+                mutableFloatStateOf(1f)
+            }
+            var offset by remember {
+                mutableStateOf(Offset.Zero)
+            }
+
+            BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxSize()
                     .onSizeChanged { imageSize = it },
             ) {
-                Image(
-                    painter = painter,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .zIndex(10f)
-                        .align(Alignment.Center),
-                    contentScale = ContentScale.Fit
-                )
+                val state = rememberTransformableState { zoomChange, panChange, _ ->
+                    scale = (scale * zoomChange).coerceIn(1f, 5f)
 
-                if (bitmap != null && visionText != null && visionText.text != "" && isTextVisibility) {
-                    val originalImageSize = Size(bitmap.width.toFloat(), bitmap.height.toFloat())
+                    val extraWidth = (scale - 1) * constraints.maxWidth
+                    val extraHeight = (scale - 1) * constraints.maxHeight
 
-                    TextOverlayOnImage(
-                        visionText = visionText,
-                        imageSize = imageSize,
-                        originalImageSize = originalImageSize
+                    val maxX = extraWidth / 2
+                    val maxY = extraHeight / 2
+
+                    offset = Offset(
+                        x = (offset.x + panChange.x).coerceIn(-maxX, maxX),
+                        y = (offset.y + panChange.y).coerceIn(-maxY, maxY)
                     )
-                } else if (visionText == null) {
+                }
+
+                val transformModifier = Modifier
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                        translationX = offset.x
+                        translationY = offset.y
+                    }
+
+                Box(
+                    modifier = Modifier
+                        .pointerInput(Unit) {
+                            detectTapGestures(
+                                onDoubleTap = { tapOffset ->
+                                    val oldScale = scale
+                                    val newScale = if (scale < 2f) 2f else 1f
+
+                                    // Tính toán offset sao cho điểm tap không bị lệch
+                                    val extraWidth = (newScale - 1) * constraints.maxWidth
+                                    val extraHeight = (newScale - 1) * constraints.maxHeight
+                                    val maxX = extraWidth / 2
+                                    val maxY = extraHeight / 2
+
+                                    val zoomCenter = tapOffset - Offset(constraints.maxWidth / 2f, constraints.maxHeight / 2f)
+                                    val newOffset = (offset - zoomCenter) * (newScale / oldScale) + zoomCenter
+
+                                    // Clamp lại trong giới hạn
+                                    offset = Offset(
+                                        x = newOffset.x.coerceIn(-maxX, maxX),
+                                        y = newOffset.y.coerceIn(-maxY, maxY)
+                                    )
+
+                                    scale = newScale
+                                }
+                            )
+                        }
+                        .align(Alignment.Center)
+                        .then(transformModifier)
+                        .transformable(state)
+                ) {
+                    Image(
+                        painter = painter,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .zIndex(10f),
+                        contentScale = ContentScale.Fit
+                    )
+
+                    if (bitmap != null && visionText != null && visionText.text.isNotEmpty() && isTextVisibility) {
+                        val originalImageSize =
+                            Size(bitmap.width.toFloat(), bitmap.height.toFloat())
+
+                        TextOverlayOnImage(
+                            visionText = visionText,
+                            imageSize = imageSize,
+                            originalImageSize = originalImageSize
+                        )
+                    }
+                }
+
+                // Handling Loading / No Text states
+                if (visionText == null) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -338,7 +411,10 @@ fun PreviewImageView(
                         Box(
                             modifier = Modifier
                                 .wrapContentSize()
-                                .background(Color(0xFF0A0D12).copy(alpha = 0.7f), shape = RoundedCornerShape(16.dp))
+                                .background(
+                                    Color(0xFF0A0D12).copy(alpha = 0.7f),
+                                    shape = RoundedCornerShape(16.dp)
+                                )
                                 .padding(8.dp)
                         ) {
                             Text(

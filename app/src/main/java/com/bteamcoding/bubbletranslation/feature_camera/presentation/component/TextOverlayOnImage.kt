@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -53,7 +55,7 @@ fun TextOverlayOnImage(
         visionText.textBlocks.forEach { block ->
             BlockOverlayOnImage(
                 block = block.originalBlock,
-                translatedTextBlock =block.translatedText,
+                translatedTextBlock = block.translatedText,
                 scale = scale,
                 offsetX = offsetX,
                 offsetY = offsetY
@@ -124,13 +126,15 @@ fun BlockOverlayOnImage(
             .padding(2.dp)
             .zIndex(10f)
     ) {
-        Text(
-            text = translatedTextBlock,
-            style = TextStyle(
-                color = Color.Black,
-                fontWeight = FontWeight.Normal,
-                fontSize = idealTextSizeSp
+        SelectionContainer {
+            Text(
+                text = translatedTextBlock,
+                style = TextStyle(
+                    color = Color.Black,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = idealTextSizeSp
+                ),
             )
-        )
+        }
     }
 }
