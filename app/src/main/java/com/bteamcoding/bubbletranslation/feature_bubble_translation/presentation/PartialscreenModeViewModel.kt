@@ -29,3 +29,4 @@ class PartialScreenModeViewModel : ViewModel() {
         }
     }
 }
+

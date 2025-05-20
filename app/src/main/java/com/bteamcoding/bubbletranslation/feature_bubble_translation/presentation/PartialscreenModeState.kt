@@ -8,3 +8,4 @@ data class PartialScreenModeState(
     val captureRegion: Rect = Rect(0f, 0f, 300f, 400f),
     val isTextVisibility: Boolean = false
 )
+
