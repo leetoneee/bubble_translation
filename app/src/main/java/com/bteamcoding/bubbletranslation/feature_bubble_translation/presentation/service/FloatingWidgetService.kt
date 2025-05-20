@@ -217,11 +217,12 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
         get() = savedStateRegistryController.savedStateRegistry
 
     private fun handleTranslateService(translateMode: TranslateMode) {
+        val resultCode = MediaProjectionPermissionHolder.resultCode
+        val resultData = MediaProjectionPermissionHolder.resultData
+
         when (translateMode) {
             TranslateMode.FULLSCREEN -> {
                 Log.i("Translate Service", "Full screen mode")
-                val resultCode = MediaProjectionPermissionHolder.resultCode
-                val resultData = MediaProjectionPermissionHolder.resultData
 
                 if (resultData != null) {
                     val intent = Intent(this, FullscreenModeService::class.java).apply {
@@ -237,7 +238,18 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
             TranslateMode.CROP -> {
                 Log.i("Translate Service", "Crop screen mode")
-//                TODO()
+                if (resultData != null) {
+                    Log.i("Translate Service", "Crop screen mode in")
+
+                    val intentCrop = Intent(this, PartialScreenModeService::class.java).apply {
+                        putExtra("resultCode", resultCode)
+                        putExtra("resultData", resultData)
+                    }
+                    startService(intentCrop)
+                } else {
+                    Toast.makeText(this, "Bạn cần cấp quyền ghi màn hình trước", Toast.LENGTH_SHORT)
+                        .show()
+                }
             }
 
             TranslateMode.AUTO -> {

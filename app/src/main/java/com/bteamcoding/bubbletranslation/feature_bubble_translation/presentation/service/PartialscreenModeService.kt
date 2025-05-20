@@ -1,6 +1,6 @@
 package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.service
 
-import android.animation.ValueAnimator
+//import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.CaptureRegion
 import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
@@ -12,7 +12,6 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
-import android.hardware.display.VirtualDisplay
 import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
@@ -24,14 +23,13 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
-import android.view.animation.DecelerateInterpolator
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -49,21 +47,16 @@ import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.core.utils.MediaProjectionSingleton
 import com.bteamcoding.bubbletranslation.core.utils.VirtualDisplaySignleton
 import com.bteamcoding.bubbletranslation.core.utils.recognizeTextFromImage
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetAction
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModel
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FullscreenModeAction
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FullscreenModeViewModel
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.CoatingLayer
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.DraggableFloatingWidget
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.TextOverlay
-import com.google.mlkit.vision.text.Text
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.PartialScreenModeAction
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.PartialScreenModeViewModel
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.PartialScreenModeState
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.CropArea
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.math.abs
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.TextOverlayCrop
 
-class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
+class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
@@ -71,16 +64,18 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: ComposeView
     private lateinit var layoutParams: WindowManager.LayoutParams
-    private lateinit var viewModel: FullscreenModeViewModel
+    private lateinit var viewModel: PartialScreenModeViewModel
+
+    private var state by mutableStateOf(PartialScreenModeState())
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val viewModelStoreInstance = ViewModelStore()
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
 
-    // Thêm biến theo dõi vị trí
-    private var initialX = 0
-    private var initialY = 0
     private val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+    private var statusBarHeight: Int = 0
+
+    //private var captureRegion: CaptureRegion? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -108,7 +103,7 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         startForeground(notificationId, notification)
 
         // Tiến hành thực hiện các tác vụ khác (như yêu cầu quyền ghi màn hình...)
-        Log.d("FullscreenModeService", "Service is now running in the foreground")
+        Log.d("PartialScreenModeService", "Service is now running in the foreground")
 
         // Initialize SavedStateRegistry
         savedStateRegistryController.performAttach()
@@ -116,40 +111,53 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
         // Create ComposeView for Floating Widget
         floatingView = ComposeView(this).apply {
-            setViewTreeLifecycleOwner(this@FullscreenModeService)
-            setViewTreeViewModelStoreOwner(this@FullscreenModeService)
-            setViewTreeSavedStateRegistryOwner(this@FullscreenModeService)
+            setViewTreeLifecycleOwner(this@PartialScreenModeService)
+            setViewTreeViewModelStoreOwner(this@PartialScreenModeService)
+            setViewTreeSavedStateRegistryOwner(this@PartialScreenModeService)
 
             // Log để kiểm tra ComposeView được tạo
-            Log.d("FullscreenModeService", "Creating ComposeView")
+            Log.d("PartialScreenModeService", "Creating ComposeView")
 
             setContent {
                 viewModel =
-                    ViewModelProvider(this@FullscreenModeService)[FullscreenModeViewModel::class.java]
+                    ViewModelProvider(this@PartialScreenModeService)[PartialScreenModeViewModel::class.java]
                 val state by viewModel.state.collectAsState()
                 val params = layoutParams as WindowManager.LayoutParams
 
-                state.visionText?.let {
-                    Log.d("FullscreenModeService", "Creating ComposeView ${it.text}")
-                    CoatingLayer(
-                        text = it,
-                        onDrag = { offsetY ->
-                            // Cập nhật vị trí và layout
-                            params.y += offsetY.toInt()
+                // Logic Crop Area: sử dụng captureRegion để cắt màn hình
+                var isResizingOrDragging by remember { mutableStateOf(false) }
 
-                            params.y = if (params.y > 0) 0 else params.y
-                            windowManager.updateViewLayout(floatingView, layoutParams)
-                        },
-                        onDragEnd = {
-                            if (abs(params.y - 0) > 50) {
-                                viewModel.onAction(FullscreenModeAction.OnReset)
-                                stopSelf()
-                            } else {
-                                params.y = 0
-                                windowManager.updateViewLayout(floatingView, layoutParams)
-                            }
-                        }
-                    )
+                CropArea(
+                    state = state,
+                    onCaptureRegionChange = { newRegion ->
+                        Log.i("captureRegion", newRegion.toString())
+                        // Cập nhật captureRegion qua ViewModel khi người dùng thay đổi nó
+                        viewModel.onAction(PartialScreenModeAction.SetCaptureRegion(newRegion))
+                        viewModel.onAction(PartialScreenModeAction.OnChange(null))
+                        viewModel.onAction(PartialScreenModeAction.OnChangeTextVisibility(false))
+                        startScreenshot(newRegion)
+                    },
+                    onTap = {
+                        viewModel.onAction(PartialScreenModeAction.OnReset)
+                        stopSelf()
+                    },
+                    onResizeStateChanged = {
+                        isResizingOrDragging = it
+                        viewModel.onAction(PartialScreenModeAction.OnChangeTextVisibility(false))
+                    },
+                    onChangeTextVisibility = {
+                        viewModel.onAction(PartialScreenModeAction.OnChangeTextVisibility(it))
+                    }
+                )
+                //startScreenshot(state.captureRegion)
+                if (!isResizingOrDragging && state.isTextVisibility) {
+                    state.visionText?.let {
+                        Log.d("PartialScreenModeService", "Creating ComposeView ${it.text}")
+                        TextOverlayCrop(
+                            visionText = state.visionText!!,
+                            captureRegion = state.captureRegion
+                        )
+                    }
                 }
             }
         }
@@ -164,67 +172,72 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 WindowManager.LayoutParams.TYPE_PHONE
             },
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
-            x = initialX
-            y = initialY
+            x = 0
+            y = 0
             gravity = Gravity.TOP or Gravity.START
         }
 
         // Log để kiểm tra WindowManager
-        Log.d("FullScreenModeService", "Adding view to WindowManager")
+        Log.d("PartialScreenModeService", "Adding view to WindowManager")
 
         // Add Floating Widget to WindowManager
         try {
             windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
             windowManager.addView(floatingView, layoutParams)
-            Log.d("FullScreenModeService", "View added successfully")
+            Log.d("PartialScreenModeService", "View added successfully")
         } catch (e: Exception) {
-            Log.e("FullScreenModeService", "Error adding view: ${e.message}")
+            Log.e("PartialScreenModeService", "Error adding view: ${e.message}")
         }
 
         // Update Lifecycle
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
         lifecycleRegistry.currentState = Lifecycle.State.STARTED
         lifecycleRegistry.currentState = Lifecycle.State.RESUMED
-
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i("FullScreenModeService", "Service started")
+        Log.i("PartialScreenModeService", "Service started")
+        viewModel =
+            ViewModelProvider(this@PartialScreenModeService)[PartialScreenModeViewModel::class.java]
+
+        val sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE)
+        statusBarHeight = sharedPreferences.getInt("STATUS_BAR_HEIGHT", 0)
+        Log.d("PartialScreenModeService", "StatusBar Height received: $statusBarHeight")
 
         if (MediaProjectionSingleton.mediaProjection == null) {
-            val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED) ?: return START_NOT_STICKY
-            val resultData = intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
+            val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED)
+                ?: return START_NOT_STICKY
+            val resultData =
+                intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
 
             mediaProjectionManager =
                 getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-            MediaProjectionSingleton.mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData)
+            MediaProjectionSingleton.mediaProjection =
+                mediaProjectionManager.getMediaProjection(resultCode, resultData)
         } else {
-            Log.d("FullscreenModeService", "Using existing MediaProjection instance.")
+            Log.d("PartialScreenModeService", "Using existing MediaProjection instance.")
         }
 
-        // Tiến hành chụp màn hình
-        startScreenshot()
+        startScreenshot(state.captureRegion)
 
         return START_NOT_STICKY
     }
-
 
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("FullscreenModeService", "Service onDestroy called")
+        Log.d("PartialScreenModeService", "Service onDestroy called")
 
         if (::floatingView.isInitialized) {
             try {
                 windowManager.removeView(floatingView)
-                Log.d("FullscreenModeService", "View removed successfully")
+                Log.d("PartialScreenModeService", "View removed successfully")
             } catch (e: Exception) {
-                Log.e("FullscreenModeService", "Error removing view: ${e.message}")
+                Log.e("PartialScreenModeService", "Error removing view: ${e.message}")
             }
         }
 
@@ -244,7 +257,9 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryController.savedStateRegistry
 
-    private fun startScreenshot() {
+    private fun startScreenshot(captureRegion: Rect) {
+        Log.d("PartialScreenModeService", "StatusBar Height received: $statusBarHeight")
+
 //      Lấy thông tin về màn hình
         val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         val display = windowManager.defaultDisplay
@@ -253,14 +268,16 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
         val width = metrics.widthPixels
         val height = metrics.heightPixels
-        val density = metrics.densityDpi
+        val d = metrics.densityDpi
+        val density = metrics.density
+
 
 //        Tạo ImageReader
         val imageReader = ImageReader.newInstance(width, height, PixelFormat.RGBA_8888, 2)
 
         // Kiểm tra nếu mediaProjection còn hợp lệ
         if (MediaProjectionSingleton.mediaProjection == null) {
-            Log.e("FullscreenModeService", "MediaProjection is not initialized")
+            Log.e("PartialScreenModeService", "MediaProjection is not initialized")
             stopSelf() // Dừng service nếu mediaProjection không hợp lệ
             return
         }
@@ -269,12 +286,15 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         val mediaProjectionCallback = object : MediaProjection.Callback() {
             override fun onStop() {
                 super.onStop()
-                Log.d("FullscreenModeService", "MediaProjection stopped")
+                Log.d("PartialScreenModeService", "MediaProjection stopped")
                 // Giải phóng tài nguyên khi MediaProjection dừng
                 releaseResources()
             }
         }
-        MediaProjectionSingleton.mediaProjection?.registerCallback(mediaProjectionCallback, Handler(Looper.getMainLooper()))
+        MediaProjectionSingleton.mediaProjection?.registerCallback(
+            mediaProjectionCallback,
+            Handler(Looper.getMainLooper())
+        )
 
         // Nếu VirtualDisplay đã tồn tại, chỉ cần cập nhật Surface mới
         if (VirtualDisplaySignleton.virtualDisplay != null) {
@@ -283,20 +303,21 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         } else {
             // Nếu VirtualDisplay chưa tồn tại, tạo mới
             try {
-                VirtualDisplaySignleton.virtualDisplay = MediaProjectionSingleton.mediaProjection?.createVirtualDisplay(
-                    "ScreenCapture",
-                    width, height, density,
-                    DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                    imageReader.surface, null, null
-                )
+                VirtualDisplaySignleton.virtualDisplay =
+                    MediaProjectionSingleton.mediaProjection?.createVirtualDisplay(
+                        "ScreenCapture",
+                        width, height, d,
+                        DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                        imageReader.surface, null, null
+                    )
                 if (VirtualDisplaySignleton.virtualDisplay == null) {
-                    Log.e("FullscreenModeService", "Failed to create virtual display")
+                    Log.e("PartialscreenModeService", "Failed to create virtual display")
                     releaseResources()
                     stopSelf() // Dừng service nếu không thể tạo virtual display
                     return
                 }
             } catch (e: Exception) {
-                Log.e("FullscreenModeService", "Error creating virtual display: ${e.message}")
+                Log.e("PartialscreenModeService", "Error creating virtual display: ${e.message}")
                 e.printStackTrace()
                 releaseResources()
                 stopSelf() // Dừng service nếu có lỗi
@@ -321,12 +342,21 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             )
             bitmap.copyPixelsFromBuffer(buffer)
 
+            // Crop the image based on CaptureRegion
+            val croppedBitmap = Bitmap.createBitmap(
+                bitmap,
+                (captureRegion.left * density).toInt(),
+                (captureRegion.top * density + statusBarHeight).toInt(),
+                (captureRegion.right * density - captureRegion.left * density).toInt(),
+                (captureRegion.bottom * density - captureRegion.top * density).toInt()
+            )
+
 //          Dọn dẹp
             image.close()
             reader.close()
             //releaseResources()
 
-            processBitmap(bitmap)
+            processBitmap(croppedBitmap)
 //            stopSelf()
         }, Handler(Looper.getMainLooper()))
     }
@@ -337,9 +367,9 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             VirtualDisplaySignleton.virtualDisplay?.release()
             VirtualDisplaySignleton.virtualDisplay = null
             MediaProjectionSingleton.mediaProjection?.stop()
-            Log.d("FullscreenModeService", "Resources released successfully")
+            Log.d("PartialscreenModeService", "Resources released successfully")
         } catch (e: Exception) {
-            Log.e("FullscreenModeService", "Error releasing resources: ${e.message}")
+            Log.e("PartialscreenModeService", "Error releasing resources: ${e.message}")
         }
     }
 
@@ -347,11 +377,14 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val result = recognizeTextFromImage(bitmap)
-                Log.d("FullScreenOCR", "Detected text: ${result.text}")
-                viewModel.onAction(FullscreenModeAction.OnChange(result))
+                Log.d("PartialScreenOCR", "Detected text: ${result.text}")
+                viewModel.onAction(PartialScreenModeAction.OnChange(result))
+                viewModel.onAction(PartialScreenModeAction.OnChangeTextVisibility(true))
             } catch (e: Exception) {
-                Log.e("FullScreenOCR", "Error: ${e.message}")
+                Log.e("PartialScreenOCR", "Error: ${e.message}")
             }
         }
     }
+
+
 }
