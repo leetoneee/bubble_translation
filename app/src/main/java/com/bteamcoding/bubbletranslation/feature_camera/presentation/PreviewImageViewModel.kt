@@ -38,6 +38,10 @@ class PreviewImageViewModel : ViewModel() {
                     )
                 }
             }
+
+            is PreviewImageAction.OnChangeIsSpeaking -> {
+                _state.update { it.copy(isSpeaking = action.newState) }
+            }
         }
     }
 }
