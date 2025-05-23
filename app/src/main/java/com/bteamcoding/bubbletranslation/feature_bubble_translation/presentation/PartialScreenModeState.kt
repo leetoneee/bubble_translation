@@ -1,7 +1,10 @@
 package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation
 
 import com.google.mlkit.vision.text.Text
+import androidx.compose.ui.geometry.Rect
 
 data class PartialScreenModeState(
-    val visionText: Text? = null
+    var visionText: Text? = null,
+    val captureRegion: Rect = Rect(0f, 0f, 300f, 400f),
+    val isTextVisibility: Boolean = false
 )

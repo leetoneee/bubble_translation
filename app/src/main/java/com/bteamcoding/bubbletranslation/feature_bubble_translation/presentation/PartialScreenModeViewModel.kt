@@ -15,8 +15,17 @@ class PartialScreenModeViewModel : ViewModel() {
                 _state.update { it.copy(visionText = action.newText) }
             }
 
-            PartialScreenModeAction.OnReset ->
+            is PartialScreenModeAction.SetCaptureRegion -> {
+                _state.update { it.copy(captureRegion = action.region) }
+            }
+
+            PartialScreenModeAction.OnReset -> {
                 _state.update { it.copy(visionText = null) }
+            }
+
+            is PartialScreenModeAction.OnChangeTextVisibility -> {
+                _state.update { it.copy(isTextVisibility = action.newState) }
+            }
         }
     }
 }
