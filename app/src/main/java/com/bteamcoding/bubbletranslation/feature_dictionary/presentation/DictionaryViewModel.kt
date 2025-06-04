@@ -28,6 +28,11 @@ class DictionaryViewModel : ViewModel() {
                     error = null
                 )
             }
+            is DictionaryAction.UpdateQuery -> {
+                _state.value = _state.value.copy(
+                    searchQuery = action.query
+                )
+            }
         }
     }
 

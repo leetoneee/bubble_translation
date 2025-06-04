@@ -62,7 +62,7 @@ fun DictionaryScreen(
         ) {
             OutlinedTextField(
                 value = state.searchQuery,
-                onValueChange = { onAction(DictionaryAction.Search(it)) },
+                onValueChange = { onAction(DictionaryAction.UpdateQuery(it)) },
                 label = { Text("Search word") },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -73,16 +73,15 @@ fun DictionaryScreen(
             ) {
                 Text("Tra cứu")
             }
+            when {
+                state.definitions.isNotEmpty() -> {
+                    Text("${state.definitions}")
+                }
+            }
             Spacer(modifier = Modifier.height(16.dp))
             when {
                 state.isLoading -> CircularProgressIndicator()
                 state.error != null -> Text(state.error ?: "", color = androidx.compose.ui.graphics.Color.Red)
-                state.definitions.isNotEmpty() -> {
-                    Text("Định nghĩa:")
-                    state.definitions.forEach { def ->
-                        Text(def)
-                    }
-                }
             }
         }
     }
