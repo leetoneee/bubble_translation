@@ -1,54 +1,58 @@
 package com.bteamcoding.bubbletranslation.core.utils
 
-import kotlinx.coroutines.delay
-import java.util.concurrent.atomic.AtomicBoolean
+class PartialTextProcessor(private val batchSize: Int) {
 
-class PartialTextProcessor {
+    private var lastWordCount = 0
+    private var preservedWords: List<String> = emptyList()
+    private var isWaiting = false
 
-    private val displayedWords = mutableListOf<String>()
-    private var lastProcessedWords = listOf<String>()
-    private val buffer = mutableListOf<String>()
-    private var delayTriggered = AtomicBoolean(false)
+     fun inputText(text: String): String {
+        val words = text.trim().split(Regex("\\s+"))
 
-    suspend fun inputText(text: String): String {
-        val words = text.trim().split("\\s+".toRegex())
+        val currentWordCount = words.size
 
-        // Tìm phần mới mà chưa được xử lý
-        val newWords = words.drop(displayedWords.size)
-
-        if (newWords.isEmpty()) {
-            return displayedWords.joinToString(" ")
+        // Nếu số từ chưa vượt quá 12, giữ nguyên toàn bộ
+        if (currentWordCount <= batchSize * 2) {
+            lastWordCount = currentWordCount
+            preservedWords = if (currentWordCount >= batchSize * 2) {
+                words.subList(batchSize, batchSize * 2)
+            } else {
+                emptyList()
+            }
+            return text
         }
 
-        // Thêm từ mới vào buffer
-        buffer.clear()
-        buffer.addAll(newWords)
+        // Tính ngưỡng mới đã đạt (ví dụ: 12, 18, 24, ...)
+        val nextThreshold = ((currentWordCount - 1) / batchSize + 1) * batchSize
 
-        // Nếu buffer chưa đủ 12 từ thì vẫn giữ như cũ
-        if (buffer.size < 12) {
-            return displayedWords.joinToString(" ")
+//        // Nếu số từ chưa vượt ngưỡng trước đó, chỉ update từ mới nếu vượt lastWordCount
+//        if (currentWordCount <= lastWordCount) {
+//            return (preservedWords + words.subList(
+//                lastWordCount, currentWordCount
+//            )).joinToString(" ")
+//        }
+
+        // Đạt đến ngưỡng mới (như 18, 24...)
+        if (currentWordCount >= nextThreshold) {
+            val endIndex = minOf(words.size, nextThreshold)
+            val startIndex = maxOf(endIndex - batchSize, 0)
+            preservedWords = words.subList(startIndex, endIndex)
+            lastWordCount = endIndex
+            return preservedWords.joinToString(" ")
         }
 
-        // Khi đủ 12 từ, thêm vào kết quả hiển thị
-        if (buffer.size >= 12) {
-            val stableWords = buffer.take(12)
-            displayedWords.addAll(stableWords)
-
-            // Xoá 12 từ đầu ra khỏi buffer
-            buffer.subList(0, 12).clear()
-            delayTriggered.set(false)  // Reset flag sau mỗi batch 12 từ
+        // Khi đang nằm trong khoảng giữa hai ngưỡng
+        val newWords = if (lastWordCount < currentWordCount) {
+            words.subList(lastWordCount, currentWordCount)
+        } else {
+            emptyList()
         }
 
-        // Nếu có thêm từ sau batch 12 và delay chưa chạy
-        if (buffer.isNotEmpty() && !delayTriggered.get()) {
-            delayTriggered.set(true)
-            delay(1000) // chờ 1 giây
+        return (preservedWords + newWords).joinToString(" ")
+    }
 
-            // Sau khi đợi, hiển thị phần còn lại (nếu có)
-            displayedWords.addAll(buffer)
-            buffer.clear()
-        }
-
-        return displayedWords.joinToString(" ")
+    fun reset() {
+        lastWordCount = 0
+        preservedWords = emptyList()
     }
 }

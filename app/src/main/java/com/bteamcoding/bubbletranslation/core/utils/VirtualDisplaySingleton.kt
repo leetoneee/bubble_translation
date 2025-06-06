@@ -2,6 +2,6 @@ package com.bteamcoding.bubbletranslation.core.utils
 
 import android.hardware.display.VirtualDisplay
 
-object VirtualDisplaySignleton {
+object VirtualDisplaySingleton {
     var virtualDisplay: VirtualDisplay? = null
 }

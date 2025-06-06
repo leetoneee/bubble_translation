@@ -1,6 +1,5 @@
 package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.service
 
-import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
@@ -9,28 +8,17 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
-import android.graphics.Bitmap
 import android.graphics.PixelFormat
-import android.hardware.display.DisplayManager
-import android.hardware.display.VirtualDisplay
-import android.media.ImageReader
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Build
-import android.os.Handler
 import android.os.IBinder
-import android.os.Looper
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
-import android.view.animation.DecelerateInterpolator
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
@@ -50,50 +38,47 @@ import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissionHolder
 import com.bteamcoding.bubbletranslation.core.utils.MediaProjectionSingleton
 import com.bteamcoding.bubbletranslation.core.utils.SpeechRecognizerHelper
-import com.bteamcoding.bubbletranslation.core.utils.VirtualDisplaySignleton
-import com.bteamcoding.bubbletranslation.core.utils.recognizeTextFromImage
+import com.bteamcoding.bubbletranslation.core.utils.getLastWords
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.AudioModeAction
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.AudioModeViewModel
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.CoatingLayer
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.SubtitleOverlay
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.json.JSONObject
-import kotlin.math.abs
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.DraggableSubtitleOverlay
 
 class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
-
     val resultCode = MediaProjectionPermissionHolder.resultCode
     val resultData = MediaProjectionPermissionHolder.resultData
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
-    private var mediaProjection: MediaProjection? = null
     private lateinit var speechRecognizerHelper: SpeechRecognizerHelper
 
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: ComposeView
     private lateinit var layoutParams: WindowManager.LayoutParams
     private lateinit var viewModel: AudioModeViewModel
+    private lateinit var mediaProjection: MediaProjection
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val viewModelStoreInstance = ViewModelStore()
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
 
     // Thêm biến theo dõi vị trí
-    private var initialX = 0
-    private var initialY = 0
+    private var initialX = 4
+    private var initialY = 8
     private val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+    private val screenWidth = Resources.getSystem().displayMetrics.widthPixels
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate() {
         super.onCreate()
 
-        speechRecognizerHelper = SpeechRecognizerHelper(this) {
-            Log.d("AudioModeService", "Recognized: $it")
-            viewModel.onAction(AudioModeAction.OnChangeText(it))
-        }
+        // Đảm bảo rằng chúng ta đang khởi động service dưới dạng foreground service
+        val channel = NotificationChannel(
+            "media_projection_channel",
+            "Media Projection Service",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(channel)
 
         // Đảm bảo rằng chúng ta đang khởi động service dưới dạng foreground service
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -138,22 +123,60 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     ViewModelProvider(this@AudioModeService)[AudioModeViewModel::class.java]
                 val state by viewModel.state.collectAsState()
                 val params = layoutParams as WindowManager.LayoutParams
+                val context = LocalContext.current
 
-                SubtitleOverlay(
+                speechRecognizerHelper = SpeechRecognizerHelper(context) {
+                    Log.d("AudioModeService", "Recognized: $it")
+                    viewModel.onAction(AudioModeAction.OnChangeText(it))
+                }
+
+                DraggableSubtitleOverlay(
+                    topPosition = state.topPosition,
                     isRecognizing = state.isRecognizing,
                     subtitleText = state.recognizedText,
+                    isTranslateMode = state.isTranslateMode,
+                    onToggleTranslateMode = {
+                        Log.i("AudioModeAction", state.isTranslateMode.toString())
+                        mediaProjection.stop()
+                        viewModel.onAction(AudioModeAction.OnChangeIsTranslateMode)
+                        speechRecognizerHelper.stopRecognition()
+                        viewModel.onAction(AudioModeAction.OnChangeIsRecognizing(false))
+                        viewModel.onAction(AudioModeAction.OnChangeText(""))
+                    },
                     onStartRecognition = {
+                        mediaProjectionManager =
+                            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                         mediaProjection =
                             mediaProjectionManager.getMediaProjection(resultCode, resultData!!)
-                        mediaProjection?.let {
-                            speechRecognizerHelper.startRecognitionFromMediaProjection(it)
+                        if (state.isTranslateMode) {
+                            speechRecognizerHelper.startRecognitionFromMediaProjectionAndTranslate(
+                                mediaProjection
+                            )
+                        } else {
+                            speechRecognizerHelper.startRecognitionFromMediaProjection(mediaProjection)
                         }
                         viewModel.onAction(AudioModeAction.OnChangeIsRecognizing(true))
                     },
                     onStopRecognition = {
                         speechRecognizerHelper.stopRecognition()
-                        mediaProjection?.stop()
+                        mediaProjection.stop()
                         viewModel.onAction(AudioModeAction.OnChangeIsRecognizing(false))
+                    },
+                    onClose = {
+                        viewModel.onAction(AudioModeAction.OnReset)
+                        speechRecognizerHelper.stopRecognition()
+                        stopSelf()
+                    },
+                    onDrag = { offsetX, offsetY ->
+                        val maxY = screenHeight - floatingView.height
+                        val maxX = screenWidth - floatingView.width
+
+                        params.x += offsetX.toInt()
+                        params.x = params.x.coerceIn(0, maxX)
+                        params.y += offsetY.toInt()
+                        params.y = params.y.coerceIn(0, maxY)
+                        viewModel.onAction(AudioModeAction.OnChangePosition(params.y))
+                        windowManager.updateViewLayout(floatingView, layoutParams)
                     }
                 )
             }
@@ -161,20 +184,16 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
         // Set LayoutParams for Floating Widget
         layoutParams = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            } else {
-                WindowManager.LayoutParams.TYPE_PHONE
-            },
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
             WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
             x = initialX
-            y = initialY
+            y = screenHeight - floatingView.height - 400
             gravity = Gravity.TOP or Gravity.START
         }
 
@@ -196,6 +215,7 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         lifecycleRegistry.currentState = Lifecycle.State.RESUMED
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i("AudioModeService", "Service started")
 
@@ -207,7 +227,7 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
             mediaProjectionManager =
                 getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-            MediaProjectionSingleton.mediaProjection =
+            mediaProjection =
                 mediaProjectionManager.getMediaProjection(resultCode, resultData)
         } else {
             Log.d("AudioModeService", "Using existing MediaProjection instance.")
@@ -247,4 +267,4 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     // Implement SavedStateRegistryOwner
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryController.savedStateRegistry
-    }
+}

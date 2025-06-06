@@ -4,5 +4,7 @@ import com.google.mlkit.vision.text.Text
 
 data class AudioModeState(
     val isRecognizing: Boolean = false,
-    val recognizedText: String = ""
+    val topPosition: Int = 50,
+    val recognizedText: String = "",
+    val isTranslateMode: Boolean = true
 )

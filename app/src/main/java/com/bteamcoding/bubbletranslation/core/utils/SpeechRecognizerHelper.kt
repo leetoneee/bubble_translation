@@ -17,6 +17,7 @@ import com.bteamcoding.bubbletranslation.core.model.VoskModelManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -31,6 +32,10 @@ class SpeechRecognizerHelper(
     private var audioRecord: AudioRecord? = null
     private var recognizing = false
     private var recognitionJob: Job? = null
+    private val batchSize: Int = 8
+
+    // Thêm instance TextFilter, gọi onResult sau khi lọc
+    private val textFilter = PartialTextProcessor(batchSize)
 
     fun startRecognition() {
         if (recognizing) return
@@ -161,14 +166,28 @@ class SpeechRecognizerHelper(
                                     val result = recognizer.result
                                     val json = JSONObject(result)
                                     val text = json.optString("text")
-                                    onResult(text)
+                                    Log.i("Recognized Text result", result)
+                                    if (text.isEmpty()) {
+                                        textFilter.reset()
+                                        onResult("")
+                                    } else {
+                                        val filteredText = textFilter.inputText(text)
+                                        onResult(filteredText)
+                                    }
                                 }
                             } else {
                                 withContext(Dispatchers.Main) {
                                     val partial = recognizer.partialResult
                                     val json = JSONObject(partial)
                                     val text = json.optString("partial")
-                                    onResult(text)
+                                    Log.i("Recognized Text partial", partial)
+                                    if (text.isEmpty()) {
+                                        textFilter.reset()
+                                        onResult("")
+                                    } else {
+                                        val filteredText = textFilter.inputText(text)
+                                        onResult(filteredText)
+                                    }
                                 }
                             }
                         }
@@ -179,6 +198,122 @@ class SpeechRecognizerHelper(
                 Log.e("SpeechRecognizerHelper", "Error during recognition", e)
                 recognizing = false
             }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.Q)
+    fun startRecognitionFromMediaProjectionAndTranslate(mediaProjection: MediaProjection) {
+        if (recognizing) return
+        recognizing = true
+
+        modelManager.loadModelAsync().whenComplete { model, throwable ->
+            if (throwable != null) {
+                Log.e("SpeechRecognizerHelper", "Error loading model", throwable)
+                recognizing = false
+                return@whenComplete
+            }
+
+            try {
+                recognizer = Recognizer(model, 16000.0f)
+
+                val audioConfig = AudioPlaybackCaptureConfiguration.Builder(mediaProjection)
+                    .addMatchingUsage(AudioAttributes.USAGE_MEDIA)
+                    .build()
+
+                val audioFormat = AudioFormat.Builder()
+                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                    .setSampleRate(16000)
+                    .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
+                    .build()
+
+                val bufferSize = AudioRecord.getMinBufferSize(
+                    16000,
+                    AudioFormat.CHANNEL_IN_MONO,
+                    AudioFormat.ENCODING_PCM_16BIT
+                )
+
+                if (ActivityCompat.checkSelfPermission(
+                        context.applicationContext,
+                        Manifest.permission.RECORD_AUDIO
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    Log.e("SpeechRecognizerHelper", "Microphone permission not granted")
+                    recognizing = false
+                    return@whenComplete
+                }
+
+                audioRecord = AudioRecord.Builder()
+                    .setAudioFormat(audioFormat)
+                    .setBufferSizeInBytes(bufferSize)
+                    .setAudioPlaybackCaptureConfig(audioConfig)
+                    .build()
+
+                audioRecord?.startRecording()
+                val buffer = ByteArray(4096)
+
+                recognitionJob = CoroutineScope(Dispatchers.IO).launch {
+                    while (recognizing && audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+                        val len = audioRecord!!.read(buffer, 0, buffer.size)
+                        if (len > 0) {
+                            if (recognizer.acceptWaveForm(buffer, len)) {
+                                withContext(Dispatchers.Main) {
+                                    val result = recognizer.result
+                                    val json = JSONObject(result)
+                                    val text = json.optString("text")
+                                    Log.i("Recognized Text result", result)
+                                    if (text.isEmpty()) {
+                                        textFilter.reset()
+                                        onResult("")
+                                    } else {
+                                        handlePartialRecognitionAndTranslate(text, true)
+                                    }
+                                }
+                            } else {
+                                withContext(Dispatchers.Main) {
+                                    val partial = recognizer.partialResult
+                                    val json = JSONObject(partial)
+                                    val text = json.optString("partial")
+                                    Log.i("Recognized Text partial", partial)
+                                    if (text.isEmpty()) {
+                                        textFilter.reset()
+                                        onResult("")
+                                    } else {
+                                        handlePartialRecognitionAndTranslate(text, false)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+            } catch (e: Exception) {
+                Log.e("SpeechRecognizerHelper", "Error during recognition", e)
+                recognizing = false
+            }
+        }
+    }
+
+    private suspend fun handlePartialRecognitionAndTranslate(
+        text: String,
+        isResult: Boolean
+    ) {
+        val filteredText = textFilter.inputText(text)
+        val words = filteredText.trim().split(Regex("\\s+"))
+        val wordCount = words.size
+
+        val halfBatch = batchSize / 2
+
+        if (isResult) {
+            onResult(translateText(filteredText))
+        }
+
+        // Nếu đạt mốc 2 * batchSize, chờ 500ms rồi dịch toàn bộ
+        if (wordCount == 2 * batchSize) {
+            onResult(translateText(filteredText))
+        }
+
+        if (wordCount >= halfBatch && wordCount % halfBatch == 0) {
+            onResult(translateText(filteredText))
         }
     }
 

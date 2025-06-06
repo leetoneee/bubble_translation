@@ -16,10 +16,25 @@ class AudioModeViewModel : ViewModel() {
             }
 
             is AudioModeAction.OnReset ->
-                _state.update { it.copy(recognizedText = "", isRecognizing = false) }
+                _state.update {
+                    it.copy(
+                        recognizedText = "",
+                        isRecognizing = false,
+                        topPosition = 0,
+                        isTranslateMode = true
+                    )
+                }
 
             is AudioModeAction.OnChangeIsRecognizing -> {
                 _state.update { it.copy(isRecognizing = action.newState) }
+            }
+
+            is AudioModeAction.OnChangePosition -> {
+                _state.update { it.copy(topPosition = action.newPosition) }
+            }
+
+            is AudioModeAction.OnChangeIsTranslateMode -> {
+                _state.update { it.copy(isTranslateMode = !it.isTranslateMode) }
             }
         }
     }
