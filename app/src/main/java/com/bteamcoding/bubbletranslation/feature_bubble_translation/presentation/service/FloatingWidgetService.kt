@@ -254,7 +254,16 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
             TranslateMode.AUTO -> {
                 Log.i("Translate Service", "Auto mode")
-//                TODO()
+                if (resultData != null) {
+                    val intentCrop = Intent(this, AutoScreenModeService::class.java).apply {
+                        putExtra("resultCode", resultCode)
+                        putExtra("resultData", resultData)
+                    }
+                    startService(intentCrop)
+                } else {
+                    Toast.makeText(this, "Bạn cần cấp quyền ghi màn hình trước", Toast.LENGTH_SHORT)
+                        .show()
+                }
             }
 
             TranslateMode.AUDIO -> {

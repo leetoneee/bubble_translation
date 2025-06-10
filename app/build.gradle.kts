@@ -1,5 +1,3 @@
-import java.util.UUID
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -77,6 +75,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.runtime.compose.android)
+    implementation(libs.androidx.compose.testing)
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
@@ -106,6 +105,8 @@ dependencies {
     implementation (libs.text.recognition)
     implementation (libs.translate)
     implementation (libs.kotlinx.coroutines.android)
+
+    implementation (libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation (libs.androidx.camera.lifecycle)

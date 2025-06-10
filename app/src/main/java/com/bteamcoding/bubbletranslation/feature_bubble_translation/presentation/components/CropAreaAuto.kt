@@ -3,11 +3,13 @@ package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentatio
 import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -25,22 +27,30 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.DrawStyle
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.PartialScreenModeState
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.AutoScreenModeState
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
+import com.bteamcoding.bubbletranslation.R
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.constraintlayout.compose.ConstraintLayout
 
 @SuppressLint("LocalContextConfigurationRead", "ConfigurationScreenWidthHeight")
 @Composable
-fun CropArea(
-    state: PartialScreenModeState,
+fun CropAreaAuto(
+    captureRegionParam: Rect,
     onCaptureRegionChange: (Rect) -> Unit,
-    onTap: () -> Unit,
-    onResizeStateChanged: (Boolean) -> Unit,
+    onClear: () -> Unit,
+    onCheck: () -> Unit,
     onChangeTextVisibility: (Boolean) -> Unit
 ) {
-    var captureRegion by remember { mutableStateOf(Rect(0f, 0f, 300f, 400f)) }
+    var captureRegion by remember { mutableStateOf(captureRegionParam) }
     var resizeType by remember { mutableStateOf<ResizeType?>(null) }
 
     // Lấy chiều rộng và chiều cao màn hình từ Configuration
@@ -48,11 +58,18 @@ fun CropArea(
     val screenWidth = context.resources.configuration.screenWidthDp.dp // Chiều rộng màn hình
     val screenHeight = context.resources.configuration.screenHeightDp.dp  // Chiều cao màn hình
     Log.d("ScreenSize", "width: $screenWidth, height: $screenHeight")
-    var offsetY by remember { mutableFloatStateOf(0f) }
 
-    var isDragging by remember { mutableStateOf(false) }  // Trạng thái kéo
+    val optionBarHeight = 40
+
+    var yOffset = if ((captureRegion.top.dp - optionBarHeight.dp) > 0.dp) {
+        captureRegion.top.dp - optionBarHeight.dp
+    } else {
+        captureRegion.bottom.dp
+    }
 
     val dfSize = 30.dp
+
+    val borderColor = colorResource(id = R.color.second_primary)
 
     //Box 1: Lớp phủ trong suốt
     Box(
@@ -94,35 +111,57 @@ fun CropArea(
                     ),
                 )
             }
-            .pointerInput(Unit) {
 
-                detectDragGestures(
-                    onDragStart = {
-                        isDragging = true  // Đánh dấu là đang kéo
-//                        onDragStart()
-                    },
-                    onDrag = { _, dragAmount ->
-                        offsetY += dragAmount.y
-//                        onDrag(dragAmount.y)  // Cập nhật vị trí khi kéo
-                    },
-                    onDragEnd = {
-                        isDragging = false  // Khi kết thúc kéo, đặt lại trạng thái kéo
-//                        onDragEnd()
-                    }
-                )
-            }
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = {
-                        // Nếu không có kéo, gọi stopSelf()
-                        if (!isDragging) {
-                            onTap()
-                        }
-                    }
-                )
-            }
     ) {
-
+        Row(
+            modifier = Modifier
+                .offset(
+                    x = captureRegion.left.dp,
+                    y = yOffset)
+                .padding(8.dp), // khoảng cách từ mép box
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Box (
+                modifier = Modifier
+                    .background(Color.White, RoundedCornerShape(6.dp))
+                    .border(
+                        width = 2.dp,
+                        color = borderColor,
+                        shape = RoundedCornerShape(6.dp)
+                    )
+                    .padding(4.dp)
+                    .clickable {
+                        onCheck()
+                    }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.round_check_24), // icon dấu tick
+                    contentDescription = "Check",
+                    tint = colorResource(id = R.color.second_primary),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Box (
+                modifier = Modifier
+                    .background(Color.White, RoundedCornerShape(6.dp))
+                    .border(
+                        width = 2.dp,
+                        color = borderColor,
+                        shape = RoundedCornerShape(6.dp)
+                    )
+                    .padding(4.dp)
+                    .clickable {
+                        onClear()
+                    }
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.round_clear_24), // icon dấu X
+                    contentDescription = "Close",
+                    tint = colorResource(id = R.color.second_primary),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
         // Box 2: Hình chữ nhật có thể thay đổi kích thước và kéo
         Box(
 
@@ -140,7 +179,6 @@ fun CropArea(
                 .drawBehind {
                     val radius = 7.dp.toPx()
                     val stroke = 5.dp.toPx()
-                    val borderColor = Color.Cyan
                     val defaultSize = (dfSize).toPx()
 
                     //Top-left
@@ -277,18 +315,8 @@ fun CropArea(
 
                 .pointerInput(Unit) {
                     detectDragGestures(
-                        onDragStart = {
-                            isDragging = true
-                            onResizeStateChanged(true)
-                        },
                         onDragEnd = {
-                            isDragging = false
-                            onResizeStateChanged(false)
                             onCaptureRegionChange(captureRegion)
-                        },
-                        onDragCancel = {
-                            isDragging = false
-                            onResizeStateChanged(false)
                         },
                         onDrag = { change, dragAmountPx ->
                             change.consume()
@@ -443,79 +471,16 @@ fun CropArea(
 }
 
 
-enum class ResizeType {
-    TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, TOP, BOTTOM, LEFT, RIGHT,
-    NONE
-}
-
-fun getResizeType(offset: Offset, w: Float, h: Float, defaultSize: Float): ResizeType {
-    // Kiểm tra xem người dùng có chạm vào góc hay cạnh nào để thay đổi kích thước
-
-    return when {
-        offset.x in (0f)..(defaultSize) && offset.y in (0f)..(defaultSize) -> ResizeType.TOP_LEFT
-        offset.x in (w - defaultSize)..(w) && offset.y in (0f)..(defaultSize) -> ResizeType.TOP_RIGHT
-        offset.x in (0f)..(defaultSize) && offset.y in (h - defaultSize)..(h) -> ResizeType.BOTTOM_LEFT
-        offset.x in (w - defaultSize)..(w) && offset.y in (h - defaultSize)..(h) -> ResizeType.BOTTOM_RIGHT
-        offset.x in (0f)..(defaultSize) && offset.y in ((h - defaultSize) / 2)..((h + defaultSize) / 2) -> ResizeType.LEFT
-        offset.x in (w - defaultSize)..(w) && offset.y in ((h - defaultSize) / 2)..((h + defaultSize) / 2) -> ResizeType.RIGHT
-        offset.x in ((w - defaultSize) / 2)..((w + defaultSize) / 2) && offset.y in (0f)..(defaultSize) -> ResizeType.TOP
-        offset.x in ((w - defaultSize) / 2)..((w + defaultSize) / 2) && offset.y in (h - defaultSize)..(h) -> ResizeType.BOTTOM
-        else -> ResizeType.NONE
-    }
-}
-
-fun DrawScope.drawCustomArc(
-    color: Color,
-    startAngle: Float,
-    topLeft: Offset,
-    size: Size,
-    style: DrawStyle = Stroke(width = 1f)
-) {
-    drawArc(
-        color = color,
-        startAngle = startAngle,
-        sweepAngle = 90f,         // thường dùng cho bo góc
-        useCenter = false,
-        topLeft = topLeft,
-        size = size,
-        style = style
+// Preview
+@Preview(showBackground = true)
+@Composable
+fun ScreenCaptureOverlayPreview() {
+    var captureRegion by remember { mutableStateOf(Rect(0f, 0f, 200f, 200f)) }
+    CropAreaAuto(
+        onCaptureRegionChange = {},
+        onClear = {},
+        onCheck = {},
+        onChangeTextVisibility = {},
+        captureRegionParam = captureRegion
     )
 }
-
-fun DrawScope.drawCustomLine(
-    color: Color,
-    start: Offset,
-    end: Offset,
-    strokeWidth: Float
-) {
-    drawLine(
-        color = color,
-        start = start,
-        end = end,
-        strokeWidth = strokeWidth
-    )
-}
-
-fun DrawScope.drawCustomRect(
-    color: Color,
-    topLeft: Offset,
-    size: Size,
-) {
-    drawRect(
-        color = color,
-        topLeft = topLeft,
-        size = size,
-    )
-}
-
-
-//// Preview
-//@Preview(showBackground = true)
-//@Composable
-//fun ScreenCaptureOverlayPreview() {
-//    var captureRegion by remember { mutableStateOf(Rect(0f, 0f, 200f, 200f)) }
-//    CropArea(
-//        captureRegion = captureRegion,
-//        onCaptureRegionChange = { newRegion -> captureRegion = newRegion }
-//    )
-//}
