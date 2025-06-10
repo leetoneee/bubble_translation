@@ -2,10 +2,13 @@ package com.bteamcoding.bubbletranslation.feature_dictionary.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bteamcoding.bubbletranslation.core.utils.callApiForTranslation
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class DictionaryViewModel : ViewModel() {
     private val _state = MutableStateFlow(DictionaryScreenState())
@@ -38,8 +41,6 @@ class DictionaryViewModel : ViewModel() {
 
     private fun searchWord(query: String) {
         viewModelScope.launch {
-            // Simulate loading
-            delay(1000)
             // TODO: Replace with real dictionary lookup
             if (query.isBlank()) {
                 _state.value = _state.value.copy(
@@ -48,9 +49,10 @@ class DictionaryViewModel : ViewModel() {
                     error = "Please enter a word."
                 )
             } else {
+                val text = withContext(Dispatchers.IO) { callApiForTranslation(query) }
                 // Fake dictionary result
                 val fakeDefinitions = listOf(
-                    "$query (n): Định nghĩa tiếng Việt 1",
+                    "$query (n): $text",
                     "$query (v): Định nghĩa tiếng Việt 2"
                 )
                 _state.value = _state.value.copy(
