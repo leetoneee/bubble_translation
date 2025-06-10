@@ -40,6 +40,30 @@ android {
     }
 }
 
+fun registerUuidTask(modelName: String) {
+    tasks.register("generateUuidFor${modelName}") {
+        val outputDir = file("src/main/assets/$modelName")
+        val uuidFile = File(outputDir, "uuid")
+
+        outputs.file(uuidFile)
+
+        doLast {
+            if (!outputDir.exists()) {
+                outputDir.mkdirs()
+            }
+            val uuid = UUID.randomUUID().toString()
+            uuidFile.writeText(uuid)
+            println("Generated uuid for $modelName: $uuid")
+        }
+    }
+}
+
+registerUuidTask("model-en")
+
+tasks.named("preBuild") {
+    dependsOn( "generateUuidFormodel-en")
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -52,6 +76,10 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.runtime.compose.android)
     implementation(libs.androidx.compose.testing)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -77,6 +105,19 @@ dependencies {
     implementation (libs.text.recognition)
     implementation (libs.translate)
     implementation (libs.kotlinx.coroutines.android)
-    
+
     implementation (libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation (libs.androidx.camera.lifecycle)
+    implementation (libs.androidx.camera.video)
+
+    implementation (libs.androidx.camera.view)
+    implementation (libs.androidx.camera.extensions)
+    implementation (libs.androidx.constraintlayout.compose)
+
+    implementation(libs.androidx.activity.ktx)
+    implementation(libs.coil.compose)
+
+    implementation(libs.vosk.android)
 }

@@ -98,7 +98,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
                             initialY = params.y
 
                             params.x = minX
-                            params.y = 900
+                            params.y = 800
                             windowManager.updateViewLayout(floatingView, layoutParams)
                         } else {
                             params.x = initialX
@@ -256,6 +256,22 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 Log.i("Translate Service", "Auto mode")
                 if (resultData != null) {
                     val intentCrop = Intent(this, AutoScreenModeService::class.java).apply {
+                        putExtra("resultCode", resultCode)
+                        putExtra("resultData", resultData)
+                    }
+                    startService(intentCrop)
+                } else {
+                    Toast.makeText(this, "Bạn cần cấp quyền ghi màn hình trước", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+
+            TranslateMode.AUDIO -> {
+                Log.i("Translate Service", "Audio mode")
+                if (resultData != null) {
+                    Log.i("Translate Service", "Crop screen mode in")
+
+                    val intentCrop = Intent(this, AudioModeService::class.java).apply {
                         putExtra("resultCode", resultCode)
                         putExtra("resultData", resultData)
                     }

@@ -14,6 +14,10 @@
     <color name="b_green">#FF03b205</color>
     <color name="b_yellow">#FFF5A200</color>
     <color name="b_blue">#FF0174F5</color>
+    <color name="b_red">#FFE53935</color>
     <color name="b_gray">#FFF0F0F0</color>
+    <color name="white_background">#FFE6E5E9</color>
+    <color name="normal_text">#FF494A50</color>
+    <color name="bold_text">#FF1F2024</color>
     <color name="second_primary">#FFB37C</color>
 </resources>
