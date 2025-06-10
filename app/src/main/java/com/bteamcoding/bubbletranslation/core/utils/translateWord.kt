@@ -1,5 +1,6 @@
 package com.bteamcoding.bubbletranslation.core.utils
 
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.OutputStream
 import java.net.HttpURLConnection
@@ -9,7 +10,7 @@ import java.net.URL
 // Hàm gọi API để dịch văn bản
 fun callApiForTranslation(parsedText: String): String? {
     val apiUrl = "https://api.textcortex.com/v1/texts/completions" // API endpoint
-    var text: String? = null
+    var text: String = ""
 
     // Prepare JSON data
     val json = JSONObject().apply {
@@ -17,7 +18,7 @@ fun callApiForTranslation(parsedText: String): String? {
         put("max_tokens", 2048)
         put("model", "gemini-2-0-flash")
         put("n", 1)
-        put("source_lang", "auto")
+        put("source_lang", "en")
         put("target_lang", "en")
         put("text",
             "Translate the following English words into Vietnamese and return the result as JSON format. This JSON string must include the following components for each word:\n" +
@@ -44,7 +45,7 @@ fun callApiForTranslation(parsedText: String): String? {
         // Set request method to POST
         connection.requestMethod = "POST"
         connection.setRequestProperty("Content-Type", "application/json")
-        connection.setRequestProperty("Authorization", "Bearer gAAAAABlZErp8klOmJLj0tYZwK9XD3waVoUGOcpfeD94pVkNx1dmpoNTySCyrBfhlN-jaXmWcejKbAzG_pBhTObpujyqUBmMhv-CnA1IDRGCnw-pUwspGwXftUVT66bMDnOx27ctgC0K")
+        connection.setRequestProperty("Authorization", "Bearer gAAAAABoR_Oe2CWDJxD2_A9LtfcAPRx0AoeVFUJNKETvXtWAWAhDsa7KqerzqKZAdOFSmQQD42Kv7loBecUbz_qqbpkTvyj2Dv1JKHF74e4D82QyaWSU5jaMqqij8VDSQTOav9LkQPl4ySJZG6TUqlpXFjY0lqvsSDXfyun1QIx1wTgGlJmiS2o=")
 
         // Enable input and output streams
         connection.doOutput = true
@@ -84,14 +85,17 @@ fun callApiForTranslation(parsedText: String): String? {
     return text
 }
 
-fun cleanJsonString(input: String?): String {
-    if (input != null) {
-        return input
-            .removePrefix("```json")
-            .removeSuffix("```")
-            .replace("\n", "")
-            .replace("\r", "")
-            .trim()
+fun cleanJsonString(input: String): String {
+    val trimmed = input
+        .removePrefix("```json")
+        .removeSuffix("```")
+        .replace("\n", "")
+        .replace("\r", "")
+        .trim()
+
+    return if (trimmed.trimStart().startsWith("[")) {
+        JSONArray(trimmed).toString()
+    } else {
+        JSONObject(trimmed).toString()
     }
-    return ""
 }

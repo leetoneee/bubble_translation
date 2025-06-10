@@ -1,5 +1,6 @@
 package com.bteamcoding.bubbletranslation.feature_dictionary.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,23 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bteamcoding.bubbletranslation.core.components.TopBar
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Divider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 @Composable
 fun DictionaryScreenRoot(
@@ -37,7 +55,9 @@ fun DictionaryScreen(
     onAction: (DictionaryAction) -> Unit
 ) {
     ConstraintLayout(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
     ) {
         val (topBar, content) = createRefs()
 
@@ -52,37 +72,122 @@ fun DictionaryScreen(
         }
 
         Column(
+            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .constrainAs(content) {
                     top.linkTo(topBar.bottom)
-                    height = Dimension.fillToConstraints
                 }
-                .fillMaxWidth()
-                .padding(16.dp)
+                .fillMaxSize()
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 8.dp,
+                    bottom = 60.dp
+                )
         ) {
             OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = { onAction(DictionaryAction.UpdateQuery(it)) },
                 label = { Text("Search word") },
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Search,
+                    autoCorrectEnabled = true
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        onAction(DictionaryAction.Search(state.searchQuery))
+                    }
+                ),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search icon"
+                    )
+                },
+                trailingIcon = {
+                    if (state.searchQuery.isNotEmpty()) {
+                        IconButton(onClick = {
+                            onAction(DictionaryAction.ClearSearch)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Clear text"
+                            )
+                        }
+                    }
+                },
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(8.dp))
-            Button(
-                onClick = { onAction(DictionaryAction.Search(state.searchQuery)) },
-                enabled = !state.isLoading && state.searchQuery.isNotBlank()
-            ) {
-                Text("Tra cứu")
-            }
+
             when {
                 state.definitions.isNotEmpty() -> {
-                    Text("${state.definitions}")
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(top = 8.dp, bottom = 8.dp),
+                        verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(state.definitions) { entry ->
+                            androidx.compose.material3.Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = MaterialTheme.shapes.medium
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = "${entry.english} [${entry.phonetic}]",
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                    Text(
+                                        text = "Part of speech: ${entry.part_of_speech}",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    entry.meanings.forEachIndexed { idx, meaning ->
+                                        Text(
+                                            text = "${idx + 1}. ${meaning.meaning}",
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                        Text(
+                                            text = "→ ${meaning.vietnamese}",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.secondary
+                                        )
+                                        Text(
+                                            text = "Example: ${meaning.example_sentence}",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                        Text(
+                                            text = "Dịch: ${meaning.vietnamese_translation}",
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-            when {
-                state.isLoading -> CircularProgressIndicator()
-                state.error != null -> Text(state.error ?: "", color = androidx.compose.ui.graphics.Color.Red)
+
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .wrapContentSize()
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                state.error != null -> {
+                    Text(
+                        text = state.error ?: "",
+                        color = Color.Red,
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
             }
         }
     }
 }
+
