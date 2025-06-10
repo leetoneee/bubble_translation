@@ -53,16 +53,17 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
+import androidx.navigation.NavController
 import com.bteamcoding.bubbletranslation.R
+import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
 import com.bteamcoding.bubbletranslation.core.components.TopBar
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.activity.CameraScreenActivity
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.activity.PreviewImageActivity
 
 @Composable
 fun CameraScreenRoot(
-    viewModel: CameraScreenViewModel = viewModel()
+    viewModel: CameraScreenViewModel = viewModel(),
+    navController: NavController
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -77,6 +78,9 @@ fun CameraScreenRoot(
             val intent = Intent(context, PreviewImageActivity::class.java)
             intent.putExtra("imageUri", it.toString())
             context.startActivity(intent)
+        },
+        onNavToAuthScreen = {
+            navController.navigate(NavRoutes.AUTH)
         }
     )
 }
@@ -84,7 +88,8 @@ fun CameraScreenRoot(
 @Composable
 fun CameraScreen(
     onCameraMode: () -> Unit,
-    onImageChosen: (Uri) -> Unit
+    onImageChosen: (Uri) -> Unit,
+    onNavToAuthScreen: () -> Unit
 ) {
     //The URI of the photo that the user has picked
     var photoUri: Uri? by remember { mutableStateOf(null) }
@@ -113,7 +118,10 @@ fun CameraScreen(
                 }
                 .fillMaxWidth()
         ) {
-            TopBar("Image Recognition")
+            TopBar(
+                "Image Recognition",
+                onNavToAuthScreen = onNavToAuthScreen
+            )
         }
 
         Column(
@@ -243,6 +251,7 @@ fun CameraScreen(
 fun CameraScreenPre() {
     CameraScreen(
         onCameraMode = {},
-        onImageChosen = {}
+        onImageChosen = {},
+        onNavToAuthScreen = {}
     )
 }

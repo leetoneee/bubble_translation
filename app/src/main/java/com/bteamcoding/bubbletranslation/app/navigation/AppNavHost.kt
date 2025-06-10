@@ -9,6 +9,12 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.navigation
+import com.bteamcoding.bubbletranslation.feature_auth.presentation.AccountScreenRoot
+import com.bteamcoding.bubbletranslation.feature_auth.presentation.AuthViewModel
+import com.bteamcoding.bubbletranslation.feature_auth.presentation.LoginScreenRoot
+import com.bteamcoding.bubbletranslation.feature_auth.presentation.ProfileScreenRoot
+import com.bteamcoding.bubbletranslation.feature_auth.presentation.RegisterScreenRoot
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StartFloatingWidgetUseCase
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.CameraScreenRoot
 import com.bteamcoding.bubbletranslation.feature_home.presentation.HomeScreenRoot
@@ -19,6 +25,42 @@ fun AppNavHost(navController: NavHostController) {
         navController = navController,
         startDestination = NavRoutes.HOME,
     ) {
+        navigation(
+            startDestination = NavRoutes.ACCOUNT,
+            route = NavRoutes.AUTH
+        ) {
+            composable(route = NavRoutes.ACCOUNT) {
+                val viewModel = it.sharedViewModel<AuthViewModel>(navController)
+
+                AccountScreenRoot(
+                    viewModel = viewModel,
+                    onNavToProfileScreen = {},
+                    onNavToLoginScreen = {}
+                )
+            }
+            composable(route = NavRoutes.LOGIN) {
+                val viewModel = it.sharedViewModel<AuthViewModel>(navController)
+
+                LoginScreenRoot(
+                    viewModel = viewModel,
+                )
+            }
+            composable(route = NavRoutes.REGISTER) {
+                val viewModel = it.sharedViewModel<AuthViewModel>(navController)
+
+                RegisterScreenRoot(
+                    viewModel = viewModel,
+
+                    )
+            }
+            composable(route = NavRoutes.PROFILE) {
+                val viewModel = it.sharedViewModel<AuthViewModel>(navController)
+
+                ProfileScreenRoot(
+                    viewModel = viewModel
+                )
+            }
+        }
         composable(route = NavRoutes.HOME) {
             val startFWUseCase = StartFloatingWidgetUseCase(LocalContext.current)
 
@@ -28,7 +70,9 @@ fun AppNavHost(navController: NavHostController) {
         }
         composable(route = NavRoutes.CAPTURE) {
 
-            CameraScreenRoot()
+            CameraScreenRoot(
+                navController = navController
+            )
         }
         composable(route = NavRoutes.DICTIONARY) {
 
@@ -40,7 +84,7 @@ fun AppNavHost(navController: NavHostController) {
 }
 
 @Composable
-inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavHostController) : T {
+inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavHostController): T {
     val navGraphRoute = destination.parent?.route ?: return viewModel()
     val parentEntry = remember(this) {
         navController.getBackStackEntry(navGraphRoute)

@@ -27,7 +27,11 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import com.bteamcoding.bubbletranslation.R
 
 @Composable
-fun TopBar(title: String, modifier: Modifier = Modifier) {
+fun TopBar(
+    title: String,
+    onNavToAuthScreen: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     ConstraintLayout(
         modifier = Modifier
             .padding(top = 8.dp)
@@ -91,7 +95,7 @@ fun TopBar(title: String, modifier: Modifier = Modifier) {
         }
 
         FilledIconButton(
-            onClick = {},
+            onClick = onNavToAuthScreen,
             colors = IconButtonDefaults.filledIconButtonColors(
                 containerColor = colorResource(R.color.b_gray),
             ),
@@ -115,5 +119,5 @@ fun TopBar(title: String, modifier: Modifier = Modifier) {
 @Composable
 @Preview
 fun TopBarPreview() {
-    TopBar("Image Recognition")
+    TopBar("Image Recognition", onNavToAuthScreen = {})
 }
