@@ -47,7 +47,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.core.utils.MediaProjectionSingleton
-import com.bteamcoding.bubbletranslation.core.utils.VirtualDisplaySignleton
+import com.bteamcoding.bubbletranslation.core.utils.VirtualDisplaySingleton
 import com.bteamcoding.bubbletranslation.core.utils.recognizeTextFromImage
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetAction
@@ -277,19 +277,19 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         MediaProjectionSingleton.mediaProjection?.registerCallback(mediaProjectionCallback, Handler(Looper.getMainLooper()))
 
         // Nếu VirtualDisplay đã tồn tại, chỉ cần cập nhật Surface mới
-        if (VirtualDisplaySignleton.virtualDisplay != null) {
+        if (VirtualDisplaySingleton.virtualDisplay != null) {
             // Cập nhật Surface cho VirtualDisplay thay vì tạo mới
-            VirtualDisplaySignleton.virtualDisplay?.surface = imageReader.surface
+            VirtualDisplaySingleton.virtualDisplay?.surface = imageReader.surface
         } else {
             // Nếu VirtualDisplay chưa tồn tại, tạo mới
             try {
-                VirtualDisplaySignleton.virtualDisplay = MediaProjectionSingleton.mediaProjection?.createVirtualDisplay(
+                VirtualDisplaySingleton.virtualDisplay = MediaProjectionSingleton.mediaProjection?.createVirtualDisplay(
                     "ScreenCapture",
                     width, height, density,
                     DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                     imageReader.surface, null, null
                 )
-                if (VirtualDisplaySignleton.virtualDisplay == null) {
+                if (VirtualDisplaySingleton.virtualDisplay == null) {
                     Log.e("FullscreenModeService", "Failed to create virtual display")
                     releaseResources()
                     stopSelf() // Dừng service nếu không thể tạo virtual display
@@ -334,8 +334,8 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     private fun releaseResources() {
         // Giải phóng tài nguyên MediaProjection và VirtualDisplay
         try {
-            VirtualDisplaySignleton.virtualDisplay?.release()
-            VirtualDisplaySignleton.virtualDisplay = null
+            VirtualDisplaySingleton.virtualDisplay?.release()
+            VirtualDisplaySingleton.virtualDisplay = null
             MediaProjectionSingleton.mediaProjection?.stop()
             Log.d("FullscreenModeService", "Resources released successfully")
         } catch (e: Exception) {

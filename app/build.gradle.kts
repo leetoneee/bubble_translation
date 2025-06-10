@@ -1,3 +1,5 @@
+import java.util.UUID
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -38,6 +40,30 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+fun registerUuidTask(modelName: String) {
+    tasks.register("generateUuidFor${modelName}") {
+        val outputDir = file("src/main/assets/$modelName")
+        val uuidFile = File(outputDir, "uuid")
+
+        outputs.file(uuidFile)
+
+        doLast {
+            if (!outputDir.exists()) {
+                outputDir.mkdirs()
+            }
+            val uuid = UUID.randomUUID().toString()
+            uuidFile.writeText(uuid)
+            println("Generated uuid for $modelName: $uuid")
+        }
+    }
+}
+
+registerUuidTask("model-en")
+
+tasks.named("preBuild") {
+    dependsOn( "generateUuidFormodel-en")
 }
 
 dependencies {
@@ -92,9 +118,5 @@ dependencies {
     implementation(libs.androidx.activity.ktx)
     implementation(libs.coil.compose)
 
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
-    implementation("org.jsoup:jsoup:1.17.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation(libs.vosk.android)
 }
-

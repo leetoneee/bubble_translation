@@ -145,6 +145,18 @@ fun FloatingWidget(
                     contentColor = Color.White
                 )
 
+                ModeButton(
+                    onClick = {
+                        onModeChange(TranslateMode.AUDIO)
+                        onToggleExpand()
+                    },
+                    icon = R.drawable.baseline_record_voice_over_24,
+                    content = "Dịch âm\nthanh",
+                    enabled = translateMode == TranslateMode.AUDIO,
+                    buttonColor = colorResource(R.color.b_red),
+                    contentColor = Color.White
+                )
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -266,6 +278,12 @@ fun FloatingWidget(
                         contentDescription = null,
                         colorFilter = ColorFilter.tint(colorResource(R.color.b_yellow))
                     )
+
+                    TranslateMode.AUDIO -> Image(
+                        painter = painterResource(R.drawable.baseline_record_voice_over_24),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(colorResource(R.color.b_red))
+                    )
                 }
             }
         }
@@ -291,7 +309,7 @@ fun FloatingWidgetPreview() {
 fun FloatingWidgetPreview2() {
     FloatingWidget(
         isExpanded = false,
-        translateMode = TranslateMode.FULLSCREEN,
+        translateMode = TranslateMode.AUDIO,
         onToggleExpand = {},
         onModeChange = {},
         onClose = {},

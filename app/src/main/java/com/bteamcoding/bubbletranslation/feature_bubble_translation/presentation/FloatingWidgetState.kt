@@ -3,7 +3,8 @@ package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentatio
 enum class TranslateMode {
     FULLSCREEN,
     CROP,
-    AUTO
+    AUTO,
+    AUDIO
 }
 
 data class FloatingWidgetState(
