@@ -19,4 +19,30 @@
     <color name="white_background">#FFE6E5E9</color>
     <color name="normal_text">#FF494A50</color>
     <color name="bold_text">#FF1F2024</color>
+
+    <color name="blue_darkest">#FF006FFD</color>
+    <color name="blue_dark">#FF2897FF</color>
+    <color name="blue_medium">#FF6FBAFF</color>
+    <color name="blue_light">#FFB4DBFF</color>
+    <color name="blue_lightest">#FFEAF2FF</color>
+    <color name="green_dark">#FF298267</color>
+    <color name="green_medium">#FF3AC0A0</color>
+    <color name="green_light">#FFE7F4E8</color>
+    <color name="yellow_dark">#FFE86339</color>
+    <color name="yellow_medium">#FFFFB37C</color>
+    <color name="yellow_light">#FFFFF4E4</color>
+    <color name="purple_dark">#FFA294F9</color>
+    <color name="purple_medium">#FFCDC1FF</color>
+    <color name="purple_light">#FFF5EFFF</color>
+    <color name="grey_darkest">#FF1F2024</color>
+    <color name="grey_dark">#FF2F3036</color>
+    <color name="grey_medium">#FF494A50</color>
+    <color name="grey_light">#FF71727A</color>
+    <color name="grey_lightest">#FF8F9098</color>
+    <color name="white_darkest">#FFC5C6CC</color>
+    <color name="white_dark">#FFD4D6DD</color>
+    <color name="white_medium">#FFE8E9F1</color>
+    <color name="white_light">#FFF8F9FE</color>
+    <color name="white_lightest">#FFFFFFFF</color>
+
 </resources>
