@@ -1,23 +1,19 @@
 package com.bteamcoding.bubbletranslation
 
-import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissionHolder
 import com.bteamcoding.bubbletranslation.app.presentation.MainScreen
-import com.bteamcoding.bubbletranslation.core.utils.translateText
 import android.graphics.Rect
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.service.PartialScreenModeService
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val REQUEST_CODE_CAPTURE_SCREEN = 1001
 

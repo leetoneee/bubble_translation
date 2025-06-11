@@ -1,13 +1,22 @@
 package com.bteamcoding.bubbletranslation.feature_auth.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bteamcoding.bubbletranslation.feature_auth.domain.use_case.SignInUseCase
+import com.bteamcoding.bubbletranslation.feature_auth.domain.use_case.SignUpUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AuthViewModel : ViewModel() {
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val signInUseCase: SignInUseCase,
+    private val signUpUseCase: SignUpUseCase
+) : ViewModel() {
     private val _state = MutableStateFlow(AuthState())
     val state = _state.asStateFlow()
 
@@ -25,6 +34,10 @@ class AuthViewModel : ViewModel() {
                 _state.update { it.copy(password = action.value) }
             }
 
+            is AuthAction.OnUsernameChanged -> {
+                _state.update { it.copy(username = action.value) }
+            }
+
             AuthAction.OnLoginClicked -> login()
 
             AuthAction.OnRegisterClicked -> register()
@@ -37,28 +50,38 @@ class AuthViewModel : ViewModel() {
 
     private fun login() {
         viewModelScope.launch {
-            _state.update {it.copy(isLoading = true, errorMessage = null)}
+            _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-//            delay(1000) // giả lập API call
-
-            if (_state.value.email == "test@example.com" && _state.value.password == "123456") {
-                _state.update {it.copy(isLoading = false, isLoginSuccessful = true)}
-            } else {
-                _state.update {it.copy(isLoading = false, errorMessage = "Sai email hoặc mật khẩu")}
+            runCatching {
+                signInUseCase(_state.value.email, _state.value.password)
+            }.onSuccess { response ->
+                Log.i("success", response.toString())
+                if (response.code == 200) {
+                    _state.update { it.copy(isLoading = false, user = response.result?.user, isLoginSuccessful = true) }
+                } else {
+                    _state.update { it.copy(isLoading = false, user = null, isLoginSuccessful = false, errorMessage = response.message) }
+                }
+            }.onFailure { t ->
+                t.message?.let { Log.d("success", it) }
+                _state.update { it.copy(isLoading = false, errorMessage = t.message) }
             }
         }
     }
 
     private fun register() {
         viewModelScope.launch {
-            _state.update {it.copy(isLoading = true, errorMessage = null)}
+            _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-//            delay(1000) // giả lập API call
-
-            if (_state.value.password == _state.value.confirmPassword) {
-                _state.update {it.copy(isLoading = false, isLoginSuccessful = true)}
-            } else {
-                _state.update {it.copy(isLoading = false, errorMessage = "Mật khẩu không trùng khớp")}
+            runCatching {
+                signUpUseCase(_state.value.username, _state.value.email, _state.value.password)
+            }.onSuccess { response ->
+                if (response.code == 200) {
+                    _state.update { it.copy(isLoading = false, isSignUpSuccessful = true) }
+                } else {
+                    _state.update { it.copy(isLoading = false, isSignUpSuccessful = false, errorMessage = response.message) }
+                }
+            }.onFailure { t ->
+                _state.update { it.copy(isLoading = false, errorMessage = t.message) }
             }
         }
     }
