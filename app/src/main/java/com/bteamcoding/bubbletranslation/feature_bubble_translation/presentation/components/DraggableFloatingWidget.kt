@@ -58,7 +58,8 @@ fun DraggableFloatingWidget(
     onToggleExpand: () -> Unit,
     onModeChange: (TranslateMode) -> Unit,
     onDrag: (Float, Float) -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onShowLanguageScreenChanged: () -> Unit
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
@@ -81,7 +82,8 @@ fun DraggableFloatingWidget(
             onClose = onClose,
             onModeChange = onModeChange,
             onToggleExpand = onToggleExpand,
-            onClick = onClick
+            onClick = onClick,
+            onShowLanguageScreenChanged = onShowLanguageScreenChanged
         )
     }
 }
@@ -93,7 +95,8 @@ fun FloatingWidget(
     onClose: () -> Unit,
     onModeChange: (TranslateMode) -> Unit,
     onToggleExpand: () -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onShowLanguageScreenChanged: () -> Unit
 ) {
     if (isExpanded) {
         Box(
@@ -166,7 +169,7 @@ fun FloatingWidget(
                 )
 
                 Button(
-                    onClick = onClose,
+                    onClick = onShowLanguageScreenChanged,
                     modifier = Modifier
                         .padding(vertical = 4.dp)
                         .fillMaxWidth(),
@@ -299,7 +302,9 @@ fun FloatingWidgetPreview() {
         onToggleExpand = {},
         onModeChange = {},
         onClose = {},
-        onClick = {}
+        onClick = {},
+        onShowLanguageScreenChanged ={}
+
     )
 
 }
@@ -313,6 +318,8 @@ fun FloatingWidgetPreview2() {
         onToggleExpand = {},
         onModeChange = {},
         onClose = {},
-        onClick = {}
+        onClick = {},
+        onShowLanguageScreenChanged = {}
+
     )
 }

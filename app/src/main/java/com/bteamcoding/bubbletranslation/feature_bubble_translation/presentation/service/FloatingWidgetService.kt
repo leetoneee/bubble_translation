@@ -12,10 +12,21 @@ import android.view.Gravity
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -33,14 +44,18 @@ import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_c
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetAction
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModel
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.TranslateMode
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.ChooseLanguageScreen
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.DraggableFloatingWidget
+import androidx.compose.ui.graphics.Color
 
 class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
 
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: ComposeView
-    private lateinit var layoutParams: WindowManager.LayoutParams
+    private lateinit var floatingLayoutParams: WindowManager.LayoutParams
+
+    private lateinit var chooseLanguageLayoutParams: WindowManager.LayoutParams
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val viewModelStoreInstance = ViewModelStore()
@@ -81,74 +96,109 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     ViewModelProvider(this@FloatingWidgetService)[FloatingWidgetViewModel::class.java]
                 val state by viewModel.state.collectAsState()
                 val stopFWUseCase = StopFloatingWidgetUseCase(LocalContext.current)
+                var showLanguageScreen by remember { mutableStateOf(false) }
 
-                DraggableFloatingWidget(
-                    state = state,
-                    onClose = {
-                        viewModel.onAction(FloatingWidgetAction.OnClose)
-                        stopFWUseCase()
-                        stopSelf()
-                    },
-                    onToggleExpand = {
-                        viewModel.onAction(FloatingWidgetAction.OnToggleExpand)
-                        val params = layoutParams as WindowManager.LayoutParams
-
-                        if (!state.isExpanded) {
-                            initialX = params.x
-                            initialY = params.y
-
-                            params.x = minX
-                            params.y = 800
-                            windowManager.updateViewLayout(floatingView, layoutParams)
+                // Khi showLanguageScreen là true, ẩn floatingView và hiển thị ChooseLanguageScreen
+                if (showLanguageScreen) {
+                    // Cập nhật layoutParams của ChooseLanguageScreen để nó chiếm toàn bộ màn hình
+                    chooseLanguageLayoutParams = WindowManager.LayoutParams(
+                        screenWidth,
+                        screenHeight,
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                         } else {
-                            params.x = initialX
-                            params.y = initialY
-                            windowManager.updateViewLayout(floatingView, layoutParams)
-                        }
-                    },
-                    onModeChange = {
-                        viewModel.onAction(FloatingWidgetAction.OnModeChange(it))
-                    },
-                    onDrag = { offsetX, offsetY ->
-                        // Cập nhật vị trí và layout
-                        val params = layoutParams as WindowManager.LayoutParams
-
-                        val targetX = if (params.x < midX) {
-                            minX // về bên trái
-                        } else {
-                            screenWidth - floatingView.width - minX// về bên phải
-                        }
-
-                        val maxY = screenHeight - floatingView.height - minY
-
-                        params.x += offsetX.toInt()
-                        params.y += offsetY.toInt()
-                        params.y = params.y.coerceIn(minY, maxY)
-                        windowManager.updateViewLayout(floatingView, layoutParams)
-
-                        // Tạo hiệu ứng trượt mượt (smooth animation)
-                        ValueAnimator.ofInt(params.x, targetX).apply {
-                            duration = 300
-                            interpolator = DecelerateInterpolator()
-                            addUpdateListener {
-                                val value = it.animatedValue as Int
-                                params.x = value
-                                windowManager.updateViewLayout(floatingView, params)
-                            }
-                            start()
-                        }
-                        // Log vị trí mới
-//                        Log.d("FloatingWidgetService", "Drag - New position: x=${layoutParams.width}, y=${layoutParams.height}")
-                    },
-                    onClick = {
-                        handleTranslateService(state.translateMode)
+                            WindowManager.LayoutParams.TYPE_PHONE
+                        },
+                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                        PixelFormat.TRANSLUCENT
+                    ).apply {
+                        x = 0 // Đặt vị trí x là 0 để luôn hiển thị ở góc trái
+                        y = 0 // Đặt vị trí y là 0 để luôn hiển thị ở góc trên cùng
+                        gravity = Gravity.TOP or Gravity.START // Căn góc trái trên cùng
                     }
-                )
+
+                    // Thêm ChooseLanguageScreen vào WindowManager với layoutParams đã cập nhật
+                    try {
+                        windowManager.removeView(floatingView)
+                        windowManager.addView(floatingView, chooseLanguageLayoutParams)
+                        Log.d("FloatingWidgetService", "ChooseLanguageScreen view added successfully")
+                    } catch (e: Exception) {
+                        Log.e("FloatingWidgetService", "Error adding ChooseLanguageScreen view: ${e.message}")
+                    }
+
+                    ChooseLanguageScreen() // Hiển thị ChooseLanguageScreen với size chiếm toàn bộ màn hình
+
+                } else {
+                    DraggableFloatingWidget(
+                        state = state,
+                        onClose = {
+                            viewModel.onAction(FloatingWidgetAction.OnClose)
+                            stopFWUseCase()
+                            stopSelf()
+                        },
+                        onToggleExpand = {
+                            viewModel.onAction(FloatingWidgetAction.OnToggleExpand)
+                            val params = layoutParams as WindowManager.LayoutParams
+
+                            if (!state.isExpanded) {
+                                initialX = params.x
+                                initialY = params.y
+
+                                params.x = minX
+                                params.y = 800
+                                windowManager.updateViewLayout(floatingView, layoutParams)
+                            } else {
+                                params.x = initialX
+                                params.y = initialY
+                                windowManager.updateViewLayout(floatingView, layoutParams)
+                            }
+                        },
+                        onModeChange = {
+                            viewModel.onAction(FloatingWidgetAction.OnModeChange(it))
+                        },
+                        onDrag = { offsetX, offsetY ->
+                            // Cập nhật vị trí và layout
+                            val params = layoutParams as WindowManager.LayoutParams
+
+                            val targetX = if (params.x < midX) {
+                                minX // về bên trái
+                            } else {
+                                screenWidth - floatingView.width - minX// về bên phải
+                            }
+
+                            val maxY = screenHeight - floatingView.height - minY
+
+                            params.x += offsetX.toInt()
+                            params.y += offsetY.toInt()
+                            params.y = params.y.coerceIn(minY, maxY)
+                            windowManager.updateViewLayout(floatingView, layoutParams)
+
+                            // Tạo hiệu ứng trượt mượt (smooth animation)
+                            ValueAnimator.ofInt(params.x, targetX).apply {
+                                duration = 300
+                                interpolator = DecelerateInterpolator()
+                                addUpdateListener {
+                                    val value = it.animatedValue as Int
+                                    params.x = value
+                                    windowManager.updateViewLayout(floatingView, params)
+                                }
+                                start()
+                            }
+                            // Log vị trí mới
+//                        Log.d("FloatingWidgetService", "Drag - New position: x=${layoutParams.width}, y=${layoutParams.height}")
+                        },
+                        onClick = {
+                            handleTranslateService(state.translateMode)
+                        },
+                        onShowLanguageScreenChanged = { showLanguageScreen = true }
+                    )
+                }
             }
         }
 
         // Set LayoutParams for Floating Widget
-        layoutParams = WindowManager.LayoutParams(
+        floatingLayoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -166,14 +216,13 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
             gravity = Gravity.TOP or Gravity.START
         }
 
-
         // Log để kiểm tra WindowManager
         Log.d("FloatingWidgetService", "Adding view to WindowManager")
 
         // Add Floating Widget to WindowManager
         try {
             windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
-            windowManager.addView(floatingView, layoutParams)
+            windowManager.addView(floatingView, floatingLayoutParams)
             Log.d("FloatingWidgetService", "View added successfully")
         } catch (e: Exception) {
             Log.e("FloatingWidgetService", "Error adding view: ${e.message}")
