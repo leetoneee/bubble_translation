@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,9 +18,14 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,7 +68,10 @@ fun TransModeButton(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
-                    .padding(horizontal = 16.dp),
+                    .padding(
+                        start = 16.dp,
+                        end = 6.dp,
+                    ),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -80,19 +89,49 @@ fun TransModeButton(
                         tint = contentColor
                     )
                 }
-                Box(
+                Column(
                     modifier = Modifier
                         .weight(1f)
-                        .wrapContentHeight()
+                        .wrapContentHeight(),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
+                    Row(
+                        modifier = Modifier
+                            .wrapContentSize(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+
+                    ) {
+                        Text(
+                            text = content,
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp,
+                            lineHeight = 16.sp,
+                            color = colorResource(R.color.grey_medium)
+                        )
+                        IconButton(
+                            onClick = {},
+                            modifier = Modifier
+                                .padding(0.dp)
+                                .size(12.dp), // shrink overall size
+                            enabled = enabled) {
+                            Icon(
+                                imageVector = Icons.Filled.QuestionMark, tint = colorResource(R.color.blue_medium),
+                                modifier = Modifier.background(colorResource(R.color.blue_medium), shape = CircleShape),
+                                contentDescription = "checkbox"
+                            )
+                        }
+                    }
                     Text(
-                        text = content,
+                        text = description,
                         fontFamily = Inter,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 12.sp,
-                        color = contentColor
+                        lineHeight = 16.sp,
+                        color = colorResource(R.color.grey_medium)
                     )
                 }
+                CircleCheckbox(selected = true) { }
             }
         }
     } else {
@@ -134,10 +173,9 @@ fun TransModeButtonPreview() {
     TransModeButton(
         onClick = {},
         icon = R.drawable.baseline_android_24,
-        content = "Dịch toàn\nmàn hình",
-        description = "Dịch toàn bộ nội dung trên màn hình",
+        content = "Toàn màn hình",
+        description = "Dịch tất cả nội dung xuất hiện trên màn hình điện thoại",
         enabled = true
     )
 }
-
 
