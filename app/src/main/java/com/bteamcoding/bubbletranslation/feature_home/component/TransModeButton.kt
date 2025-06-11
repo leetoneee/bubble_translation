@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.QuestionMark
+import androidx.compose.material.icons.filled.RemoveRedEye
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -99,27 +100,39 @@ fun TransModeButton(
                         modifier = Modifier
                             .wrapContentSize(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = content,
                             fontFamily = Inter,
                             fontWeight = FontWeight.Bold,
                             fontSize = 12.sp,
-                            lineHeight = 16.sp,
+                            lineHeight = 14.sp,
                             color = colorResource(R.color.grey_medium)
                         )
                         IconButton(
                             onClick = {},
                             modifier = Modifier
                                 .padding(0.dp)
-                                .size(12.dp), // shrink overall size
+                                .size(14.dp), // shrink overall size
                             enabled = enabled) {
-                            Icon(
-                                imageVector = Icons.Filled.QuestionMark, tint = colorResource(R.color.blue_medium),
-                                modifier = Modifier.background(colorResource(R.color.blue_medium), shape = CircleShape),
-                                contentDescription = "checkbox"
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .size(14.dp)
+                                    .clip(CircleShape)
+                                    .background(colorResource(R.color.blue_medium)),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.QuestionMark,
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .size(12.dp)
+                                        .background(colorResource(R.color.blue_medium), shape = CircleShape),
+                                    contentDescription = "checkbox"
+                                )
+                            }
                         }
                     }
                     Text(

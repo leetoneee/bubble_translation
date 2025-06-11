@@ -28,7 +28,6 @@ import com.bteamcoding.bubbletranslation.R
 @Composable
 fun CircleCheckbox(selected: Boolean, enabled: Boolean = true, onChecked: () -> Unit) {
 
-    val color = MaterialTheme.colorScheme
     val imageVector = if (selected) Icons.Filled.CheckCircle else Icons.Outlined.Circle
     val tint = if (selected) colorResource(R.color.blue_dark).copy(alpha = 0.8f) else Color.White.copy(alpha = 0.8f)
     val background = if (selected) Color.White else Color.Transparent
