@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CountryCodePicker(
     modifier: Modifier = Modifier,
-    selectedCountry: Country = Country.Bangladesh,
+    selectedCountry: Country = Country.Thai,
     countryList: List<Country> = Country.getAllCountries(),
     onCountrySelected: (Country) -> Unit,
     viewCustomization: ViewCustomization = ViewCustomization(),

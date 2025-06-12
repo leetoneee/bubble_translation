@@ -74,20 +74,20 @@ fun CountryPickerBottomSheet(
 
                 Spacer(modifier = Modifier.height(itemPadding.dp))
 
-                CountrySearch(value = value,
-                    onValueChange = { value = it },
-                    textStyle = textStyle,
-                    hint = pickerCustomization.searchHint,
-                    showClearIcon = pickerCustomization.showSearchClearIcon,
-                    requestFocus = false,
-                    onFocusChanged = {
-                        if (it.hasFocus) {
-                            scope.launch {
-                                sheetState.expand()
-                            }
-                        }
-
-                    })
+//                CountrySearch(value = value,
+//                    onValueChange = { value = it },
+//                    textStyle = textStyle,
+//                    hint = pickerCustomization.searchHint,
+//                    showClearIcon = pickerCustomization.showSearchClearIcon,
+//                    requestFocus = false,
+//                    onFocusChanged = {
+//                        if (it.hasFocus) {
+//                            scope.launch {
+//                                sheetState.expand()
+//                            }
+//                        }
+//
+//                    })
 
                 Spacer(modifier = Modifier.height(itemPadding.dp))
 

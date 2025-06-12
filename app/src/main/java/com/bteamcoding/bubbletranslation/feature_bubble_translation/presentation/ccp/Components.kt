@@ -68,7 +68,7 @@ internal fun CountryHeaderDialog(
 
 @Composable
 internal fun CountryHeaderSheet(
-    title: String = "Select Country"
+    title: String = "Chọn ngôn ngữ"
 ) {
 
     Row(
@@ -96,7 +96,7 @@ internal fun CountrySearch(
     value: String,
     onValueChange: (String) -> Unit,
     textStyle: TextStyle = TextStyle(),
-    hint: String = "Search Country",
+    hint: String = "Tìm kiếm ngôn ngữ",
     showClearIcon: Boolean = true,
     requestFocus: Boolean = true,
     onFocusChanged: (FocusState) -> Unit = {}
@@ -302,7 +302,7 @@ private fun CountryHeaderSheetPreview() {
 @Composable
 private fun PreviewCountryUI() {
     CountryUI(
-        country = Country.Bangladesh,
+        country = Country.Thai,
         onCountryClicked = {},
         showCountryFlag = true,
         showCountryIso = true,

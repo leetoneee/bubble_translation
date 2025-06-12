@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +48,7 @@ import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.ChooseLanguageScreen
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.DraggableFloatingWidget
 import androidx.compose.ui.graphics.Color
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.AutoScreenModeAction
 
 class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
@@ -98,38 +100,68 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 val stopFWUseCase = StopFloatingWidgetUseCase(LocalContext.current)
                 var showLanguageScreen by remember { mutableStateOf(false) }
 
+                floatingLayoutParams = WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                    } else {
+                        WindowManager.LayoutParams.TYPE_PHONE
+                    },
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                            WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS or
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                    PixelFormat.TRANSLUCENT
+                ).apply {
+                    x = initialX
+                    y = initialY
+                    gravity = Gravity.TOP or Gravity.START
+                }
+
+                chooseLanguageLayoutParams = WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                    } else {
+                        WindowManager.LayoutParams.TYPE_PHONE
+                    },
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+                    PixelFormat.TRANSLUCENT
+                ).apply {
+                    x = 0 // Đặt vị trí x là 0 để luôn hiển thị ở góc trái
+                    y = 0 // Đặt vị trí y là 0 để luôn hiển thị ở góc trên cùng
+                    gravity = Gravity.TOP or Gravity.START // Căn góc trái trên cùng
+                }
+
+                LaunchedEffect(showLanguageScreen) {
+                    val params = if (showLanguageScreen) chooseLanguageLayoutParams else floatingLayoutParams
+                    try {
+                        windowManager.updateViewLayout(floatingView, params)
+                    } catch (e: Exception) {
+                        Log.e("FloatingWidgetService", "Error updating layout params: ${e.message}")
+                    }
+                }
+
                 // Khi showLanguageScreen là true, ẩn floatingView và hiển thị ChooseLanguageScreen
                 if (showLanguageScreen) {
-                    // Cập nhật layoutParams của ChooseLanguageScreen để nó chiếm toàn bộ màn hình
-                    chooseLanguageLayoutParams = WindowManager.LayoutParams(
-                        screenWidth,
-                        screenHeight,
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                        } else {
-                            WindowManager.LayoutParams.TYPE_PHONE
+                    ChooseLanguageScreen(
+                        state = state,
+                        onUpdateSourceLanguage = { newSourceLanguage ->
+                            viewModel.onAction(FloatingWidgetAction.OnSourceLanguageChange(newSourceLanguage))
                         },
-                        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-                        PixelFormat.TRANSLUCENT
-                    ).apply {
-                        x = 0 // Đặt vị trí x là 0 để luôn hiển thị ở góc trái
-                        y = 0 // Đặt vị trí y là 0 để luôn hiển thị ở góc trên cùng
-                        gravity = Gravity.TOP or Gravity.START // Căn góc trái trên cùng
-                    }
-
-                    // Thêm ChooseLanguageScreen vào WindowManager với layoutParams đã cập nhật
-                    try {
-                        windowManager.removeView(floatingView)
-                        windowManager.addView(floatingView, chooseLanguageLayoutParams)
-                        Log.d("FloatingWidgetService", "ChooseLanguageScreen view added successfully")
-                    } catch (e: Exception) {
-                        Log.e("FloatingWidgetService", "Error adding ChooseLanguageScreen view: ${e.message}")
-                    }
-
-                    ChooseLanguageScreen() // Hiển thị ChooseLanguageScreen với size chiếm toàn bộ màn hình
+                        onUpdateTargetLanguage = { newTargetLanguage ->
+                            viewModel.onAction(FloatingWidgetAction.OnTargetLanguageChange(newTargetLanguage))
+                        },
+                        onShowLanguageScreenChanged = {
+                            // Cập nhật showLanguageScreen trong service
+                            showLanguageScreen = false  // Đổi về false khi nhấn xác nhận
+                        }
+                    ) // Hiển thị ChooseLanguageScreen với size chiếm toàn bộ màn hình
 
                 } else {
+
                     DraggableFloatingWidget(
                         state = state,
                         onClose = {

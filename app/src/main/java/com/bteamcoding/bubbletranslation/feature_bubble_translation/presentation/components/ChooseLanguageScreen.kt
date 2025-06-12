@@ -29,9 +29,15 @@ import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetState
 
 @Composable
-fun ChooseLanguageScreen() {
+fun ChooseLanguageScreen(
+    state: FloatingWidgetState,
+    onUpdateSourceLanguage: (Country) -> Unit,
+    onUpdateTargetLanguage: (Country) -> Unit,
+    onShowLanguageScreenChanged: (Boolean) -> Unit
+) {
     var showDialog by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
@@ -59,7 +65,7 @@ fun ChooseLanguageScreen() {
 
                 // Ngon ngu
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(100.dp)
+                    horizontalArrangement = Arrangement.spacedBy(70.dp)
                 ) {
                     Text(
                         text = "Ngôn ngữ gốc",
@@ -76,16 +82,18 @@ fun ChooseLanguageScreen() {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    //Chon ngon ngu nguon
+                    // Chọn ngôn ngữ nguồn
                     Column {
-                        var sourceCountry by remember {
-                            mutableStateOf(Country.UnitedKingdom)
-                        }
+                        var sourceCountry = state.sourceLanguage
 
                         CountryCodePicker(
-                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            modifier = Modifier
+                                .align(Alignment.CenterHorizontally),
                             selectedCountry = sourceCountry,
-                            onCountrySelected = { sourceCountry = it },
+                            onCountrySelected = { country ->
+                                sourceCountry = country
+                                onUpdateSourceLanguage(country) // Cập nhật ngôn ngữ nguồn
+                            },
                             viewCustomization = ViewCustomization(
                                 showFlag = true,
                                 showCountryIso = true,
@@ -104,15 +112,17 @@ fun ChooseLanguageScreen() {
 
                     Icon(imageVector = Icons.Default.ArrowForward, contentDescription = "Arrow")
 
+                    // Chọn ngôn ngữ đích
                     Column {
-                        var targetCountry by remember {
-                            mutableStateOf(Country.Vietnam)
-                        }
+                        var targetCountry = state.targetLanguage
 
                         CountryCodePicker(
                             modifier = Modifier.align(Alignment.CenterHorizontally),
                             selectedCountry = targetCountry,
-                            onCountrySelected = { targetCountry = it },
+                            onCountrySelected = { country ->
+                                targetCountry = country
+                                onUpdateTargetLanguage(country) // Cập nhật ngôn ngữ đích
+                            },
                             viewCustomization = ViewCustomization(
                                 showFlag = true,
                                 showCountryIso = true,
@@ -132,7 +142,10 @@ fun ChooseLanguageScreen() {
 
                 // Nút Xác nhận
                 Button(
-                    onClick = { showDialog = true },
+                    onClick = {
+                        // Cập nhật ngôn ngữ khi nhấn nút xác nhận
+                        onShowLanguageScreenChanged(false) // Đóng màn hình chọn ngôn ngữ
+                    },
                     modifier = Modifier
                         .padding(top = 16.dp)
                         .fillMaxWidth()
@@ -147,5 +160,16 @@ fun ChooseLanguageScreen() {
 @Preview(showBackground = true)
 @Composable
 fun PreviewChooseLanguageScreen() {
-    ChooseLanguageScreen()
+    // Tạo một state giả để truyền vào ChooseLanguageScreen cho Preview
+    val fakeState = FloatingWidgetState(
+        sourceLanguage = Country.English,  // Giả sử ngôn ngữ nguồn là tiếng Anh
+        targetLanguage = Country.Vietnamese // Giả sử ngôn ngữ đích là tiếng Việt
+    )
+
+    ChooseLanguageScreen(
+        state = fakeState,
+        onUpdateSourceLanguage = {},
+        onUpdateTargetLanguage = {},
+        onShowLanguageScreenChanged = {}
+    )
 }
