@@ -69,7 +69,12 @@
         <service
             android:name=".feature_bubble_translation.presentation.service.AudioModeService"
             android:exported="false"
-            android:foregroundServiceType="mediaProjection" />
+            android:foregroundServiceType="mediaProjection"/>
+        <service
+            android:name=".feature_bubble_translation.presentation.service.AutoScreenModeService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection"/>
     </application>
 
 </manifest>
