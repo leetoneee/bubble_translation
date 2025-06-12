@@ -59,6 +59,7 @@ import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.core.components.TopBar
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.activity.CameraScreenActivity
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.activity.PreviewImageActivity
+import com.bteamcoding.bubbletranslation.ui.theme.Inter
 
 @Composable
 fun CameraScreenRoot(
@@ -130,20 +131,20 @@ fun CameraScreen(
                 modifier = Modifier
                     .size(120.dp)
                     .background(
-                        color = colorResource(R.color.blue_400).copy(0.5f),
+                        color = colorResource(R.color.blue_lightest).copy(0.5f),
                         shape = RoundedCornerShape(30.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.Image,
+                    imageVector = ImageVector.vectorResource(R.drawable.bee_plain),
                     contentDescription = null,
-                    modifier = Modifier.size(40.dp),
+                    modifier = Modifier.size(80.dp),
                     tint = colorResource(R.color.blue_900)
                 )
             }
-            Text(text = "Take a picture or\nChoose image from library", fontWeight = FontWeight.Bold, fontSize = 18.sp, textAlign = TextAlign.Center, lineHeight = 20.sp, color = colorResource(R.color.bold_text), modifier = Modifier.padding(top = 30.dp, bottom = 10.dp))
-            Text(text = "Text in the image will be translated\n and displayed here", fontSize = 14.sp, fontWeight = FontWeight.Thin, textAlign = TextAlign.Center, color = colorResource(R.color.normal_text))
+            Text(text = "Take a picture or\nChoose image from library", fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 18.sp, textAlign = TextAlign.Center, lineHeight = 20.sp, color = colorResource(R.color.bold_text), modifier = Modifier.padding(top = 30.dp, bottom = 10.dp))
+            Text(text = "Text in the image will be translated\n and displayed here", fontFamily = Inter, fontSize = 14.sp, fontWeight = FontWeight.Normal, textAlign = TextAlign.Center, color = colorResource(R.color.grey_light))
         }
 
         Row(
