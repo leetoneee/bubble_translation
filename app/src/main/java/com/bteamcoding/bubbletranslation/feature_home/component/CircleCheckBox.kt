@@ -29,8 +29,8 @@ import com.bteamcoding.bubbletranslation.R
 fun CircleCheckbox(selected: Boolean, enabled: Boolean = true, onChecked: () -> Unit) {
 
     val imageVector = if (selected) Icons.Filled.CheckCircle else Icons.Outlined.Circle
-    val tint = if (selected) colorResource(R.color.blue_dark).copy(alpha = 0.8f) else Color.White.copy(alpha = 0.8f)
-    val background = if (selected) Color.White else Color.Transparent
+    val tint = if (selected) colorResource(R.color.blue_dark).copy(alpha = 0.8f) else colorResource(R.color.white_darkest).copy(alpha = 0.8f)
+    val background = Color.White
 
     IconButton(onClick = { onChecked() },
         modifier = Modifier

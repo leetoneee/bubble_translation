@@ -54,128 +54,97 @@ fun TransModeButton(
     description: String,
     contentColor: Color = Color.Black
 ) {
-    if (enabled) {
-        Button(
-            onClick = onClick,
+    val background = if (enabled) colorResource(R.color.blue_lightest) else colorResource(R.color.white_light)
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(71.dp),
+        //elevation = ButtonDefaults.buttonElevation(4.dp),
+        colors = ButtonDefaults.buttonColors(background),
+        shape = RoundedCornerShape(30.dp),
+        contentPadding = PaddingValues(0.dp)
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(71.dp),
-            elevation = ButtonDefaults.buttonElevation(8.dp),
-            colors = ButtonDefaults.buttonColors(colorResource(R.color.blue_lightest)),
-            shape = RoundedCornerShape(30.dp),
-            contentPadding = PaddingValues(0.dp)
-        ) {
-            Row(
+                .fillMaxHeight()
+                .padding(
+                    start = 16.dp,
+                    end = 6.dp,
+                ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .padding(
-                        start = 16.dp,
-                        end = 6.dp,
-                    ),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(colorResource(R.color.white)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = ImageVector.vectorResource(icon),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = contentColor
-                    )
-                }
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .wrapContentHeight(),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .wrapContentSize(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = content,
-                            fontFamily = Inter,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 12.sp,
-                            lineHeight = 14.sp,
-                            color = colorResource(R.color.grey_medium)
-                        )
-                        IconButton(
-                            onClick = {},
-                            modifier = Modifier
-                                .padding(0.dp)
-                                .size(14.dp), // shrink overall size
-                            enabled = enabled) {
-                            Row(
-                                modifier = Modifier
-                                    .size(14.dp)
-                                    .clip(CircleShape)
-                                    .background(colorResource(R.color.blue_medium)),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.QuestionMark,
-                                    tint = Color.White,
-                                    modifier = Modifier
-                                        .size(12.dp)
-                                        .background(colorResource(R.color.blue_medium), shape = CircleShape),
-                                    contentDescription = "checkbox"
-                                )
-                            }
-                        }
-                    }
-                    Text(
-                        text = description,
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 12.sp,
-                        lineHeight = 16.sp,
-                        color = colorResource(R.color.grey_medium)
-                    )
-                }
-                CircleCheckbox(selected = true) { }
-            }
-        }
-    } else {
-        Button(
-            onClick = onClick,
-            modifier = Modifier
-                .padding(vertical = 4.dp)
-                .fillMaxWidth()
-                .height(71.dp),
-            elevation = ButtonDefaults.buttonElevation(8.dp),
-            colors = ButtonDefaults.buttonColors(colorResource(R.color.white_light)),
-        ) {
-            Row(
-                modifier = Modifier.wrapContentSize(),
-                verticalAlignment = Alignment.CenterVertically
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(colorResource(R.color.white)),
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = ImageVector.vectorResource(icon),
                     contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = Color.Black
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = content,
-                    fontWeight = FontWeight.Normal,
-                    fontSize = 12.sp,
-                    lineHeight = 15.sp,
-                    color = Color.Black
+                    modifier = Modifier.size(24.dp),
+                    tint = contentColor
                 )
             }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .wrapContentHeight(),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .wrapContentSize(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = content,
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        lineHeight = 14.sp,
+                        color = colorResource(R.color.grey_medium)
+                    )
+                    IconButton(
+                        onClick = {},
+                        modifier = Modifier
+                            .padding(0.dp)
+                            .size(14.dp), // shrink overall size
+                        enabled = true) {
+                        Row(
+                            modifier = Modifier
+                                .size(14.dp)
+                                .clip(CircleShape)
+                                .background(colorResource(R.color.blue_medium)),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.QuestionMark,
+                                tint = Color.White,
+                                modifier = Modifier
+                                    .size(12.dp)
+                                    .background(colorResource(R.color.blue_medium), shape = CircleShape),
+                                contentDescription = "checkbox"
+                            )
+                        }
+                    }
+                }
+                Text(
+                    text = description,
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Normal,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
+                    color = colorResource(R.color.grey_medium)
+                )
+            }
+            CircleCheckbox(selected = enabled) { }
         }
     }
 }
@@ -183,12 +152,14 @@ fun TransModeButton(
 @Preview
 @Composable
 fun TransModeButtonPreview() {
+    var enabled = true
     TransModeButton(
-        onClick = {},
+        onClick = {enabled = !enabled},
         icon = R.drawable.baseline_android_24,
         content = "Toàn màn hình",
         description = "Dịch tất cả nội dung xuất hiện trên màn hình điện thoại",
-        enabled = true
+        enabled = true,
+        contentColor = colorResource(R.color.blue_medium)
     )
 }
 
