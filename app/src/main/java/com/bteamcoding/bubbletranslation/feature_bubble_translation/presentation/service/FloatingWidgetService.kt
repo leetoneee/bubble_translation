@@ -82,7 +82,6 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
 //                    ViewModelProvider(this@FloatingWidgetService)[FloatingWidgetViewModel::class.java]
                 val viewModel = FloatingWidgetViewModelHolder.instance
                 // Khi Service được khởi động, chuyển trạng thái isOn sang true
-                viewModel.onAction(FloatingWidgetAction.OnStart)
 
                 val state by viewModel.state.collectAsState()
                 val stopFWUseCase = StopFloatingWidgetUseCase(LocalContext.current)

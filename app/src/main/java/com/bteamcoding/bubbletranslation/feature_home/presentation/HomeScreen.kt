@@ -43,6 +43,7 @@ import com.bteamcoding.bubbletranslation.feature_home.component.HexagonButton
 import com.bteamcoding.bubbletranslation.feature_home.component.TransModeButton
 import com.bteamcoding.bubbletranslation.ui.theme.Inter
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
+import kotlinx.coroutines.delay
 
 
 fun requestOverlayPermission(context: Context) {
@@ -258,10 +259,13 @@ fun HomeScreen(
                     icon = if (isOn==false) Icons.Filled.PowerSettingsNew else Icons.Filled.PowerOff,
                     backgroundColor = if (isOn==false) colorResource(R.color.blue_dark) else colorResource(R.color.red_medium),
                     onClick = {
-                        if (isOn==false) onShowWidget()
+                        if (isOn==false){
+                            onShowWidget()
+                            viewModel.onAction(FloatingWidgetAction.OnStart);
+                        }
                         else {
-                            viewModel.onAction(FloatingWidgetAction.OnClose);
                             stopFWUseCase()
+                            viewModel.onAction(FloatingWidgetAction.OnClose);
                         }
                     }
                 )
