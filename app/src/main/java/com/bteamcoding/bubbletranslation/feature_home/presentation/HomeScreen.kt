@@ -135,10 +135,10 @@ fun HomeScreen(
                         fontSize = 14.sp,
                         color = colorResource(R.color.grey_darkest)
                     )
-                    Box(
+                    Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 54.dp),
+                            .width(200.dp),
+                        horizontalArrangement = Arrangement.Center
                     ){
                         SelectLang()
                     }
