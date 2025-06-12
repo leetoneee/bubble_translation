@@ -26,6 +26,9 @@ suspend fun translateText(text: String): String {
             .setTargetLanguage(targetLangCode) // Ngôn ngữ đích
             .build()
 
+        Log.d("Translation", "Source Language: $sourceLangCode") // Log ngôn ngữ nguồn
+        Log.d("Translation", "Target Language: $targetLangCode") // Log ngôn ngữ đích
+
         val translator: Translator = Translation.getClient(options)
 
         // Kiểm tra xem mô hình dịch có cần tải không
