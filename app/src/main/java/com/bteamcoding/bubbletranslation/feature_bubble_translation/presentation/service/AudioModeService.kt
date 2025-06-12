@@ -137,7 +137,7 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     isTranslateMode = state.isTranslateMode,
                     onToggleTranslateMode = {
                         Log.i("AudioModeAction", state.isTranslateMode.toString())
-                        mediaProjection.stop()
+//                        mediaProjection.stop()
                         viewModel.onAction(AudioModeAction.OnChangeIsTranslateMode)
                         speechRecognizerHelper.stopRecognition()
                         viewModel.onAction(AudioModeAction.OnChangeIsRecognizing(false))
@@ -159,7 +159,7 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     },
                     onStopRecognition = {
                         speechRecognizerHelper.stopRecognition()
-                        mediaProjection.stop()
+//                        mediaProjection.stop()
                         viewModel.onAction(AudioModeAction.OnChangeIsRecognizing(false))
                     },
                     onClose = {
