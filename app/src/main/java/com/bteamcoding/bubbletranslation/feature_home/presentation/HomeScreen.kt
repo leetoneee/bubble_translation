@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CompareArrows
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledIconButton
@@ -163,7 +164,7 @@ fun HomeScreen(
                     )
                     TransModeButton(
                         onClick = {enabled = !enabled},
-                        icon = R.drawable.baseline_android_24,
+                        icon = R.drawable.full_screen,
                         content = "Toàn màn hình",
                         description = "Dịch tất cả nội dung xuất hiện trên màn hình",
                         enabled = enabled,
@@ -171,7 +172,7 @@ fun HomeScreen(
                     )
                     TransModeButton(
                         onClick = {enabled = !enabled},
-                        icon = R.drawable.baseline_android_24,
+                        icon = R.drawable.partial_screen,
                         content = "Một phần màn hình",
                         description = "Chỉ dịch nội dung trong vùng được chọn",
                         enabled = enabled,
@@ -179,7 +180,7 @@ fun HomeScreen(
                     )
                     TransModeButton(
                         onClick = {enabled = !enabled},
-                        icon = R.drawable.baseline_android_24,
+                        icon = R.drawable.autosubtile,
                         content = "Tự động dịch Phụ đề",
                         description = "Tự động dịch Phụ đề xuất hiện trong video, cutscene",
                         enabled = enabled,
@@ -187,7 +188,7 @@ fun HomeScreen(
                     )
                     TransModeButton(
                         onClick = {enabled = !enabled},
-                        icon = R.drawable.baseline_android_24,
+                        icon = R.drawable.auto_audio,
                         content = "Tự động dịch Audio",
                         description = "Tự động dịch Audio phát ra từ loa thiết bị",
                         enabled = enabled,
@@ -215,7 +216,7 @@ fun HomeScreen(
                     )
                     TransModeButton(
                         onClick = {enabled = !enabled},
-                        icon = R.drawable.baseline_android_24,
+                        icon = R.drawable.global,
                         content = "Tiêu chuẩn",
                         description = "Phù hợp cho hầu hết các trường hợp",
                         enabled = enabled,
@@ -223,7 +224,7 @@ fun HomeScreen(
                     )
                     TransModeButton(
                         onClick = {enabled = !enabled},
-                        icon = R.drawable.baseline_android_24,
+                        icon = R.drawable.baseline_menu_book_24,
                         content = "Truyện tranh",
                         description = "Tối ưu cho văn bản trong truyện tranh",
                         enabled = enabled,
@@ -231,7 +232,7 @@ fun HomeScreen(
                     )
                     TransModeButton(
                         onClick = {enabled = !enabled},
-                        icon = R.drawable.baseline_android_24,
+                        icon = R.drawable.subtitles,
                         content = "Phụ đề",
                         description = "Tối ưu cho phụ đề trong video, cutscene",
                         enabled = enabled,
