@@ -10,47 +10,39 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CompareArrows
-import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.PowerOff
 import androidx.compose.material.icons.filled.PowerSettingsNew
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.core.components.SelectLang
 import com.bteamcoding.bubbletranslation.core.components.TopBar
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StartFloatingWidgetUseCase
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetAction
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModelHolder
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.TranslateMode
 import com.bteamcoding.bubbletranslation.feature_home.component.HexagonButton
 import com.bteamcoding.bubbletranslation.feature_home.component.TransModeButton
 import com.bteamcoding.bubbletranslation.ui.theme.Inter
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
 
 
 fun requestOverlayPermission(context: Context) {
@@ -96,6 +88,14 @@ fun HomeScreen(
     onShowWidget: () -> Unit,
 ) {
     var enabled by remember { mutableStateOf(true) }
+    val viewModel = FloatingWidgetViewModelHolder.instance
+    val state by viewModel.state.collectAsState()
+    val currentMode = state.translateMode
+    val isOn = state.isOn
+    val context = LocalContext.current
+    val stopFWUseCase = remember { StopFloatingWidgetUseCase(context) }
+
+
     Column (
         modifier = Modifier
             .fillMaxWidth()
@@ -163,35 +163,46 @@ fun HomeScreen(
                         color = colorResource(R.color.grey_darkest)
                     )
                     TransModeButton(
-                        onClick = {enabled = !enabled},
+                        onClick = {
+                            viewModel.onAction(FloatingWidgetAction.OnModeChange(TranslateMode.FULLSCREEN))
+                        },
                         icon = R.drawable.full_screen,
                         content = "Toàn màn hình",
                         description = "Dịch tất cả nội dung xuất hiện trên màn hình",
-                        enabled = enabled,
+                        enabled = currentMode == TranslateMode.FULLSCREEN,
                         contentColor = colorResource(R.color.blue_medium)
                     )
+
                     TransModeButton(
-                        onClick = {enabled = !enabled},
+                        onClick = {
+                            viewModel.onAction(FloatingWidgetAction.OnModeChange(TranslateMode.CROP))
+                        },
                         icon = R.drawable.partial_screen,
                         content = "Một phần màn hình",
                         description = "Chỉ dịch nội dung trong vùng được chọn",
-                        enabled = enabled,
+                        enabled = currentMode == TranslateMode.CROP,
                         contentColor = colorResource(R.color.green_medium)
                     )
+
                     TransModeButton(
-                        onClick = {enabled = !enabled},
+                        onClick = {
+                            viewModel.onAction(FloatingWidgetAction.OnModeChange(TranslateMode.AUTO))
+                        },
                         icon = R.drawable.autosubtile,
                         content = "Tự động dịch Phụ đề",
                         description = "Tự động dịch Phụ đề xuất hiện trong video, cutscene",
-                        enabled = enabled,
+                        enabled = currentMode == TranslateMode.AUTO,
                         contentColor = colorResource(R.color.yellow_medium)
                     )
+
                     TransModeButton(
-                        onClick = {enabled = !enabled},
+                        onClick = {
+                            viewModel.onAction(FloatingWidgetAction.OnModeChange(TranslateMode.AUDIO))
+                        },
                         icon = R.drawable.auto_audio,
                         content = "Tự động dịch Audio",
                         description = "Tự động dịch Audio phát ra từ loa thiết bị",
-                        enabled = enabled,
+                        enabled = currentMode == TranslateMode.AUDIO,
                         contentColor = colorResource(R.color.purple_dark)
                     )
                 }
@@ -223,19 +234,19 @@ fun HomeScreen(
                         contentColor = colorResource(R.color.blue_dark)
                     )
                     TransModeButton(
-                        onClick = {enabled = !enabled},
+                        onClick = {},
                         icon = R.drawable.baseline_menu_book_24,
                         content = "Truyện tranh",
                         description = "Tối ưu cho văn bản trong truyện tranh",
-                        enabled = enabled,
+                        enabled = false,
                         contentColor = colorResource(R.color.blue_dark)
                     )
                     TransModeButton(
-                        onClick = {enabled = !enabled},
+                        onClick = {},
                         icon = R.drawable.subtitles,
                         content = "Phụ đề",
                         description = "Tối ưu cho phụ đề trong video, cutscene",
-                        enabled = enabled,
+                        enabled = false,
                         contentColor = colorResource(R.color.blue_dark)
                     )
                 }
@@ -244,12 +255,18 @@ fun HomeScreen(
                 HexagonButton(
                     width = 60.dp,
                     height = 60.dp,
-                    icon = Icons.Filled.PowerSettingsNew,
-                    backgroundColor = colorResource(R.color.blue_dark),
-                    //textStyle = TextStyle(fontSize = 12.sp, color = Color.White, fontFamily = Inter, fontWeight = FontWeight.Bold),
-                    onClick = {onShowWidget()}
+                    icon = if (isOn==false) Icons.Filled.PowerSettingsNew else Icons.Filled.PowerOff,
+                    backgroundColor = if (isOn==false) colorResource(R.color.blue_dark) else colorResource(R.color.red_medium),
+                    onClick = {
+                        if (isOn==false) onShowWidget()
+                        else {
+                            viewModel.onAction(FloatingWidgetAction.OnClose);
+                            stopFWUseCase()
+                        }
+                    }
                 )
             }
         }
     }
 }
+

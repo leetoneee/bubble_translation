@@ -44,5 +44,6 @@
     <color name="white_medium">#FFE8E9F1</color>
     <color name="white_light">#FFF8F9FE</color>
     <color name="white_lightest">#FFFFFFFF</color>
+    <color name="red_medium">#FFFF616D</color>
 
 </resources>

@@ -14,11 +14,17 @@ class FloatingWidgetViewModel() : ViewModel() {
             is FloatingWidgetAction.OnToggleExpand -> {
                 _state.update { it.copy(isExpanded = !it.isExpanded) }
             }
+            is FloatingWidgetAction.OnStart -> {
+                // Handle start widget logic here if needed
+                _state.update {
+                    it.copy(isOn = true)
+                }
+            }
 
             is FloatingWidgetAction.OnClose -> {
                 // Handle close widget logic here if needed
                 _state.update {
-                    it.copy(isExpanded = false)
+                    it.copy(isExpanded = false, isOn = false)
                 }
             }
 
