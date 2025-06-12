@@ -121,7 +121,8 @@ dependencies {
 
     implementation(libs.androidx.activity.ktx)
     implementation(libs.coil.compose)
-    implementation("androidx.graphics:graphics-shapes:1.0.1") // or latest version
-
+    implementation(libs.androidx.graphics.shapes) // or latest version
+    implementation(libs.coil.compose.v250) // Or latest version
+    implementation(libs.coil.svg)
     implementation(libs.vosk.android)
 }
