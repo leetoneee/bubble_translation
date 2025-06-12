@@ -49,7 +49,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.core.utils.MediaProjectionSingleton
-import com.bteamcoding.bubbletranslation.core.utils.VirtualDisplaySignleton
+import com.bteamcoding.bubbletranslation.core.utils.VirtualDisplaySingleton
 import com.bteamcoding.bubbletranslation.core.utils.recognizeTextFromImage
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.AutoScreenModeAction
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.AutoScreenModeViewModel
@@ -547,20 +547,20 @@ class AutoScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         )
 
         // Nếu VirtualDisplay đã tồn tại, chỉ cần cập nhật Surface mới
-        if (VirtualDisplaySignleton.virtualDisplay != null) {
+        if (VirtualDisplaySingleton.virtualDisplay != null) {
             // Cập nhật Surface cho VirtualDisplay thay vì tạo mới
-            VirtualDisplaySignleton.virtualDisplay?.surface = imageReader.surface
+            VirtualDisplaySingleton.virtualDisplay?.surface = imageReader.surface
         } else {
             // Nếu VirtualDisplay chưa tồn tại, tạo mới
             try {
-                VirtualDisplaySignleton.virtualDisplay =
+                VirtualDisplaySingleton.virtualDisplay =
                     MediaProjectionSingleton.mediaProjection?.createVirtualDisplay(
                         "ScreenCapture",
                         width, height, d,
                         DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                         imageReader.surface, null, null
                     )
-                if (VirtualDisplaySignleton.virtualDisplay == null) {
+                if (VirtualDisplaySingleton.virtualDisplay == null) {
                     Log.e("AutoscreenModeService", "Failed to create virtual display")
                     releaseResources()
                     stopSelf() // Dừng service nếu không thể tạo virtual display
@@ -632,8 +632,8 @@ class AutoScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     private fun releaseResources() {
         // Giải phóng tài nguyên MediaProjection và VirtualDisplay
         try {
-            VirtualDisplaySignleton.virtualDisplay?.release()
-            VirtualDisplaySignleton.virtualDisplay = null
+            VirtualDisplaySingleton.virtualDisplay?.release()
+            VirtualDisplaySingleton.virtualDisplay = null
             MediaProjectionSingleton.mediaProjection?.stop()
             Log.d("AutoscreenModeService", "Resources released successfully")
         } catch (e: Exception) {
