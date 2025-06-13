@@ -1,6 +1,7 @@
 package com.bteamcoding.bubbletranslation.feature_dictionary.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Divider
@@ -37,6 +39,16 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.colorResource
+import com.bteamcoding.bubbletranslation.R
+import kotlinx.coroutines.delay
 
 @Composable
 fun DictionaryScreenRoot(
@@ -85,6 +97,14 @@ fun DictionaryScreen(
                     bottom = 60.dp
                 )
         ) {
+            val focusManager = LocalFocusManager.current
+            val keyboardController = LocalSoftwareKeyboardController.current
+            val focusRequester = remember { FocusRequester() }
+            LaunchedEffect(Unit) {
+                // Add a short delay to allow the UI to compose before requesting focus
+                delay(100)
+                focusRequester.requestFocus()
+            }
             OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = { onAction(DictionaryAction.UpdateQuery(it)) },
@@ -116,11 +136,14 @@ fun DictionaryScreen(
                         }
                     }
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().focusRequester(focusRequester)
             )
 
             when {
                 state.definitions.isNotEmpty() -> {
+                    LaunchedEffect(state.definitions) {
+                          keyboardController?.hide()
+                    }
                     LazyColumn(
                         modifier = Modifier
                             .weight(1f)
@@ -174,6 +197,7 @@ fun DictionaryScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .wrapContentSize()
+                            .padding(bottom=200.dp),
                     ) {
                         CircularProgressIndicator()
                     }

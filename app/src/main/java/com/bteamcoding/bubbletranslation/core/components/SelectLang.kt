@@ -39,7 +39,7 @@ fun SelectLang(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
-        horizontalArrangement = SpaceEvenly,
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ){
         FilledIconButton(

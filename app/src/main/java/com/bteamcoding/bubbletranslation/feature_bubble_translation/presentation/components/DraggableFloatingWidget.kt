@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.SubdirectoryArrowLeft
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -163,12 +164,12 @@ fun FloatingWidget(
                     contentColor = colorResource(R.color.purple_dark)
                 )
 
-                Box(
+                HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .height(1.dp)
-                        .background(color = Color.LightGray)
+                        .padding(start = 6.dp, end = 6.dp, top = 4.dp),
+                    color = colorResource(R.color.white_dark),
+                    thickness = 2.dp
                 )
 
                 Button(

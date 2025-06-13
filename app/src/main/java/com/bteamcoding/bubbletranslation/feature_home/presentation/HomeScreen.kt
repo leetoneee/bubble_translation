@@ -138,7 +138,7 @@ fun HomeScreen(
                     )
                     Row(
                         modifier = Modifier
-                            .width(200.dp),
+                            .width(160.dp),
                         horizontalArrangement = Arrangement.Center
                     ){
                         SelectLang()
