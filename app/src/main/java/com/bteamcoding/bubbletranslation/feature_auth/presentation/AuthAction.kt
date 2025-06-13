@@ -9,4 +9,7 @@ sealed interface AuthAction {
     data object OnLoginClicked : AuthAction
     data object OnRegisterClicked : AuthAction
     data object ClearError : AuthAction
+
+    data object OnLoadCurrentUser : AuthAction
+    data object OnLogOut : AuthAction
 }

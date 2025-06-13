@@ -33,23 +33,30 @@ fun AppNavHost(navController: NavHostController) {
         ) {
 
             composable(route = NavRoutes.ACCOUNT) {
-                val viewModel = hiltViewModel<AuthViewModel>(it)
+                val viewModel = it.sharedHiltViewModel<AuthViewModel>(navController)
 
                 AccountScreenRoot(
                     viewModel = viewModel,
-                    onNavToProfileScreen = {},
-                    onNavToLoginScreen = {}
+                    onNavToProfileScreen = {
+                        navController.navigate(NavRoutes.PROFILE)
+                    },
+                    onNavToLoginScreen = {
+                        navController.navigate(NavRoutes.LOGIN)
+                    },
+                    onBack = {
+                        navController.popBackStack()
+                    }
                 )
             }
             composable(route = NavRoutes.LOGIN) {
-                val viewModel = hiltViewModel<AuthViewModel>(it)
+                val viewModel = it.sharedHiltViewModel<AuthViewModel>(navController)
 
                 LoginScreenRoot(
                     viewModel = viewModel,
                 )
             }
             composable(route = NavRoutes.REGISTER) {
-                val viewModel = hiltViewModel<AuthViewModel>(it)
+                val viewModel = it.sharedHiltViewModel<AuthViewModel>(navController)
 
                 RegisterScreenRoot(
                     viewModel = viewModel,
@@ -57,10 +64,13 @@ fun AppNavHost(navController: NavHostController) {
                     )
             }
             composable(route = NavRoutes.PROFILE) {
-                val viewModel = hiltViewModel<AuthViewModel>(it)
+                val viewModel = it.sharedHiltViewModel<AuthViewModel>(navController)
 
                 ProfileScreenRoot(
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    onBack = {
+                        navController.popBackStack()
+                    }
                 )
             }
         }
@@ -94,3 +104,13 @@ inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navControll
     }
     return viewModel(parentEntry)
 }
+
+@Composable
+inline fun <reified T : ViewModel> NavBackStackEntry.sharedHiltViewModel(navController: NavHostController): T {
+    val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
+    val parentEntry = remember(this) {
+        navController.getBackStackEntry(navGraphRoute)
+    }
+    return hiltViewModel(parentEntry)
+}
+

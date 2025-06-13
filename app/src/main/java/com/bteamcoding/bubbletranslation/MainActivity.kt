@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissionHolder
 import com.bteamcoding.bubbletranslation.app.presentation.MainScreen
 import android.graphics.Rect
+import androidx.core.view.WindowCompat
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
