@@ -45,7 +45,7 @@ fun DictionaryScreenRoot(
     val state by viewModel.state.collectAsStateWithLifecycle()
     DictionaryScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = { action -> viewModel.onAction(action) }
     )
 }
 

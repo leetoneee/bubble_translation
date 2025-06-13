@@ -1,12 +1,15 @@
 package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components
 
 import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.SubdirectoryArrowLeft
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -236,29 +240,40 @@ fun FloatingWidget(
             }
         }
     } else {
+        @OptIn(ExperimentalFoundationApi::class)
         Box(
             modifier = Modifier
                 .size(90.dp) // Kích thước hình tròn cho vùng màu trắng
                 .clip(CircleShape)
                 .background(Color.Transparent)
+                .combinedClickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = rememberRipple(bounded = true, radius = 40.dp),
+                    onClick = { onClick() },
+                    onLongClick = {
+                        Log.i("OnToggleExpand", "đã nhấn")
+                        onToggleExpand()
+                    }
+                ),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectTapGestures(
-                            onLongPress = {
-                                // Xử lý khi người dùng long press
-                                Log.i("OnToggleExpand", "đã nhấn")
-                                onToggleExpand()
-                            },
-                            onTap = {
-                                onClick()
-                            }
-                        )
-                    },
-                contentAlignment = Alignment.Center
-            ) {
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//                    .pointerInput(Unit) {
+//                        detectTapGestures(
+//                            onLongPress = {
+//                                // Xử lý khi người dùng long press
+//                                Log.i("OnToggleExpand", "đã nhấn")
+//                                onToggleExpand()
+//                            },
+//                            onTap = {
+//                                onClick()
+//                            }
+//                        )
+//                    },
+//                contentAlignment = Alignment.Center,
+//            ) {
                 when (translateMode) {
                     TranslateMode.FULLSCREEN -> Image(
                         painter = painterResource(R.drawable.bee_blue),
@@ -280,7 +295,7 @@ fun FloatingWidget(
                         contentDescription = null,
                     )
                 }
-            }
+            //}
         }
     }
 }
