@@ -44,9 +44,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -202,37 +204,48 @@ fun FloatingWidget(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                        .padding(0.dp),
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
-                            .background(color = colorResource(R.color.b_gray), shape = CircleShape)
+                            .background(color = colorResource(R.color.blue_medium), shape = CircleShape)
                             .clip(CircleShape)
                             .clickable { onToggleExpand() }
-                            .padding(8.dp)
+                            .size(36.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
-                            imageVector = Icons.Default.SubdirectoryArrowLeft,
+                            imageVector = ImageVector.vectorResource(R.drawable.curv_arrow),
                             contentDescription = null,
+                            tint = Color.White,
                             modifier = Modifier
-                                .size(20.dp)
+                                .size(16.dp)
                                 .align(Alignment.Center)
                         )
                     }
 
+                    Image(
+                        painter = painterResource(R.drawable.bee_icon),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(36.dp)
+                    )
+
                     Box(
                         modifier = Modifier
-                            .background(color = colorResource(R.color.b_gray), shape = CircleShape)
+                            .background(color = colorResource(R.color.blue_medium), shape = CircleShape)
                             .clip(CircleShape)
                             .clickable { onClose() }
-                            .padding(8.dp)
+                            .size(36.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.PowerSettingsNew,
                             contentDescription = null,
-                            modifier = Modifier.size(20.dp)
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }
