@@ -82,6 +82,7 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
+    implementation(libs.androidx.foundation.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -120,6 +121,8 @@ dependencies {
 
     implementation(libs.androidx.activity.ktx)
     implementation(libs.coil.compose)
-
+    implementation(libs.androidx.graphics.shapes) // or latest version
+    implementation(libs.coil.compose.v250) // Or latest version
+    implementation(libs.coil.svg)
     implementation(libs.vosk.android)
 }

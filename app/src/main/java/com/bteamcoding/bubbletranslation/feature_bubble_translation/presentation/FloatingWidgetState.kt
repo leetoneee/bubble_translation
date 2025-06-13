@@ -9,5 +9,6 @@ enum class TranslateMode {
 
 data class FloatingWidgetState(
     val isExpanded: Boolean = false,
-    val translateMode: TranslateMode = TranslateMode.FULLSCREEN
+    val translateMode: TranslateMode = TranslateMode.FULLSCREEN,
+    val isOn:Boolean = false,
 )

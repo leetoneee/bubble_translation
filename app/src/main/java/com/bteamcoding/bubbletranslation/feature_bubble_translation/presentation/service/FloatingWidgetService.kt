@@ -32,6 +32,7 @@ import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissio
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetAction
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModel
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModelHolder
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.TranslateMode
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.DraggableFloatingWidget
 
@@ -77,8 +78,11 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
             Log.d("FloatingWidgetService", "Creating ComposeView")
 
             setContent {
-                val viewModel: FloatingWidgetViewModel =
-                    ViewModelProvider(this@FloatingWidgetService)[FloatingWidgetViewModel::class.java]
+//                val viewModel: FloatingWidgetViewModel =
+//                    ViewModelProvider(this@FloatingWidgetService)[FloatingWidgetViewModel::class.java]
+                val viewModel = FloatingWidgetViewModelHolder.instance
+                // Khi Service được khởi động, chuyển trạng thái isOn sang true
+
                 val state by viewModel.state.collectAsState()
                 val stopFWUseCase = StopFloatingWidgetUseCase(LocalContext.current)
 
