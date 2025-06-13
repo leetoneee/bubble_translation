@@ -141,12 +141,6 @@ fun CameraScreen(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-//                Icon(
-//                    imageVector = ImageVector.vectorResource(R.drawable.bee_plain),
-//                    contentDescription = null,
-//                    modifier = Modifier.size(80.dp),
-//                    tint = colorResource(R.color.blue_900)
-//                )
                 Image(
                     painter = painterResource(R.drawable.bee_plain),
                     contentDescription = null,

@@ -1,7 +1,9 @@
 package com.bteamcoding.bubbletranslation.feature_dictionary.presentation
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +26,7 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,12 +45,18 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
 import com.bteamcoding.bubbletranslation.R
+import com.bteamcoding.bubbletranslation.ui.theme.Inter
 import kotlinx.coroutines.delay
 
 @Composable
@@ -140,6 +149,34 @@ fun DictionaryScreen(
             )
 
             when {
+                !state.isLoading && state.definitions.isEmpty() -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(bottom = 178.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
+                                .background(
+                                    color = colorResource(R.color.purple_light),
+                                    shape = RoundedCornerShape(30.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.bee_pink_icon),
+                                contentDescription = null,
+                                modifier = Modifier.size(100.dp)
+                            )
+                        }
+                        Text(text = "Enter the English word\nyou want to look up", fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 18.sp, textAlign = TextAlign.Center, lineHeight = 20.sp, color = colorResource(R.color.bold_text), modifier = Modifier.padding(top = 30.dp, bottom = 10.dp))
+                        Text(text = "Its meaning and example sentences\nwill be displayed here", fontFamily = Inter, fontSize = 14.sp, fontWeight = FontWeight.Normal, textAlign = TextAlign.Center, color = colorResource(R.color.grey_light))
+                    }
+                }
+
                 state.definitions.isNotEmpty() -> {
                     LaunchedEffect(state.definitions) {
                           keyboardController?.hide()
@@ -155,7 +192,11 @@ fun DictionaryScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = MaterialTheme.shapes.medium
                             ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
+                                Column(
+                                    modifier = Modifier
+                                        .background(colorResource(R.color.purple_light))
+                                        .padding(16.dp)
+                                ) {
                                     Text(
                                         text = "${entry.english} [${entry.phonetic}]",
                                         style = MaterialTheme.typography.titleMedium
@@ -174,7 +215,7 @@ fun DictionaryScreen(
                                         Text(
                                             text = "→ ${meaning.vietnamese}",
                                             style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.secondary
+                                            color = colorResource(R.color.purple_dark)
                                         )
                                         Text(
                                             text = "Example: ${meaning.example_sentence}",
@@ -182,7 +223,8 @@ fun DictionaryScreen(
                                         )
                                         Text(
                                             text = "Dịch: ${meaning.vietnamese_translation}",
-                                            style = MaterialTheme.typography.bodySmall
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.secondary
                                         )
                                         Spacer(modifier = Modifier.height(8.dp))
                                     }
@@ -197,7 +239,7 @@ fun DictionaryScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .wrapContentSize()
-                            .padding(bottom=200.dp),
+                            .padding(bottom=240.dp),
                     ) {
                         CircularProgressIndicator()
                     }
