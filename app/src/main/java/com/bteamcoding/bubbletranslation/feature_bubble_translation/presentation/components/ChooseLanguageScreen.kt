@@ -1,5 +1,6 @@
 package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,8 +30,10 @@ import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation
 import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import com.bteamcoding.bubbletranslation.core.utils.LanguageManager
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetState
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun ChooseLanguageScreen(
     state: FloatingWidgetState,
@@ -84,7 +87,7 @@ fun ChooseLanguageScreen(
                 ) {
                     // Chọn ngôn ngữ nguồn
                     Column {
-                        var sourceCountry = state.sourceLanguage
+                        var sourceCountry = LanguageManager.sourceLang.value
 
                         CountryCodePicker(
                             modifier = Modifier
@@ -92,7 +95,7 @@ fun ChooseLanguageScreen(
                             selectedCountry = sourceCountry,
                             onCountrySelected = { country ->
                                 sourceCountry = country
-                                onUpdateSourceLanguage(country) // Cập nhật ngôn ngữ nguồn
+                                LanguageManager.updateSourceLanguage(country) // Cập nhật ngôn ngữ nguồn
                             },
                             viewCustomization = ViewCustomization(
                                 showFlag = true,
@@ -114,14 +117,14 @@ fun ChooseLanguageScreen(
 
                     // Chọn ngôn ngữ đích
                     Column {
-                        var targetCountry = state.targetLanguage
+                        var targetCountry = LanguageManager.targetLang.value
 
                         CountryCodePicker(
                             modifier = Modifier.align(Alignment.CenterHorizontally),
                             selectedCountry = targetCountry,
                             onCountrySelected = { country ->
                                 targetCountry = country
-                                onUpdateTargetLanguage(country) // Cập nhật ngôn ngữ đích
+                                LanguageManager.updateTargetLanguage(country) // Cập nhật ngôn ngữ đích
                             },
                             viewCustomization = ViewCustomization(
                                 showFlag = true,

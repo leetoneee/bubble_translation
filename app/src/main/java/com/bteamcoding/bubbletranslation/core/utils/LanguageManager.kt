@@ -5,12 +5,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 object LanguageManager {
-    private val _sourceLang = MutableStateFlow<Country>(Country.English)
-    private val _targetLang = MutableStateFlow<Country>(Country.Vietnamese)
+    private var _sourceLang = MutableStateFlow<Country>(Country.English)
+    private var _targetLang = MutableStateFlow<Country>(Country.Vietnamese)
 
     // Publicly exposed StateFlow để các file khác có thể quan sát
-    val sourceLang: StateFlow<Country> = _sourceLang
-    val targetLang: StateFlow<Country> = _targetLang
+    var sourceLang: StateFlow<Country> = _sourceLang
+    var targetLang: StateFlow<Country> = _targetLang
 
     // Hàm để cập nhật sourceLang
     fun updateSourceLanguage(newSourceLanguage: Country) {

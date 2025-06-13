@@ -1,5 +1,6 @@
 package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -47,12 +48,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bteamcoding.bubbletranslation.R
+import com.bteamcoding.bubbletranslation.core.utils.LanguageManager
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetState
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.TranslateMode
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.ccp.Country
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.ccp.Utils.Companion.getEmojiFlag
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun DraggableFloatingWidget(
     state: FloatingWidgetState,
@@ -66,6 +70,10 @@ fun DraggableFloatingWidget(
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
 
+    // Theo dõi sự thay đổi của sourceLang và targetLang từ LanguageManager
+    val sourceLanguage by LanguageManager.sourceLang.collectAsStateWithLifecycle()
+    val targetLanguage by LanguageManager.targetLang.collectAsStateWithLifecycle()
+
     Box(
         modifier = Modifier
             .pointerInput(Unit) {
@@ -77,10 +85,11 @@ fun DraggableFloatingWidget(
                 }
             }
     ) {
+
         // Thêm nội dung FloatingWidget ở đây
         FloatingWidget(
-            sourceLanguage = state.sourceLanguage,
-            targetLanguage = state.targetLanguage,
+            sourceLanguage = sourceLanguage,
+            targetLanguage = targetLanguage,
             isExpanded = state.isExpanded,
             translateMode = state.translateMode,
             onClose = onClose,
@@ -104,6 +113,7 @@ fun FloatingWidget(
     onClick: () -> Unit,
     onShowLanguageScreenChanged: () -> Unit
 ) {
+
     if (isExpanded) {
         Box(
             modifier = Modifier
