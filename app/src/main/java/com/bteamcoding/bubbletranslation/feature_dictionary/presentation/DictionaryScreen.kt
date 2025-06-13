@@ -124,7 +124,7 @@ fun DictionaryScreen(
                     LazyColumn(
                         modifier = Modifier
                             .weight(1f)
-                            .padding(top = 8.dp, bottom = 8.dp),
+                            .padding(bottom = 12.dp),
                         verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)
                     ) {
                         items(state.definitions) { entry ->

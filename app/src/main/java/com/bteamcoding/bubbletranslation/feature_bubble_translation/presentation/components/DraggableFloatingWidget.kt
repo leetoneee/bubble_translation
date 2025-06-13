@@ -116,18 +116,18 @@ fun FloatingWidget(
                 modifier = Modifier
                     .wrapContentSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 ModeButton(
                     onClick = {
                         onModeChange(TranslateMode.FULLSCREEN)
                         onToggleExpand()
                     },
-                    icon = R.drawable.baseline_translate_24,
+                    icon = R.drawable.full_screen,
                     content = "Dịch toàn\nmàn hình",
                     enabled = translateMode == TranslateMode.FULLSCREEN,
-                    buttonColor = colorResource(R.color.b_green),
-                    contentColor = Color.White
+                    buttonColor = colorResource(R.color.blue_dark),
+                    contentColor = colorResource(R.color.blue_medium)
                 )
 
                 ModeButton(
@@ -135,11 +135,11 @@ fun FloatingWidget(
                         onModeChange(TranslateMode.CROP)
                         onToggleExpand()
                     },
-                    icon = R.drawable.outline_crop_free_24,
-                    content = "Dịch một\nphần",
+                    icon = R.drawable.partial_screen,
+                    content = "Một phần\nmàn hình",
                     enabled = translateMode == TranslateMode.CROP,
-                    buttonColor = colorResource(R.color.b_blue),
-                    contentColor = Color.White
+                    buttonColor = colorResource(R.color.green_medium),
+                    contentColor = colorResource(R.color.green_medium)
                 )
 
                 ModeButton(
@@ -147,11 +147,11 @@ fun FloatingWidget(
                         onModeChange(TranslateMode.AUTO)
                         onToggleExpand()
                     },
-                    icon = R.drawable.baseline_android_24,
-                    content = "Dịch tự\nđộng",
+                    icon = R.drawable.autosubtile,
+                    content = "Dịch sub\ntự động",
                     enabled = translateMode == TranslateMode.AUTO,
-                    buttonColor = colorResource(R.color.b_yellow),
-                    contentColor = Color.White
+                    buttonColor = colorResource(R.color.yellow_medium),
+                    contentColor = colorResource(R.color.yellow_medium)
                 )
 
                 ModeButton(
@@ -159,11 +159,11 @@ fun FloatingWidget(
                         onModeChange(TranslateMode.AUDIO)
                         onToggleExpand()
                     },
-                    icon = R.drawable.baseline_record_voice_over_24,
-                    content = "Dịch âm\nthanh",
+                    icon = R.drawable.auto_audio,
+                    content = "Dịch audio\ntự động",
                     enabled = translateMode == TranslateMode.AUDIO,
-                    buttonColor = colorResource(R.color.b_red),
-                    contentColor = Color.White
+                    buttonColor = colorResource(R.color.purple_dark),
+                    contentColor = colorResource(R.color.purple_dark)
                 )
 
                 Box(
@@ -270,10 +270,9 @@ fun FloatingWidget(
     } else {
         Box(
             modifier = Modifier
-                .size(50.dp) // Kích thước hình tròn cho vùng màu trắng
+                .size(90.dp) // Kích thước hình tròn cho vùng màu trắng
                 .clip(CircleShape)
-                .background(Color.White)
-                .border(1.dp, Color.LightGray, CircleShape)
+                .background(Color.Transparent)
         ) {
             Box(
                 modifier = Modifier
@@ -294,27 +293,23 @@ fun FloatingWidget(
             ) {
                 when (translateMode) {
                     TranslateMode.FULLSCREEN -> Image(
-                        painter = painterResource(R.drawable.baseline_translate_24),
+                        painter = painterResource(R.drawable.bee_blue),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorResource(R.color.b_green))
                     )
 
                     TranslateMode.CROP -> Image(
-                        painter = painterResource(R.drawable.outline_crop_free_24),
+                        painter = painterResource(R.drawable.bee_green),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorResource(R.color.b_blue))
                     )
 
                     TranslateMode.AUTO -> Image(
-                        painter = painterResource(R.drawable.baseline_android_24),
+                        painter = painterResource(R.drawable.bee_yellow),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorResource(R.color.b_yellow))
                     )
 
                     TranslateMode.AUDIO -> Image(
-                        painter = painterResource(R.drawable.baseline_record_voice_over_24),
+                        painter = painterResource(R.drawable.bee_purple),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(colorResource(R.color.b_red))
                     )
                 }
             }

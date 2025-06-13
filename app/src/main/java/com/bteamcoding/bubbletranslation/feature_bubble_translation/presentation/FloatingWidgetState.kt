@@ -12,6 +12,7 @@ enum class TranslateMode {
 data class FloatingWidgetState(
     val isExpanded: Boolean = false,
     val translateMode: TranslateMode = TranslateMode.FULLSCREEN,
+    val isOn:Boolean = false,
     val sourceLanguage: Country = Country.English,
     val targetLanguage: Country = Country.Vietnamese
 )
