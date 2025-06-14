@@ -12,4 +12,5 @@ data class AuthState(
     val isSignUpSuccessful: Boolean = false,
     val isLoginSuccessful: Boolean = false,
     val errorMessage: String? = null,
+    val successMessage: String? = null
 )

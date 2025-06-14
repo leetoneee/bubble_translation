@@ -38,7 +38,7 @@ class AuthViewModel @Inject constructor(
             }
 
             is AuthAction.OnEmailChanged -> {
-                _state.update { it.copy(email = action.value) }
+                _state.update { it.copy(email = action.value, errorMessage = null) }
             }
 
             is AuthAction.OnPasswordChanged -> {
@@ -60,38 +60,107 @@ class AuthViewModel @Inject constructor(
             AuthAction.OnLoadCurrentUser -> getUserInfo()
 
             AuthAction.OnLogOut -> {
-                _state.update { it.copy(user = null, isLoginSuccessful = false, errorMessage = null) }
+                _state.update {
+                    it.copy(
+                        user = null,
+                        isLoginSuccessful = false,
+                        errorMessage = null
+                    )
+                }
                 logout()
+            }
+
+            AuthAction.OnLoginSuccess -> {
+                _state.update {
+                    it.copy(
+                        isLoginSuccessful = false,
+                        errorMessage = null,
+                        email = "",
+                        password = ""
+                    )
+                }
+            }
+
+            AuthAction.OnRegisterSuccess -> {
+                _state.update {
+                    it.copy(
+                        isSignUpSuccessful = false,
+                        errorMessage = null,
+                        username = "",
+                        confirmPassword = "",
+                        successMessage = null
+                    )
+                }
             }
         }
     }
 
     private fun login() {
+        val email = _state.value.email.trim()
+        val password = _state.value.password
+
+        if (email.isBlank() || password.isBlank()) {
+            _state.update {
+                it.copy(errorMessage = "Email và mật khẩu không được để trống")
+            }
+            return
+        }
+
+        if (password.length < 6) {
+            _state.update {
+                it.copy(errorMessage = "Mật khẩu phải có ít nhất 6 ký tự")
+            }
+            return
+        }
+
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
 
             runCatching {
-                signInUseCase(_state.value.email, _state.value.password)
+                signInUseCase(email, password)
             }.onSuccess { response ->
                 Log.i("success", response.toString())
                 if (response.code == 200) {
                     val user = response.result?.user
-                    if (user != null){
-                        _state.update { it.copy(isLoading = false, user = user, isLoginSuccessful = true) }
-                        Log.i("return user", user.toString())
+                    if (user != null) {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                user = user,
+                                isLoginSuccessful = true,
+                            )
+                        }
                         saveUserInfo(user.id, user.username, user.email)
                     }
                 } else {
-                    _state.update { it.copy(isLoading = false, user = null, isLoginSuccessful = false, errorMessage = response.message) }
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            user = null,
+                            isLoginSuccessful = false,
+                            errorMessage = response.message
+                        )
+                    }
                 }
             }.onFailure { t ->
                 t.message?.let { Log.d("success", it) }
-                _state.update { it.copy(isLoading = false, errorMessage = t.message) }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = t.message ?: "Lỗi không xác định"
+                    )
+                }
             }
         }
     }
 
     private fun register() {
+        val error = validateRegisterInput()
+        if (error != null) {
+            _state.update { it.copy(errorMessage = error) }
+            return
+        }
+
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
 
@@ -99,13 +168,46 @@ class AuthViewModel @Inject constructor(
                 signUpUseCase(_state.value.username, _state.value.email, _state.value.password)
             }.onSuccess { response ->
                 if (response.code == 200) {
-                    _state.update { it.copy(isLoading = false, isSignUpSuccessful = true) }
+                    val user = response.result?.user
+                    if (user != null) {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                isSignUpSuccessful = true,
+                                successMessage = "Đăng ký thành công"
+                            )
+                        }
+                    }
                 } else {
-                    _state.update { it.copy(isLoading = false, isSignUpSuccessful = false, errorMessage = response.message) }
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            isSignUpSuccessful = false,
+                            errorMessage = response.message
+                        )
+                    }
                 }
             }.onFailure { t ->
                 _state.update { it.copy(isLoading = false, errorMessage = t.message) }
             }
+        }
+    }
+
+    private fun validateRegisterInput(): String? {
+        val username = _state.value.username.trim()
+        val email = _state.value.email.trim()
+        val password = _state.value.password
+        val confirmPassword = _state.value.confirmPassword
+
+        return when {
+            username.isEmpty() -> "Vui lòng nhập tên người dùng"
+            email.isEmpty() -> "Vui lòng nhập email"
+            !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Email không hợp lệ"
+            password.isEmpty() -> "Vui lòng nhập mật khẩu"
+            password.length < 6 -> "Mật khẩu phải có ít nhất 6 ký tự"
+            confirmPassword.isEmpty() -> "Vui lòng xác nhận mật khẩu"
+            confirmPassword != password -> "Mật khẩu xác nhận không khớp"
+            else -> null
         }
     }
 

@@ -53,6 +53,12 @@ fun AppNavHost(navController: NavHostController) {
 
                 LoginScreenRoot(
                     viewModel = viewModel,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onNavToRegisterScreen = {
+                        navController.navigate(NavRoutes.REGISTER)
+                    }
                 )
             }
             composable(route = NavRoutes.REGISTER) {
@@ -60,8 +66,10 @@ fun AppNavHost(navController: NavHostController) {
 
                 RegisterScreenRoot(
                     viewModel = viewModel,
-
-                    )
+                    onBack = {
+                        navController.popBackStack()
+                    }
+                )
             }
             composable(route = NavRoutes.PROFILE) {
                 val viewModel = it.sharedHiltViewModel<AuthViewModel>(navController)

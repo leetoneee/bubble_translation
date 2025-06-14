@@ -21,3 +21,8 @@ data class AuthResponse(
     val authenticated: Boolean,
     val user: User
 )
+
+@Serializable
+data class AuthResponseWrapper(
+    val user: User
+)

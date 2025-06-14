@@ -62,12 +62,8 @@ fun AccountScreenRoot(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val user by viewModel.userInfo.collectAsStateWithLifecycle()
 
-    Log.i("user account", user.toString())
-    Log.i("state user", state.user.toString())
-
     LaunchedEffect(state.user) {
         if (state.user != null) {
-            Log.i("user account", "I'm here")
             viewModel.onAction(AuthAction.OnLoadCurrentUser)
         }
     }
@@ -346,10 +342,10 @@ fun AccountScreenPreview() {
         AccountScreen(
             state = AuthState(),
             user = User(
-                id = TODO(),
-                username = TODO(),
-                email = TODO(),
-                password = TODO()
+                id = 1,
+                username = "Toan",
+                email = "email",
+                password = "111"
             ),
             onBack = {},
             onNavToProfile = {}

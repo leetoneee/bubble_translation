@@ -4,6 +4,7 @@ import com.bteamcoding.bubbletranslation.app.data.remote.KtorClientProvider
 import com.bteamcoding.bubbletranslation.app.data.remote.dto.ApiResponse
 import com.bteamcoding.bubbletranslation.feature_auth.data.network.AuthApi
 import com.bteamcoding.bubbletranslation.feature_auth.data.remote.dto.AuthResponse
+import com.bteamcoding.bubbletranslation.feature_auth.data.remote.dto.AuthResponseWrapper
 import com.bteamcoding.bubbletranslation.feature_auth.data.remote.dto.SignInRequest
 import com.bteamcoding.bubbletranslation.feature_auth.data.remote.dto.SignUpRequest
 import io.ktor.client.HttpClient
@@ -20,7 +21,7 @@ class AuthApiService @Inject constructor(
 
     private val baseUrl = "http://127.0.0.1:8080/api"
 
-    override suspend fun signUp(request: SignUpRequest): ApiResponse<AuthResponse> =
+    override suspend fun signUp(request: SignUpRequest): ApiResponse<AuthResponseWrapper> =
         client.post("$baseUrl/auth/signup") {
             contentType(ContentType.Application.Json)
             setBody(request)
