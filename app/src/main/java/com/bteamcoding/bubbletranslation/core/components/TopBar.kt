@@ -1,6 +1,5 @@
 package com.bteamcoding.bubbletranslation.core.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
@@ -19,12 +18,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.ui.theme.Inter
 
 @Composable
-fun TopBar(title: String, modifier: Modifier = Modifier) {
+fun TopBar(
+    title: String,
+    onNavToAuthScreen: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         modifier = Modifier
             .padding(top = 8.dp)
@@ -49,8 +51,7 @@ fun TopBar(title: String, modifier: Modifier = Modifier) {
         }
 
         Row(
-            modifier = Modifier
-                .wrapContentWidth(),
+            modifier = Modifier.wrapContentWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -85,7 +86,7 @@ fun TopBar(title: String, modifier: Modifier = Modifier) {
             }
 
             FilledIconButton(
-                onClick = {},
+                onClick = onNavToAuthScreen,
                 modifier = Modifier.size(36.dp),
                 colors = IconButtonDefaults.filledIconButtonColors(
                     containerColor = colorResource(R.color.b_gray),
@@ -102,9 +103,8 @@ fun TopBar(title: String, modifier: Modifier = Modifier) {
     }
 }
 
-
-@Composable
 @Preview
+@Composable
 fun TopBarPreview() {
-    TopBar("Image Recognition")
+    TopBar("Image Recognition", onNavToAuthScreen = {})
 }

@@ -72,22 +72,29 @@ import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.ui.theme.Inter
 import kotlinx.coroutines.delay
 import java.util.Locale
+import androidx.navigation.NavController
+import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
 
 @Composable
 fun DictionaryScreenRoot(
-    viewModel: DictionaryViewModel = viewModel()
+    viewModel: DictionaryViewModel = viewModel(),
+    navController: NavController
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     DictionaryScreen(
         state = state,
-        onAction = { action -> viewModel.onAction(action) }
+        onAction = { action -> viewModel.onAction(action) },
+        onNavToAuthScreen = {
+            navController.navigate(NavRoutes.AUTH)
+        }
     )
 }
 
 @Composable
 fun DictionaryScreen(
     state: DictionaryScreenState,
-    onAction: (DictionaryAction) -> Unit
+    onAction: (DictionaryAction) -> Unit,
+    onNavToAuthScreen: () -> Unit
 ) {
     lateinit var tts: TextToSpeech
     val context = LocalContext.current
@@ -118,7 +125,7 @@ fun DictionaryScreen(
                 }
                 .fillMaxWidth()
         ) {
-            TopBar("Dictionary Lookup")
+            TopBar("Dictionary Lookup", onNavToAuthScreen = onNavToAuthScreen)
         }
 
         Column(

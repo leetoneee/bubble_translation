@@ -1,7 +1,9 @@
 package com.bteamcoding.bubbletranslation.feature_home.presentation
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.provider.Settings
 import android.util.Log
@@ -20,6 +22,7 @@ import androidx.compose.material.icons.filled.PowerOff
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,7 +35,10 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat.startActivityForResult
+import androidx.navigation.NavController
 import com.bteamcoding.bubbletranslation.R
+import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
 import com.bteamcoding.bubbletranslation.core.components.SelectLang
 import com.bteamcoding.bubbletranslation.core.components.TopBar
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StartFloatingWidgetUseCase
@@ -45,7 +51,7 @@ import com.bteamcoding.bubbletranslation.ui.theme.Inter
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.DisplayMode
 import kotlinx.coroutines.delay
-
+import androidx.compose.runtime.State
 
 fun requestOverlayPermission(context: Context) {
     if (!Settings.canDrawOverlays(context)) {
@@ -60,6 +66,9 @@ fun requestOverlayPermission(context: Context) {
 @Composable
 fun HomeScreenRoot(
     startUseCase: StartFloatingWidgetUseCase,
+    onRequestScreenCapturePermission: () -> Unit,
+    permissionGranted: State<Boolean>,
+    navController: NavController
 ) {
     val context = LocalContext.current
 
@@ -81,13 +90,22 @@ fun HomeScreenRoot(
                 }
                 context.startActivity(intent)
             }
-        }
+        },
+        onNavToAuthScreen = {
+            navController.navigate(NavRoutes.AUTH)
+        },
+        onRequestScreenCapturePermission = onRequestScreenCapturePermission,
+        permissionGranted = permissionGranted
     )
 }
 
+@SuppressLint("ServiceCast")
 @Composable
 fun HomeScreen(
     onShowWidget: () -> Unit,
+    onNavToAuthScreen: () -> Unit,
+    onRequestScreenCapturePermission: () -> Unit,
+    permissionGranted: State<Boolean>
 ) {
     val viewModel = FloatingWidgetViewModelHolder.instance
     val state by viewModel.state.collectAsState()
@@ -97,8 +115,17 @@ fun HomeScreen(
     val context = LocalContext.current
     val stopFWUseCase = remember { StopFloatingWidgetUseCase(context) }
 
+    var waitingForPermission by remember { mutableStateOf(false) }
 
-    Column (
+    LaunchedEffect(permissionGranted.value) {
+        if (waitingForPermission && permissionGranted.value) {
+            onShowWidget()
+            viewModel.onAction(FloatingWidgetAction.OnStart)
+            waitingForPermission = false
+        }
+    }
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(),
@@ -109,17 +136,17 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .padding(bottom = 12.dp),
         ) {
-            TopBar("Screen Translate")
+            TopBar("Screen Translate", onNavToAuthScreen = onNavToAuthScreen)
         }
-        LazyColumn (
+        LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .padding(bottom = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
-        )  {
-            item{
+        ) {
+            item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -141,12 +168,12 @@ fun HomeScreen(
                         modifier = Modifier
                             .width(160.dp),
                         horizontalArrangement = Arrangement.Center
-                    ){
+                    ) {
                         SelectLang()
                     }
                 }
             }
-            item{
+            item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -209,7 +236,7 @@ fun HomeScreen(
                     )
                 }
             }
-            item{
+            item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -259,16 +286,23 @@ fun HomeScreen(
                     )
                 }
             }
-            item{
+            item {
                 HexagonButton(
                     width = 60.dp,
                     height = 60.dp,
-                    icon = if (isOn==false) Icons.Filled.PowerSettingsNew else Icons.Filled.PowerOff,
-                    backgroundColor = if (isOn==false) colorResource(R.color.blue_dark) else colorResource(R.color.red_medium),
+                    icon = if (isOn == false) Icons.Filled.PowerSettingsNew else Icons.Filled.PowerOff,
+                    backgroundColor = if (isOn == false) colorResource(R.color.blue_dark) else colorResource(
+                        R.color.red_medium
+                    ),
                     onClick = {
                         if (isOn==false){
-                            onShowWidget()
-                            viewModel.onAction(FloatingWidgetAction.OnStart);
+                            if (!permissionGranted.value) {
+                                waitingForPermission = true
+                                onRequestScreenCapturePermission()
+                            } else {
+                                onShowWidget()
+                                viewModel.onAction(FloatingWidgetAction.OnStart)
+                            }
                         }
                         else {
                             stopFWUseCase()
