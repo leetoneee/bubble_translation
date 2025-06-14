@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -39,6 +41,9 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    packaging {
+        exclude ("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
     }
 }
 
@@ -77,12 +82,13 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.runtime.compose.android)
-    implementation(libs.androidx.compose.testing)
     implementation(libs.androidx.camera.view)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.foundation.android)
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.compose.testing)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -109,12 +115,10 @@ dependencies {
     implementation (libs.translate)
     implementation (libs.kotlinx.coroutines.android)
 
-    implementation (libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation (libs.androidx.camera.lifecycle)
     implementation (libs.androidx.camera.video)
-
     implementation (libs.androidx.camera.view)
     implementation (libs.androidx.camera.extensions)
     implementation (libs.androidx.constraintlayout.compose)
@@ -125,6 +129,10 @@ dependencies {
     implementation(libs.coil.compose.v250) // Or latest version
     implementation(libs.coil.svg)
     implementation(libs.vosk.android)
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     // To recognize Latin script
     implementation ("com.google.mlkit:text-recognition:16.0.1")

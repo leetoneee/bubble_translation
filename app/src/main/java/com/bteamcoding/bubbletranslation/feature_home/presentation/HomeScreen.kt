@@ -32,7 +32,9 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.bteamcoding.bubbletranslation.R
+import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
 import com.bteamcoding.bubbletranslation.core.components.SelectLang
 import com.bteamcoding.bubbletranslation.core.components.TopBar
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StartFloatingWidgetUseCase
@@ -59,6 +61,7 @@ fun requestOverlayPermission(context: Context) {
 @Composable
 fun HomeScreenRoot(
     startUseCase: StartFloatingWidgetUseCase,
+    navController: NavController
 ) {
     val context = LocalContext.current
 
@@ -80,6 +83,9 @@ fun HomeScreenRoot(
                 }
                 context.startActivity(intent)
             }
+        },
+        onNavToAuthScreen = {
+            navController.navigate(NavRoutes.AUTH)
         }
     )
 }
@@ -87,6 +93,7 @@ fun HomeScreenRoot(
 @Composable
 fun HomeScreen(
     onShowWidget: () -> Unit,
+    onNavToAuthScreen: () -> Unit
 ) {
     var enabled by remember { mutableStateOf(true) }
     val viewModel = FloatingWidgetViewModelHolder.instance
@@ -97,7 +104,7 @@ fun HomeScreen(
     val stopFWUseCase = remember { StopFloatingWidgetUseCase(context) }
 
 
-    Column (
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .fillMaxHeight(),
@@ -108,17 +115,17 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .padding(bottom = 12.dp),
         ) {
-            TopBar("Screen Translate")
+            TopBar("Screen Translate", onNavToAuthScreen = onNavToAuthScreen)
         }
-        LazyColumn (
+        LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .padding(bottom = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
-        )  {
-            item{
+        ) {
+            item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -140,12 +147,12 @@ fun HomeScreen(
                         modifier = Modifier
                             .width(200.dp),
                         horizontalArrangement = Arrangement.Center
-                    ){
+                    ) {
                         SelectLang()
                     }
                 }
             }
-            item{
+            item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -208,7 +215,7 @@ fun HomeScreen(
                     )
                 }
             }
-            item{
+            item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -227,7 +234,7 @@ fun HomeScreen(
                         color = colorResource(R.color.grey_darkest)
                     )
                     TransModeButton(
-                        onClick = {enabled = !enabled},
+                        onClick = { enabled = !enabled },
                         icon = R.drawable.global,
                         content = "Tiêu chuẩn",
                         description = "Phù hợp cho hầu hết các trường hợp",
@@ -252,18 +259,19 @@ fun HomeScreen(
                     )
                 }
             }
-            item{
+            item {
                 HexagonButton(
                     width = 60.dp,
                     height = 60.dp,
-                    icon = if (isOn==false) Icons.Filled.PowerSettingsNew else Icons.Filled.PowerOff,
-                    backgroundColor = if (isOn==false) colorResource(R.color.blue_dark) else colorResource(R.color.red_medium),
+                    icon = if (isOn == false) Icons.Filled.PowerSettingsNew else Icons.Filled.PowerOff,
+                    backgroundColor = if (isOn == false) colorResource(R.color.blue_dark) else colorResource(
+                        R.color.red_medium
+                    ),
                     onClick = {
-                        if (isOn==false){
+                        if (isOn == false) {
                             onShowWidget()
                             viewModel.onAction(FloatingWidgetAction.OnStart);
-                        }
-                        else {
+                        } else {
                             stopFWUseCase()
                             viewModel.onAction(FloatingWidgetAction.OnClose);
                         }
