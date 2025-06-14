@@ -1,6 +1,7 @@
 package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components
 
 import android.content.res.Resources
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -21,6 +22,8 @@ import com.bteamcoding.bubbletranslation.core.utils.translateText
 import com.google.mlkit.vision.text.Text
 import kotlin.math.pow
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun TextOverlay(
@@ -89,15 +92,28 @@ fun BlockOverlay(block: Text.TextBlock) {
     }
 
     // 5. Hiển thị Text composable
+//    Text(
+//        text = translated,
+//        style = TextStyle(
+//            color = Color.Yellow,
+//            fontSize = idealTextSizeSp
+//        ),
+//        modifier = Modifier
+//            .offset(x = offsetDp.x.dp, y = offsetDp.y.dp)
+//            .width(widthDp)
+//            .height(heightDp)
+//    )
     Text(
         text = translated,
         style = TextStyle(
-            color = Color.Yellow,
-            fontSize = idealTextSizeSp
+            color = Color.White,
+            fontSize = idealTextSizeSp,
+            fontWeight = FontWeight.SemiBold
         ),
         modifier = Modifier
             .offset(x = offsetDp.x.dp, y = offsetDp.y.dp)
             .width(widthDp)
             .height(heightDp)
+            .background(Color(0xFF000000).copy(alpha = 0.5f))
     )
 }
