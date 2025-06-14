@@ -13,13 +13,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.Edit
@@ -29,6 +32,7 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
@@ -36,6 +40,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -45,18 +50,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.feature_auth.domain.model.User
 import com.bteamcoding.bubbletranslation.ui.theme.BubbleTranslationTheme
@@ -77,6 +77,22 @@ fun ProfileScreenRoot(
             onSignOut = {
                 viewModel.onAction(AuthAction.OnLogOut)
                 onBack()
+            },
+            onDeleteClicked = {
+                viewModel.onAction(AuthAction.OnShowConfirmDialog(true))
+            },
+            onConfirm = {
+                viewModel.onAction(AuthAction.OnDeleteAccount)
+            },
+            onDismiss = {
+                viewModel.onAction(AuthAction.OnShowConfirmDialog(false))
+            },
+            onSuccess = {
+                if (state.successMessage != null) {
+                    viewModel.onAction(AuthAction.OnDeleteSuccess)
+                    viewModel.onAction(AuthAction.OnLogOut)
+                    onBack()
+                }
             }
         )
     }
@@ -87,7 +103,11 @@ fun ProfileScreen(
     state: AuthState,
     user: User,
     onBack: () -> Unit,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
+    onDeleteClicked: () -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    onSuccess: () -> Unit
 ) {
     ConstraintLayout(
         modifier = Modifier
@@ -204,7 +224,7 @@ fun ProfileScreen(
             FeatureGroup(
                 icon = Icons.Outlined.DeleteOutline,
                 text = "Delete account",
-                onClick = {}
+                onClick = onDeleteClicked
             )
         }
 
@@ -228,6 +248,82 @@ fun ProfileScreen(
             Text("Sign out", fontWeight = FontWeight.SemiBold, color = Color.Red)
         }
     }
+
+    if (state.showConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = null,
+                        tint = Color.Red,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Xác nhận xoá tài khoản",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Red
+                    )
+                }
+            },
+            text = {
+                Text(
+                    text = "Bạn có chắc chắn muốn xoá tài khoản? Hành động này không thể hoàn tác.",
+                    color = Color.DarkGray
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = onConfirm) {
+                    Text("Xoá", color = Color.Red, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("Huỷ", color = Color.Gray)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(12.dp)
+        )
+    }
+
+    if (!state.successMessage.isNullOrEmpty()) {
+        AlertDialog(
+            onDismissRequest = onSuccess,
+            title = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CheckCircle,
+                        contentDescription = null,
+                        tint = Color(0xFF4CAF50), // màu xanh lá
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = state.successMessage,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF4CAF50)
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onSuccess) {
+                    Text("OK", color = Color(0xFF4CAF50), fontWeight = FontWeight.Medium)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(12.dp)
+        )
+    }
+
 }
 
 @Composable
@@ -260,7 +356,11 @@ fun ProfileScreenPreview() {
             state = AuthState(),
             user = User(1, "letoan", "letoan7442", "0000"),
             onBack = {},
-            onSignOut = {}
+            onSignOut = {},
+            onDeleteClicked = {},
+            onConfirm = {},
+            onDismiss = {},
+            onSuccess = {}
         )
     }
 }

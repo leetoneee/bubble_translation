@@ -7,6 +7,7 @@ import com.bteamcoding.bubbletranslation.app.domain.use_case.GetUserInfoUseCase
 import com.bteamcoding.bubbletranslation.app.domain.use_case.LogoutUseCase
 import com.bteamcoding.bubbletranslation.app.domain.use_case.SaveUserInfoUseCase
 import com.bteamcoding.bubbletranslation.feature_auth.domain.model.User
+import com.bteamcoding.bubbletranslation.feature_auth.domain.use_case.DeleteUserUseCase
 import com.bteamcoding.bubbletranslation.feature_auth.domain.use_case.SignInUseCase
 import com.bteamcoding.bubbletranslation.feature_auth.domain.use_case.SignUpUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,7 +24,8 @@ class AuthViewModel @Inject constructor(
     private val signUpUseCase: SignUpUseCase,
     private val saveUserInfoUseCase: SaveUserInfoUseCase,
     private val getUserInfoUseCase: GetUserInfoUseCase,
-    private val logoutUseCase: LogoutUseCase
+    private val logoutUseCase: LogoutUseCase,
+    private val deleteUserUseCase: DeleteUserUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(AuthState())
     val state = _state.asStateFlow()
@@ -89,6 +91,22 @@ class AuthViewModel @Inject constructor(
                         username = "",
                         confirmPassword = "",
                         successMessage = null
+                    )
+                }
+            }
+
+            is AuthAction.OnShowConfirmDialog -> {
+                _state.update { it.copy(showConfirmDialog = action.value) }
+            }
+
+            AuthAction.OnDeleteAccount -> deleteAccount()
+
+            AuthAction.OnDeleteSuccess -> {
+                _state.update {
+                    it.copy(
+                        errorMessage = null,
+                        successMessage = null,
+                        showConfirmDialog = false
                     )
                 }
             }
@@ -187,6 +205,20 @@ class AuthViewModel @Inject constructor(
                         )
                     }
                 }
+            }.onFailure { t ->
+                _state.update { it.copy(isLoading = false, errorMessage = t.message) }
+            }
+        }
+    }
+
+    private fun deleteAccount() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, errorMessage = null) }
+
+            runCatching {
+                _userInfo.value?.let { deleteUserUseCase(it.id) }
+            }.onSuccess { response ->
+                _state.update { it.copy(isLoading = false, successMessage = "Xoá tài khoản thành công") }
             }.onFailure { t ->
                 _state.update { it.copy(isLoading = false, errorMessage = t.message) }
             }
