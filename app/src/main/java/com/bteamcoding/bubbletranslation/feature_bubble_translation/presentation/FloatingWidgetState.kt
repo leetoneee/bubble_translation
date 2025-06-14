@@ -9,10 +9,17 @@ enum class TranslateMode {
     AUDIO
 }
 
+enum class DisplayMode {
+    GLOBAL,
+    COMIC,
+    SUBTITLE,
+}
+
 data class FloatingWidgetState(
     val isExpanded: Boolean = false,
     val translateMode: TranslateMode = TranslateMode.FULLSCREEN,
     val isOn:Boolean = false,
     val sourceLanguage: Country = Country.English,
-    val targetLanguage: Country = Country.Vietnamese
+    val targetLanguage: Country = Country.Vietnamese,
+    val displayMode: DisplayMode = DisplayMode.GLOBAL
 )

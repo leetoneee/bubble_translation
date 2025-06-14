@@ -117,39 +117,39 @@ fun CropAreaAuto(
             modifier = Modifier
                 .offset(
                     x = captureRegion.left.dp,
-                    y = yOffset)
-                .padding(8.dp), // khoảng cách từ mép box
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    y = yOffset - 4.dp)
+                .padding(start = 0.dp, top = 8.dp), // khoảng cách từ mép box
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Box (
                 modifier = Modifier
+                    .padding(bottom = 8.dp)
                     .background(Color.White, RoundedCornerShape(6.dp))
                     .border(
                         width = 2.dp,
                         color = borderColor,
                         shape = RoundedCornerShape(6.dp)
                     )
-                    .padding(4.dp)
                     .clickable {
                         onCheck()
-                    }
+                    },
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.round_check_24), // icon dấu tick
                     contentDescription = "Check",
                     tint = colorResource(id = R.color.second_primary),
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.padding(4.dp).size(24.dp)
                 )
             }
             Box (
                 modifier = Modifier
+                    .padding(bottom = 8.dp)
                     .background(Color.White, RoundedCornerShape(6.dp))
                     .border(
                         width = 2.dp,
                         color = borderColor,
                         shape = RoundedCornerShape(6.dp)
                     )
-                    .padding(4.dp)
                     .clickable {
                         onClear()
                     }
@@ -158,7 +158,7 @@ fun CropAreaAuto(
                     painter = painterResource(id = R.drawable.round_clear_24), // icon dấu X
                     contentDescription = "Close",
                     tint = colorResource(id = R.color.second_primary),
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.padding(4.dp).size(24.dp)
                 )
             }
         }

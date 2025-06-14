@@ -147,12 +147,6 @@ fun CameraScreen(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-//                Icon(
-//                    imageVector = ImageVector.vectorResource(R.drawable.bee_plain),
-//                    contentDescription = null,
-//                    modifier = Modifier.size(80.dp),
-//                    tint = colorResource(R.color.blue_900)
-//                )
                 Image(
                     painter = painterResource(R.drawable.bee_plain),
                     contentDescription = null,
@@ -174,18 +168,20 @@ fun CameraScreen(
                 .constrainAs(controller) {
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
-                    bottom.linkTo(parent.bottom, margin = 24.dp)
+                    bottom.linkTo(parent.bottom, margin = 26.dp)
                 }
-                .padding(start = 4.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 modifier = Modifier
-                    .width(158.dp)
-                    .wrapContentHeight(),
+                    .width(144.dp)
+                    .wrapContentHeight()
+                    .padding(horizontal = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+
             ){
                 SelectLang(shapeSize = 40.dp, textSize = 14.sp)
             }
