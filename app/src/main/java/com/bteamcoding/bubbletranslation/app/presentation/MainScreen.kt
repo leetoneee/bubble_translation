@@ -14,11 +14,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bteamcoding.bubbletranslation.app.navigation.AppNavHost
+import androidx.compose.runtime.State
+import androidx.compose.runtime.rememberUpdatedState
+
 import com.bteamcoding.bubbletranslation.app.navigation.BottomNavRoutes
 import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    onRequestScreenCapturePermission: () -> Unit,
+    onPermissionGranted: () -> Unit,
+    permissionGranted: State<Boolean>
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination
@@ -37,7 +44,12 @@ fun MainScreen() {
             }
         ) { paddingValues: PaddingValues ->
             Box(modifier = Modifier.padding(paddingValues)) {
-                AppNavHost(navController)
+                AppNavHost(
+                    navController,
+                    onRequestScreenCapturePermission,
+                    onPermissionGranted,
+                    permissionGranted
+                )
             }
         }
     }
@@ -46,5 +58,11 @@ fun MainScreen() {
 @Composable
 @Preview
 fun MainScreenPreview() {
-    MainScreen()
+    val fakePermissionState: State<Boolean> = rememberUpdatedState(true)
+
+    MainScreen(
+        onRequestScreenCapturePermission = {},
+        onPermissionGranted = {},
+        permissionGranted = fakePermissionState
+    )
 }
