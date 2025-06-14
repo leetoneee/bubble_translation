@@ -319,7 +319,7 @@ fun FloatingWidget(
 
                     Box(
                         modifier = Modifier
-                            .background(color = colorResource(R.color.blue_medium), shape = CircleShape)
+                            .background(color = colorResource(R.color.red_light), shape = CircleShape)
                             .clip(CircleShape)
                             .clickable { onClose() }
                             .size(32.dp),

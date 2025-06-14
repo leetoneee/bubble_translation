@@ -50,6 +50,7 @@
     <color name="pink_light">#FFFFEDFA</color>
     <color name="pink_skin">#FFFFEDF3</color>
     <color name="pink_text">#FFC562AF</color>
+    <color name="red_light">#FFFF8282</color>
 
     <color name="second_primary">#FFB37C</color>
 </resources>
