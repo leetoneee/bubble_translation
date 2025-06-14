@@ -4,24 +4,24 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissionHolder
 import com.bteamcoding.bubbletranslation.app.presentation.MainScreen
 import android.graphics.Rect
+import androidx.core.view.WindowCompat
+import dagger.hilt.android.AndroidEntryPoint
 import com.bteamcoding.bubbletranslation.core.utils.ScreenSizeHolder
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.service.PartialScreenModeService
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableStateOf
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val REQUEST_CODE_CAPTURE_SCREEN = 1001
 
@@ -59,7 +59,6 @@ class MainActivity : ComponentActivity() {
         if (requestCode == REQUEST_CODE_CAPTURE_SCREEN && resultCode == RESULT_OK && data != null) {
             MediaProjectionPermissionHolder.resultCode = resultCode
             MediaProjectionPermissionHolder.resultData = data
-            permissionGrantedState.value = true
 
             // Lưu statusBarHeight vào SharedPreferences
             val statusBarHeight = getStatusBarHeight()

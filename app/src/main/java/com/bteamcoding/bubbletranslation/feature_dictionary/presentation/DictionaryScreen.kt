@@ -37,22 +37,29 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.navigation.NavController
+import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
 
 @Composable
 fun DictionaryScreenRoot(
-    viewModel: DictionaryViewModel = viewModel()
+    viewModel: DictionaryViewModel = viewModel(),
+    navController: NavController
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     DictionaryScreen(
         state = state,
-        onAction = { action -> viewModel.onAction(action) }
+        onAction = { action -> viewModel.onAction(action) },
+        onNavToAuthScreen = {
+            navController.navigate(NavRoutes.AUTH)
+        }
     )
 }
 
 @Composable
 fun DictionaryScreen(
     state: DictionaryScreenState,
-    onAction: (DictionaryAction) -> Unit
+    onAction: (DictionaryAction) -> Unit,
+    onNavToAuthScreen: () -> Unit
 ) {
     ConstraintLayout(
         modifier = Modifier
@@ -68,7 +75,7 @@ fun DictionaryScreen(
                 }
                 .fillMaxWidth()
         ) {
-            TopBar("Dictionary Lookup")
+            TopBar("Dictionary Lookup", onNavToAuthScreen = onNavToAuthScreen)
         }
 
         Column(
