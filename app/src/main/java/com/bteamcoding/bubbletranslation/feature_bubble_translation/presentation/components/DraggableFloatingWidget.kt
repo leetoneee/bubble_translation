@@ -1,9 +1,11 @@
 package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,6 +16,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,7 +50,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.consumeDownChange
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
@@ -56,12 +61,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bteamcoding.bubbletranslation.MainActivity
 import com.bteamcoding.bubbletranslation.R
+import com.bteamcoding.bubbletranslation.core.components.SelectLang
 import com.bteamcoding.bubbletranslation.core.utils.LanguageManager
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetState
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.TranslateMode
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.ccp.Country
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.ccp.Utils.Companion.getEmojiFlag
+import com.bteamcoding.bubbletranslation.feature_home.component.HexagonButton
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
@@ -127,7 +135,7 @@ fun FloatingWidget(
                 .width(150.dp)
                 .background(Color.White, shape = RoundedCornerShape(28.dp))
                 .clip(RoundedCornerShape(28.dp))
-                .padding(8.dp)
+                .padding(start = 8.dp, end = 8.dp, top = 8.dp, bottom = 10.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -186,7 +194,7 @@ fun FloatingWidget(
                 HorizontalDivider(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(start = 6.dp, end = 6.dp, top = 4.dp),
+                        .padding(start = 6.dp, end = 6.dp),
                     color = colorResource(R.color.white_dark),
                     thickness = 2.dp
                 )
@@ -194,60 +202,81 @@ fun FloatingWidget(
                 Button(
                     onClick = onShowLanguageScreenChanged,
                     modifier = Modifier
-//                        .padding(vertical = 4.dp)
                         .fillMaxWidth(),
-                    elevation = ButtonDefaults.buttonElevation(8.dp),
-                    colors = ButtonDefaults.buttonColors(colorResource(R.color.b_gray)),
+                    colors = ButtonDefaults.buttonColors(colorResource(R.color.blue_lightest)),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 6.dp),
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        // Your interactive content like IconButton, Text, etc.
+                        SelectLang(
+                            shapeSize = 32.dp,
+                            textSize = 12.sp
+                        )
+                        // Overlay a transparent Box to absorb all pointer events
+                        val interactionSource = remember { MutableInteractionSource() }
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clip(RoundedCornerShape(16.dp))
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = rememberRipple(bounded = true), // Use default ripple
+                                    onClick = onShowLanguageScreenChanged
+                                )
+                        )
+                    }
                     //source Language
-                    Column(
-
-                    ) {
-                        Text(
-                            text = getEmojiFlag(sourceLanguage.countryIso),
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 12.sp,
-                            color = Color.Black
-                        )
-                        Text(
-                            text = sourceLanguage.countryIso,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 12.sp,
-                            color = Color.Black
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "fullscreen",
-                        modifier = Modifier.size(24.dp),
-                        tint = Color.Black
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    //target Language
-                    Column(
-
-                    ) {
-                        Text(
-                            text = getEmojiFlag(targetLanguage.countryIso),
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 12.sp,
-                            color = Color.Black
-                        )
-                        Text(
-                            text = targetLanguage.countryIso,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 12.sp,
-                            color = Color.Black
-                        )
-                    }
+//                    Column(
+//
+//                    ) {
+//                        Text(
+//                            text = getEmojiFlag(sourceLanguage.countryIso),
+//                            fontWeight = FontWeight.Normal,
+//                            fontSize = 12.sp,
+//                            color = Color.Black
+//                        )
+//                        Text(
+//                            text = sourceLanguage.countryIso,
+//                            fontWeight = FontWeight.Normal,
+//                            fontSize = 12.sp,
+//                            color = Color.Black
+//                        )
+//                    }
+//                    Spacer(modifier = Modifier.width(16.dp))
+//                    HexagonButton(
+//                        width = 24.dp,
+//                        height = 24.dp,
+//                        icon = ImageVector.vectorResource(R.drawable.two_arrow),
+//                        backgroundColor = colorResource(R.color.blue_medium),
+//                        onClick = {}
+//                    )
+//                    Spacer(modifier = Modifier.width(16.dp))
+//                    //target Language
+//                    Column(
+//
+//                    ) {
+//                        Text(
+//                            text = getEmojiFlag(targetLanguage.countryIso),
+//                            fontWeight = FontWeight.Normal,
+//                            fontSize = 12.sp,
+//                            color = Color.Black
+//                        )
+//                        Text(
+//                            text = targetLanguage.countryIso,
+//                            fontWeight = FontWeight.Normal,
+//                            fontSize = 12.sp,
+//                            color = Color.Black
+//                        )
+//                    }
                 }
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(0.dp),
+                        .padding(horizontal = 2.dp),
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -256,7 +285,7 @@ fun FloatingWidget(
                             .background(color = colorResource(R.color.blue_medium), shape = CircleShape)
                             .clip(CircleShape)
                             .clickable { onToggleExpand() }
-                            .size(36.dp),
+                            .size(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -264,16 +293,28 @@ fun FloatingWidget(
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier
-                                .size(16.dp)
+                                .size(14.dp)
                                 .align(Alignment.Center)
                         )
                     }
 
+                    val context = LocalContext.current
                     Image(
                         painter = painterResource(R.drawable.bee_icon),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(36.dp)
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .clickable (
+                                indication = rememberRipple(bounded = true),
+                                interactionSource = remember { MutableInteractionSource() }
+                            ) {
+                                val intent = Intent(context, MainActivity::class.java).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                                }
+                                context.startActivity(intent)
+                                onToggleExpand()
+                            },
                     )
 
                     Box(
@@ -281,14 +322,14 @@ fun FloatingWidget(
                             .background(color = colorResource(R.color.blue_medium), shape = CircleShape)
                             .clip(CircleShape)
                             .clickable { onClose() }
-                            .size(36.dp),
+                            .size(32.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.PowerSettingsNew,
                             contentDescription = null,
                             tint = Color.White,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }

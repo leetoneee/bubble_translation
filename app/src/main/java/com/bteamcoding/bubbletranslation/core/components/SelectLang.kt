@@ -49,6 +49,7 @@ fun SelectLang(
     modifier: Modifier = Modifier,
     shapeSize: Dp = 42.dp,
     textSize: TextUnit = 14.sp,
+    enabled: Boolean = true,
 ) {
     var isPickerOpenSourceLanguage by remember { mutableStateOf(false) }
     var isPickerOpenTargetLanguage by remember { mutableStateOf(false) }
@@ -66,6 +67,7 @@ fun SelectLang(
             onClick = {isPickerOpenSourceLanguage = true},
             modifier = Modifier
                 .size(shapeSize),
+            enabled = enabled,
             colors = IconButtonDefaults.filledIconButtonColors(
                 containerColor = colorResource(R.color.blue_dark),
             )
@@ -107,6 +109,7 @@ fun SelectLang(
         FilledIconButton(
             onClick = {isPickerOpenTargetLanguage = true},
             modifier = Modifier.size(shapeSize),
+            enabled = enabled,
             colors = IconButtonDefaults.filledIconButtonColors(
                 containerColor = colorResource(R.color.blue_dark),
             )
