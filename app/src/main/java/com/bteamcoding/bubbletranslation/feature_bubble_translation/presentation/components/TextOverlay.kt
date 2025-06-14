@@ -3,16 +3,20 @@ package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentatio
 import android.content.res.Resources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
@@ -24,21 +28,31 @@ import kotlin.math.pow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.DisplayMode
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModelHolder
 
 @Composable
 fun TextOverlay(
     visionText: Text,
     modifier: Modifier = Modifier
 ) {
+    val viewModel = FloatingWidgetViewModelHolder.instance
+    val state by viewModel.state.collectAsState()
+    val currentDisplay = state.displayMode
+
     Box(modifier = modifier) {
         visionText.textBlocks.forEach { block ->
-            BlockOverlay(block = block)
+            BlockOverlay(block = block, displayMode = currentDisplay)
         }
     }
 }
 
 @Composable
-fun BlockOverlay(block: Text.TextBlock) {
+fun BlockOverlay(
+    block: Text.TextBlock,
+    displayMode: DisplayMode = DisplayMode.GLOBAL,
+) {
     val density = LocalDensity.current
 
     // 1. Tính tổng chiều cao (px) và max chiều rộng (px) của block
@@ -92,28 +106,56 @@ fun BlockOverlay(block: Text.TextBlock) {
     }
 
     // 5. Hiển thị Text composable
-//    Text(
-//        text = translated,
-//        style = TextStyle(
-//            color = Color.Yellow,
-//            fontSize = idealTextSizeSp
-//        ),
-//        modifier = Modifier
-//            .offset(x = offsetDp.x.dp, y = offsetDp.y.dp)
-//            .width(widthDp)
-//            .height(heightDp)
-//    )
-    Text(
-        text = translated,
-        style = TextStyle(
-            color = Color.White,
-            fontSize = idealTextSizeSp,
-            fontWeight = FontWeight.SemiBold
-        ),
-        modifier = Modifier
-            .offset(x = offsetDp.x.dp, y = offsetDp.y.dp)
-            .width(widthDp)
-            .height(heightDp)
-            .background(Color(0xFF000000).copy(alpha = 0.5f))
-    )
+    when {
+        displayMode == DisplayMode.GLOBAL -> {
+            Text(
+                text = translated,
+                style = TextStyle(
+                    color = Color.White,
+                    fontSize = idealTextSizeSp,
+                    fontWeight = FontWeight.SemiBold
+                ),
+                modifier = Modifier
+                    .offset(x = offsetDp.x.dp, y = offsetDp.y.dp)
+                    .width(widthDp)
+                    .height(heightDp)
+                    .background(Color(0xFF000000).copy(alpha = 0.5f))
+            )
+        }
+
+        displayMode == DisplayMode.COMIC -> {
+            Text(
+                text = translated,
+                style = TextStyle(
+                    color = Color.Yellow,
+                    fontSize = idealTextSizeSp*1.6, // Slightly larger for visibility
+                ),
+                modifier = Modifier
+                    .padding(vertical = 4.dp)
+                    .offset(x = offsetDp.x.dp, y = offsetDp.y.dp)
+                    .width(widthDp*1.5f) // Slightly smaller for padding
+                    .height(heightDp*1.5f)
+            )
+        }
+
+        displayMode == DisplayMode.SUBTITLE -> {
+            Box(
+                modifier = Modifier
+                    .offset(x = offsetDp.x.dp, y = offsetDp.y.dp)
+                    .width(widthDp*1.2f)
+                    .height(heightDp*1.2f)
+                    .background(Color(0xFF000000).copy(alpha = 0.8f)),
+                contentAlignment = Alignment.Center
+            ){
+                Text(
+                    text = translated,
+                    style = TextStyle(
+                        color = Color.White,
+                        fontSize = idealTextSizeSp*1.5,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                )
+            }
+        }
+    }
 }

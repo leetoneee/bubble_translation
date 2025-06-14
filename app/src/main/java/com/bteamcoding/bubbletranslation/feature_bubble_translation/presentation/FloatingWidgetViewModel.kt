@@ -35,6 +35,12 @@ class FloatingWidgetViewModel() : ViewModel() {
                 }
             }
 
+            is FloatingWidgetAction.OnDisplayChange -> {
+                _state.update {
+                    it.copy(displayMode = action.newMode)
+                }
+            }
+
             is FloatingWidgetAction.OnSourceLanguageChange -> {
                 // Cập nhật state và gọi LanguageManager để thay đổi ngôn ngữ nguồn
                 _state.update { it.copy(sourceLanguage = action.newSourceLanguage) }

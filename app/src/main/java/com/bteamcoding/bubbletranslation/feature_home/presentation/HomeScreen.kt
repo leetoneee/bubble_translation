@@ -43,6 +43,7 @@ import com.bteamcoding.bubbletranslation.feature_home.component.HexagonButton
 import com.bteamcoding.bubbletranslation.feature_home.component.TransModeButton
 import com.bteamcoding.bubbletranslation.ui.theme.Inter
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.DisplayMode
 import kotlinx.coroutines.delay
 
 
@@ -88,10 +89,10 @@ fun HomeScreenRoot(
 fun HomeScreen(
     onShowWidget: () -> Unit,
 ) {
-    var enabled by remember { mutableStateOf(true) }
     val viewModel = FloatingWidgetViewModelHolder.instance
     val state by viewModel.state.collectAsState()
     val currentMode = state.translateMode
+    val currentDisplay = state.displayMode
     val isOn = state.isOn
     val context = LocalContext.current
     val stopFWUseCase = remember { StopFloatingWidgetUseCase(context) }
@@ -227,27 +228,33 @@ fun HomeScreen(
                         color = colorResource(R.color.grey_darkest)
                     )
                     TransModeButton(
-                        onClick = {enabled = !enabled},
+                        onClick = {
+                            viewModel.onAction(FloatingWidgetAction.OnDisplayChange(DisplayMode.GLOBAL))
+                        },
                         icon = R.drawable.global,
                         content = "Tiêu chuẩn",
                         description = "Phù hợp cho hầu hết các trường hợp",
-                        enabled = enabled,
+                        enabled = currentDisplay == DisplayMode.GLOBAL,
                         contentColor = colorResource(R.color.blue_dark)
                     )
                     TransModeButton(
-                        onClick = {},
+                        onClick = {
+                            viewModel.onAction(FloatingWidgetAction.OnDisplayChange(DisplayMode.COMIC))
+                        },
                         icon = R.drawable.baseline_menu_book_24,
                         content = "Truyện tranh",
                         description = "Tối ưu cho văn bản trong truyện tranh",
-                        enabled = false,
+                        enabled = currentDisplay == DisplayMode.COMIC,
                         contentColor = colorResource(R.color.blue_dark)
                     )
                     TransModeButton(
-                        onClick = {},
+                        onClick = {
+                            viewModel.onAction(FloatingWidgetAction.OnDisplayChange(DisplayMode.SUBTITLE))
+                        },
                         icon = R.drawable.subtitles,
                         content = "Phụ đề",
                         description = "Tối ưu cho phụ đề trong video, cutscene",
-                        enabled = false,
+                        enabled = currentDisplay == DisplayMode.SUBTITLE,
                         contentColor = colorResource(R.color.blue_dark)
                     )
                 }
