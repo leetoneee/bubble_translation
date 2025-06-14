@@ -1,3 +1,6 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import java.io.FileInputStream
+import java.util.Properties
 import java.util.UUID
 
 plugins {
@@ -19,6 +22,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField ("String", "API_KEY", "\"${project.properties["API_KEY"]}\"")
+
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {

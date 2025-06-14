@@ -1,16 +1,22 @@
 package com.bteamcoding.bubbletranslation.core.utils
 
+import android.provider.Settings.Global.getString
+import com.bteamcoding.bubbletranslation.R
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
+import com.bteamcoding.bubbletranslation.BuildConfig
+
 
 // Hàm gọi API để dịch văn bản
 fun callApiForTranslation(parsedText: String): String? {
     val apiUrl = "https://api.openai.com/v1/responses" // API endpoint
     var text: String = ""
+    val apiKey = BuildConfig.API_KEY// Replace with your actual API key
+
 
     // Prepare JSON data
     val json = JSONObject().apply {
@@ -43,7 +49,7 @@ fun callApiForTranslation(parsedText: String): String? {
         // Set request method to POST
         connection.requestMethod = "POST"
         connection.setRequestProperty("Content-Type", "application/json")
-        connection.setRequestProperty("Authorization", "Bearer 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")
+        connection.setRequestProperty("Authorization", "Bearer $apiKey")
 
         // Enable input and output streams
         connection.doOutput = true
@@ -99,3 +105,4 @@ fun cleanJsonString(input: String): String {
         JSONObject(trimmed).toString()
     }
 }
+
