@@ -14,7 +14,6 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissionHolder
 import com.bteamcoding.bubbletranslation.app.presentation.MainScreen
-import com.bteamcoding.bubbletranslation.core.utils.translateText
 import android.graphics.Rect
 import com.bteamcoding.bubbletranslation.core.utils.ScreenSizeHolder
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.service.PartialScreenModeService

@@ -1,5 +1,7 @@
 package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation
 
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.ccp.Country
+
 enum class TranslateMode {
     FULLSCREEN,
     CROP,
@@ -11,4 +13,6 @@ data class FloatingWidgetState(
     val isExpanded: Boolean = false,
     val translateMode: TranslateMode = TranslateMode.FULLSCREEN,
     val isOn:Boolean = false,
+    val sourceLanguage: Country = Country.English,
+    val targetLanguage: Country = Country.Vietnamese
 )
