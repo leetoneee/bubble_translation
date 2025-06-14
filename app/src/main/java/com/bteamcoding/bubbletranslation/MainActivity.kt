@@ -1,6 +1,7 @@
 package com.bteamcoding.bubbletranslation
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -17,10 +18,18 @@ import com.bteamcoding.bubbletranslation.app.presentation.MainScreen
 import android.graphics.Rect
 import com.bteamcoding.bubbletranslation.core.utils.ScreenSizeHolder
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.service.PartialScreenModeService
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.mutableStateOf
 
 class MainActivity : ComponentActivity() {
     private val REQUEST_CODE_CAPTURE_SCREEN = 1001
 
+    private lateinit var screenCaptureLauncher: ActivityResultLauncher<Intent>
+
+    private val permissionGrantedState = mutableStateOf(false)
+
+    @SuppressLint("UnrememberedMutableState")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -29,16 +38,19 @@ class MainActivity : ComponentActivity() {
         val displayMetrics = resources.displayMetrics
         ScreenSizeHolder.screenWidth = displayMetrics.widthPixels.toFloat()
 
-        // Tạo một intent yêu cầu quyền ghi màn hình
-        val mediaProjectionManager =
-            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        val screenCaptureIntent = mediaProjectionManager.createScreenCaptureIntent()
-
-        // Gọi yêu cầu quyền ghi màn hình
-        startActivityForResult(screenCaptureIntent, REQUEST_CODE_CAPTURE_SCREEN)
-
         setContent {
-            MainScreen()
+            MainScreen(
+                onRequestScreenCapturePermission = {
+                    val mediaProjectionManager =
+                        getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                    val screenCaptureIntent = mediaProjectionManager.createScreenCaptureIntent()
+                    startActivityForResult(screenCaptureIntent, REQUEST_CODE_CAPTURE_SCREEN)
+                },
+                onPermissionGranted = {
+                    permissionGrantedState.value = true
+                },
+                permissionGranted = permissionGrantedState
+            )
         }
     }
 
@@ -47,6 +59,7 @@ class MainActivity : ComponentActivity() {
         if (requestCode == REQUEST_CODE_CAPTURE_SCREEN && resultCode == RESULT_OK && data != null) {
             MediaProjectionPermissionHolder.resultCode = resultCode
             MediaProjectionPermissionHolder.resultData = data
+            permissionGrantedState.value = true
 
             // Lưu statusBarHeight vào SharedPreferences
             val statusBarHeight = getStatusBarHeight()

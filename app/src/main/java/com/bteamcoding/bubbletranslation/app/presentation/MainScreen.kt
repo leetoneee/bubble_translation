@@ -12,9 +12,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.bteamcoding.bubbletranslation.app.navigation.AppNavHost
+import androidx.compose.runtime.State
+import androidx.compose.runtime.rememberUpdatedState
+
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    onRequestScreenCapturePermission: () -> Unit,
+    onPermissionGranted: () -> Unit,
+    permissionGranted: State<Boolean>
+) {
     val navController = rememberNavController()
 
     Surface(
@@ -25,7 +32,12 @@ fun MainScreen() {
             bottomBar = { BottomBar(navController) }
         ) { paddingValues: PaddingValues ->
             Box(modifier = Modifier.padding(paddingValues)) {
-                AppNavHost(navController)
+                AppNavHost(
+                    navController,
+                    onRequestScreenCapturePermission,
+                    onPermissionGranted,
+                    permissionGranted
+                )
             }
         }
     }
@@ -34,5 +46,11 @@ fun MainScreen() {
 @Composable
 @Preview
 fun MainScreenPreview() {
-    MainScreen()
+    val fakePermissionState: State<Boolean> = rememberUpdatedState(true)
+
+    MainScreen(
+        onRequestScreenCapturePermission = {},
+        onPermissionGranted = {},
+        permissionGranted = fakePermissionState
+    )
 }

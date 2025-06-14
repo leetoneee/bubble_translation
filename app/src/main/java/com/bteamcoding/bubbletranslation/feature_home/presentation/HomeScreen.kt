@@ -1,7 +1,9 @@
 package com.bteamcoding.bubbletranslation.feature_home.presentation
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.provider.Settings
 import android.util.Log
@@ -20,6 +22,7 @@ import androidx.compose.material.icons.filled.PowerOff
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +35,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat.startActivityForResult
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.core.components.SelectLang
 import com.bteamcoding.bubbletranslation.core.components.TopBar
@@ -44,7 +48,7 @@ import com.bteamcoding.bubbletranslation.feature_home.component.TransModeButton
 import com.bteamcoding.bubbletranslation.ui.theme.Inter
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
 import kotlinx.coroutines.delay
-
+import androidx.compose.runtime.State
 
 fun requestOverlayPermission(context: Context) {
     if (!Settings.canDrawOverlays(context)) {
@@ -59,6 +63,8 @@ fun requestOverlayPermission(context: Context) {
 @Composable
 fun HomeScreenRoot(
     startUseCase: StartFloatingWidgetUseCase,
+    onRequestScreenCapturePermission: () -> Unit,
+    permissionGranted: State<Boolean>
 ) {
     val context = LocalContext.current
 
@@ -80,13 +86,18 @@ fun HomeScreenRoot(
                 }
                 context.startActivity(intent)
             }
-        }
+        },
+        onRequestScreenCapturePermission = onRequestScreenCapturePermission,
+        permissionGranted = permissionGranted
     )
 }
 
+@SuppressLint("ServiceCast")
 @Composable
 fun HomeScreen(
     onShowWidget: () -> Unit,
+    onRequestScreenCapturePermission: () -> Unit,
+    permissionGranted: State<Boolean>
 ) {
     var enabled by remember { mutableStateOf(true) }
     val viewModel = FloatingWidgetViewModelHolder.instance
@@ -96,6 +107,15 @@ fun HomeScreen(
     val context = LocalContext.current
     val stopFWUseCase = remember { StopFloatingWidgetUseCase(context) }
 
+    var waitingForPermission by remember { mutableStateOf(false) }
+
+    LaunchedEffect(permissionGranted.value) {
+        if (waitingForPermission && permissionGranted.value) {
+            onShowWidget()
+            viewModel.onAction(FloatingWidgetAction.OnStart)
+            waitingForPermission = false
+        }
+    }
 
     Column (
         modifier = Modifier
@@ -260,8 +280,13 @@ fun HomeScreen(
                     backgroundColor = if (isOn==false) colorResource(R.color.blue_dark) else colorResource(R.color.red_medium),
                     onClick = {
                         if (isOn==false){
-                            onShowWidget()
-                            viewModel.onAction(FloatingWidgetAction.OnStart);
+                            if (!permissionGranted.value) {
+                                waitingForPermission = true
+                                onRequestScreenCapturePermission()
+                            } else {
+                                onShowWidget()
+                                viewModel.onAction(FloatingWidgetAction.OnStart)
+                            }
                         }
                         else {
                             stopFWUseCase()

@@ -1,11 +1,8 @@
 package com.bteamcoding.bubbletranslation.app.navigation
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -15,11 +12,16 @@ import androidx.navigation.compose.composable
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StartFloatingWidgetUseCase
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.CameraScreenRoot
 import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryScreenRoot
-
+import androidx.compose.runtime.State
 import com.bteamcoding.bubbletranslation.feature_home.presentation.HomeScreenRoot
 
 @Composable
-fun AppNavHost(navController: NavHostController) {
+fun AppNavHost(
+    navController: NavHostController,
+    onRequestScreenCapturePermission: () -> Unit,
+    onPermissionGranted: () -> Unit,
+    permissionGranted: State<Boolean>
+) {
     NavHost(
         navController = navController,
         startDestination = NavRoutes.HOME,
@@ -28,7 +30,9 @@ fun AppNavHost(navController: NavHostController) {
             val startFWUseCase = StartFloatingWidgetUseCase(LocalContext.current)
 
             HomeScreenRoot(
-                startUseCase = startFWUseCase
+                startUseCase = startFWUseCase,
+                onRequestScreenCapturePermission = onRequestScreenCapturePermission,
+                permissionGranted = permissionGranted
             )
         }
         composable(route = NavRoutes.CAPTURE) {
