@@ -1,5 +1,6 @@
 package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -47,10 +48,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bteamcoding.bubbletranslation.R
+import com.bteamcoding.bubbletranslation.core.utils.LanguageManager
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetState
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.TranslateMode
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.ccp.Country
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.ccp.Utils.Companion.getEmojiFlag
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun DraggableFloatingWidget(
     state: FloatingWidgetState,
@@ -58,10 +64,15 @@ fun DraggableFloatingWidget(
     onToggleExpand: () -> Unit,
     onModeChange: (TranslateMode) -> Unit,
     onDrag: (Float, Float) -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onShowLanguageScreenChanged: () -> Unit
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
+
+    // Theo dõi sự thay đổi của sourceLang và targetLang từ LanguageManager
+    val sourceLanguage by LanguageManager.sourceLang.collectAsStateWithLifecycle()
+    val targetLanguage by LanguageManager.targetLang.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier
@@ -74,27 +85,35 @@ fun DraggableFloatingWidget(
                 }
             }
     ) {
+
         // Thêm nội dung FloatingWidget ở đây
         FloatingWidget(
+            sourceLanguage = sourceLanguage,
+            targetLanguage = targetLanguage,
             isExpanded = state.isExpanded,
             translateMode = state.translateMode,
             onClose = onClose,
             onModeChange = onModeChange,
             onToggleExpand = onToggleExpand,
-            onClick = onClick
+            onClick = onClick,
+            onShowLanguageScreenChanged = onShowLanguageScreenChanged
         )
     }
 }
 
 @Composable
 fun FloatingWidget(
+    sourceLanguage: Country,
+    targetLanguage: Country,
     isExpanded: Boolean,
     translateMode: TranslateMode,
     onClose: () -> Unit,
     onModeChange: (TranslateMode) -> Unit,
     onToggleExpand: () -> Unit,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onShowLanguageScreenChanged: () -> Unit
 ) {
+
     if (isExpanded) {
         Box(
             modifier = Modifier
@@ -166,19 +185,30 @@ fun FloatingWidget(
                 )
 
                 Button(
-                    onClick = onClose,
+                    onClick = onShowLanguageScreenChanged,
                     modifier = Modifier
-                        .padding(vertical = 4.dp)
+//                        .padding(vertical = 4.dp)
                         .fillMaxWidth(),
                     elevation = ButtonDefaults.buttonElevation(8.dp),
                     colors = ButtonDefaults.buttonColors(colorResource(R.color.b_gray)),
                 ) {
-                    Text(
-                        "EN",
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 12.sp,
-                        color = Color.Black
-                    )
+                    //source Language
+                    Column(
+
+                    ) {
+                        Text(
+                            text = getEmojiFlag(sourceLanguage.countryIso),
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 12.sp,
+                            color = Color.Black
+                        )
+                        Text(
+                            text = sourceLanguage.countryIso,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 12.sp,
+                            color = Color.Black
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
@@ -187,12 +217,24 @@ fun FloatingWidget(
                         tint = Color.Black
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "VN",
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 12.sp,
-                        color = Color.Black
-                    )
+
+                    //target Language
+                    Column(
+
+                    ) {
+                        Text(
+                            text = getEmojiFlag(targetLanguage.countryIso),
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 12.sp,
+                            color = Color.Black
+                        )
+                        Text(
+                            text = targetLanguage.countryIso,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 12.sp,
+                            color = Color.Black
+                        )
+                    }
                 }
 
                 Row(
@@ -289,25 +331,30 @@ fun FloatingWidget(
 @Composable
 fun FloatingWidgetPreview() {
     FloatingWidget(
+        sourceLanguage = Country.Thai,
+        targetLanguage = Country.Vietnamese,
         isExpanded = true,
         translateMode = TranslateMode.FULLSCREEN,
         onToggleExpand = {},
         onModeChange = {},
         onClose = {},
-        onClick = {}
+        onClick = {},
+        onShowLanguageScreenChanged ={}
     )
-
 }
 
 @Preview
 @Composable
 fun FloatingWidgetPreview2() {
     FloatingWidget(
+        sourceLanguage = Country.Thai,
+        targetLanguage = Country.Vietnamese,
         isExpanded = false,
         translateMode = TranslateMode.AUDIO,
         onToggleExpand = {},
         onModeChange = {},
         onClose = {},
-        onClick = {}
+        onClick = {},
+        onShowLanguageScreenChanged = {}
     )
 }
