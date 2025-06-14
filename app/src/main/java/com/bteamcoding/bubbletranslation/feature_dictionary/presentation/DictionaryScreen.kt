@@ -3,6 +3,7 @@ package com.bteamcoding.bubbletranslation.feature_dictionary.presentation
 import android.speech.tts.TextToSpeech
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.MarqueeDefaults.Spacing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -45,6 +46,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.CopyAll
 import androidx.compose.material3.Icon
@@ -227,10 +229,12 @@ fun DictionaryScreen(
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
-                                        Text(
-                                            text = "${entry.english} [${entry.phonetic}]",
-                                            style = MaterialTheme.typography.titleMedium
-                                        )
+                                        Box(modifier = Modifier.padding(end = 8.dp)) {
+                                            Text(
+                                                text = "${entry.english} [${entry.phonetic}]",
+                                                style = MaterialTheme.typography.titleMedium
+                                            )
+                                        }
                                         IconButton(
                                             onClick = { tts.speak(entry.english, TextToSpeech.QUEUE_FLUSH, null, null)},
                                         ) {
@@ -238,6 +242,17 @@ fun DictionaryScreen(
                                                 imageVector = ImageVector.vectorResource(R.drawable.speaker),
                                                 contentDescription = null,
                                                 modifier = Modifier.size(24.dp),
+                                                tint = colorResource(R.color.grey_medium)
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = {},
+                                            modifier = Modifier.size(40.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Save,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(28.dp),
                                                 tint = colorResource(R.color.grey_medium)
                                             )
                                         }
