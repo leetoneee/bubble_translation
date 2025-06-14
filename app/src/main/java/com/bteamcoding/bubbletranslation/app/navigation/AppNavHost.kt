@@ -18,8 +18,9 @@ import com.bteamcoding.bubbletranslation.feature_auth.presentation.ProfileScreen
 import com.bteamcoding.bubbletranslation.feature_auth.presentation.RegisterScreenRoot
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StartFloatingWidgetUseCase
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.CameraScreenRoot
-import com.bteamcoding.bubbletranslation.feature_home.presentation.HomeScreenRoot
+import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryScreenRoot
 
+import com.bteamcoding.bubbletranslation.feature_home.presentation.HomeScreenRoot
 
 @Composable
 fun AppNavHost(navController: NavHostController) {
@@ -86,7 +87,8 @@ fun AppNavHost(navController: NavHostController) {
             val startFWUseCase = StartFloatingWidgetUseCase(LocalContext.current)
 
             HomeScreenRoot(
-                startUseCase = startFWUseCase
+                startUseCase = startFWUseCase,
+                navController = navController
             )
         }
         composable(route = NavRoutes.CAPTURE) {
@@ -96,7 +98,9 @@ fun AppNavHost(navController: NavHostController) {
             )
         }
         composable(route = NavRoutes.DICTIONARY) {
-
+            DictionaryScreenRoot(
+                navController = navController
+            )
         }
         composable(route = NavRoutes.FLASH_CARD) {
 
@@ -105,7 +109,7 @@ fun AppNavHost(navController: NavHostController) {
 }
 
 @Composable
-inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavHostController): T {
+inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavHostController) : T {
     val navGraphRoute = destination.parent?.route ?: return viewModel()
     val parentEntry = remember(this) {
         navController.getBackStackEntry(navGraphRoute)

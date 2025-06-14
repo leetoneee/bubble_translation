@@ -13,6 +13,8 @@ import com.bteamcoding.bubbletranslation.app.presentation.MainScreen
 import android.graphics.Rect
 import androidx.core.view.WindowCompat
 import dagger.hilt.android.AndroidEntryPoint
+import com.bteamcoding.bubbletranslation.core.utils.ScreenSizeHolder
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.service.PartialScreenModeService
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -21,6 +23,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Lấy chiều rộng màn hình theo pixel
+        val displayMetrics = resources.displayMetrics
+        ScreenSizeHolder.screenWidth = displayMetrics.widthPixels.toFloat()
+
         // Tạo một intent yêu cầu quyền ghi màn hình
         val mediaProjectionManager =
             getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager

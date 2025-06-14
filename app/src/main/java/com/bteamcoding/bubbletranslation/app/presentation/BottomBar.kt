@@ -1,5 +1,8 @@
 package com.bteamcoding.bubbletranslation.app.presentation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Camera
@@ -15,9 +18,11 @@ import androidx.compose.material3.NavigationBarItemColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.bteamcoding.bubbletranslation.R
@@ -31,7 +36,7 @@ fun BottomBar(navController: NavController) {
             route = NavRoutes.HOME,
             title = "Home",
             selectedIcon = Icons.Default.Home,
-            unselectedIcon = Icons.Outlined.Home
+            unselectedIcon = Icons.Outlined.Home,
         ),
         BottomNavItem(
             route = NavRoutes.CAPTURE,
@@ -53,14 +58,19 @@ fun BottomBar(navController: NavController) {
         )
     )
 
-    NavigationBar {
+    NavigationBar (
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colorResource(R.color.purple_light))
+            .padding(horizontal = 10.dp),
+    ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
         items.forEach { item ->
             NavigationBarItem(
                 selected = currentRoute == item.route,
-                alwaysShowLabel = false,
+                alwaysShowLabel = true,
                 onClick = {
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
