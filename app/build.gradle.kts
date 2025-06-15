@@ -12,6 +12,11 @@ plugins {
     id("com.google.dagger.hilt.android")
 }
 
+val envProperties = Properties()
+file("$rootDir/local.properties").takeIf { it.exists() }?.inputStream()?.use {
+    envProperties.load(it)
+}
+
 android {
     namespace = "com.bteamcoding.bubbletranslation"
     compileSdk = 35
@@ -24,8 +29,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField ("String", "API_KEY", "\"${project.properties["API_KEY"]}\"")
-
+        buildConfigField ("String", "API_KEY", "\"${envProperties["API_KEY"]}\"")
     }
 
     buildFeatures {
