@@ -100,7 +100,7 @@ fun BlockOverlayCrop(block: Text.TextBlock, captureRegion: Rect) {
         style = TextStyle(
             color = Color.White,
             fontSize = idealTextSizeSp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.SemiBold
         ),
         modifier = Modifier
             .offset(x = offsetDp.x.dp, y = offsetDp.y.dp)

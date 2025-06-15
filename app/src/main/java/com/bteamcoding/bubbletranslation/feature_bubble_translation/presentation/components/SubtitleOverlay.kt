@@ -44,7 +44,7 @@ fun SubtitleOverlay(
     onClose: () -> Unit,
 ) {
     val optionBarHeight = 40
-    val borderColor = colorResource(R.color.b_yellow).copy(alpha = 0.8f)
+    val borderColor = colorResource(R.color.purple_dark)
 
     ConstraintLayout(
         modifier = Modifier
@@ -72,7 +72,7 @@ fun SubtitleOverlay(
             Box(
                 modifier = Modifier
                     .border(
-                        border = BorderStroke(1.dp, color = borderColor),
+                        border = BorderStroke(1.5.dp, color = borderColor),
                         shape = RoundedCornerShape(6.dp)
                     )
                     .background(Color.White, shape = RoundedCornerShape(6.dp))
@@ -110,7 +110,7 @@ fun SubtitleOverlay(
                         bottom.linkTo(parent.bottom)
                     }
                     .border(
-                        border = BorderStroke(1.dp, color = borderColor),
+                        border = BorderStroke(1.5.dp, color = borderColor),
                         shape = RoundedCornerShape(6.dp)
                     )
                     .background(Color.White, shape = RoundedCornerShape(6.dp))
@@ -142,7 +142,7 @@ fun SubtitleOverlay(
             Box(
                 modifier = Modifier
                     .border(
-                        border = BorderStroke(1.dp, color = borderColor),
+                        border = BorderStroke(1.5.dp, color = borderColor),
                         shape = RoundedCornerShape(6.dp)
                     )
                     .background(Color.White, shape = RoundedCornerShape(6.dp))
@@ -177,7 +177,7 @@ fun SubtitleOverlay(
                 .fillMaxWidth()
                 .background(Color.Transparent, shape = RoundedCornerShape(6.dp))
                 .border(
-                    border = BorderStroke(1.dp, color = borderColor),
+                    border = BorderStroke(2.dp, color = borderColor),
                     shape = RoundedCornerShape(6.dp)
                 )
                 .clip(RoundedCornerShape(6.dp))

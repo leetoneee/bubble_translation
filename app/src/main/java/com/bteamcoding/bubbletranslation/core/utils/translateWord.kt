@@ -1,27 +1,30 @@
 package com.bteamcoding.bubbletranslation.core.utils
 
+import android.provider.Settings.Global.getString
+import com.bteamcoding.bubbletranslation.R
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.OutputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
+import com.bteamcoding.bubbletranslation.BuildConfig
+
 
 // Hàm gọi API để dịch văn bản
 fun callApiForTranslation(parsedText: String): String? {
-    val apiUrl = "https://api.textcortex.com/v1/texts/completions" // API endpoint
+    val apiUrl = "https://api.openai.com/v1/responses" // API endpoint
     var text: String = ""
+    val apiKey = BuildConfig.API_KEY// Replace with your actual API key
 
     // Prepare JSON data
     val json = JSONObject().apply {
-        put("formality", "default")
-        put("max_tokens", 2048)
-        put("model", "gemini-2-0-flash")
-        put("n", 1)
-        put("source_lang", "en")
-        put("target_lang", "en")
-        put("text",
-            "Translate the following English words into Vietnamese and return the result as JSON format. This JSON string must include the following components for each word:\n" +
+//        put("max_output_tokens", 2048)
+        put("model", "gpt-4.1-nano")
+//        put("temperature", 0.3)
+//        put("type", "json_schema")
+        put("input",
+            "Translate the following English words into Vietnamese and return the result as JSON array format. This JSON string must include the following components for each word:\n" +
                     "\n" +
                     "english: The original English word.\n" +
                     "phonetic: The English phonetic transcription (IPA).\n" +
@@ -45,7 +48,7 @@ fun callApiForTranslation(parsedText: String): String? {
         // Set request method to POST
         connection.requestMethod = "POST"
         connection.setRequestProperty("Content-Type", "application/json")
-        connection.setRequestProperty("Authorization", "Bearer gAAAAABoR_Oe2CWDJxD2_A9LtfcAPRx0AoeVFUJNKETvXtWAWAhDsa7KqerzqKZAdOFSmQQD42Kv7loBecUbz_qqbpkTvyj2Dv1JKHF74e4D82QyaWSU5jaMqqij8VDSQTOav9LkQPl4ySJZG6TUqlpXFjY0lqvsSDXfyun1QIx1wTgGlJmiS2o=")
+        connection.setRequestProperty("Authorization", "Bearer $apiKey")
 
         // Enable input and output streams
         connection.doOutput = true
@@ -66,8 +69,10 @@ fun callApiForTranslation(parsedText: String): String? {
             val response = connection.inputStream.bufferedReader().use { it.readText() }
             // Process JSON response
             val jsonResponse = JSONObject(response) // Ensure you're parsing the String response here
-            text = jsonResponse.getJSONObject("data")
-                .getJSONArray("outputs")
+            text = jsonResponse
+                .getJSONArray("output")
+                .getJSONObject(0)
+                .getJSONArray("content")
                 .getJSONObject(0)
                 .getString("text")
         } else {
@@ -99,3 +104,4 @@ fun cleanJsonString(input: String): String {
         JSONObject(trimmed).toString()
     }
 }
+

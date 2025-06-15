@@ -48,6 +48,11 @@
     <color name="white_lightest">#FFFFFFFF</color>
     <color name="red_medium">#FFFF616D</color>
     <color name="blue_icon">#FFEAF2FF</color>
+    <color name="pink_medium">#FFFFB8E0</color>
+    <color name="pink_light">#FFFFEDFA</color>
+    <color name="pink_skin">#FFFFEDF3</color>
+    <color name="pink_text">#FFC562AF</color>
+    <color name="red_light">#FFFF8282</color>
 
     <color name="second_primary">#FFB37C</color>
 </resources>
