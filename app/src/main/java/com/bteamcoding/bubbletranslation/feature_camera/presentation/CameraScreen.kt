@@ -142,7 +142,7 @@ fun CameraScreen(
                 modifier = Modifier
                     .size(120.dp)
                     .background(
-                        color = colorResource(R.color.blue_400).copy(0.5f),
+                        color = colorResource(R.color.blue_icon).copy(0.5f),
                         shape = RoundedCornerShape(30.dp)
                     ),
                 contentAlignment = Alignment.Center

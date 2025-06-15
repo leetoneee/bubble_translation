@@ -17,7 +17,6 @@ fun callApiForTranslation(parsedText: String): String? {
     var text: String = ""
     val apiKey = BuildConfig.API_KEY// Replace with your actual API key
 
-
     // Prepare JSON data
     val json = JSONObject().apply {
 //        put("max_output_tokens", 2048)

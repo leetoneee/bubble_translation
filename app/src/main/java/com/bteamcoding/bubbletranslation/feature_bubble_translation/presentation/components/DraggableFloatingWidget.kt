@@ -383,7 +383,7 @@ fun FloatingWidget(
                     )
 
                     TranslateMode.AUTO -> Image(
-                        painter = painterResource(R.drawable.bee_yellow),
+                        painter = painterResource(R.drawable.bee_2yellow),
                         contentDescription = null,
                     )
 

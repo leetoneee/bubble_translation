@@ -10,4 +10,5 @@ object NavRoutes {
     const val CAPTURE = "capture"
     const val DICTIONARY = "dictionary"
     const val FLASH_CARD = "flash_card"
+    const val SPLASH = "splash"
 }
