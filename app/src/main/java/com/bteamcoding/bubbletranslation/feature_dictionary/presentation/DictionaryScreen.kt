@@ -129,7 +129,7 @@ fun DictionaryScreen(
         }
 
         Column(
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier
                 .constrainAs(content) {
                     top.linkTo(topBar.bottom)

@@ -111,7 +111,9 @@ fun AppNavHost(
             )
         }
         composable(route = NavRoutes.FLASH_CARD) {
-            BookmarkScreenRoot()
+            BookmarkScreenRoot(
+                navController = navController
+            )
         }
     }
 }

@@ -1,9 +1,11 @@
 package com.bteamcoding.bubbletranslation.feature_bookmark.presentaion
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bteamcoding.bubbletranslation.app.domain.use_case.GetUserInfoUseCase
 import com.bteamcoding.bubbletranslation.feature_auth.domain.model.User
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddFolderUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.DeleteFolderUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetAllFoldersUseCase
@@ -33,17 +35,20 @@ class BookmarkViewModel @Inject constructor(
         when (action) {
             BookmarkAction.OnLoadCurrentUser -> getUserInfo()
 
-            is BookmarkAction.OnAddNewFolder -> {
-                addFolder(action.name)
-                getAllFolders()
-            }
+            BookmarkAction.OnAddNewFolder -> addFolder(_state.value.folderName)
+
 
             is BookmarkAction.OnDeleteFolder -> {
                 deleteFolder(action.folderId)
                 getAllFolders()
             }
 
-            BookmarkAction.OnLoadAllFolders -> getAllFolders()
+            BookmarkAction.OnLoadAllFolders -> {
+                _state.update {
+                    it.copy(currentFolder = null)
+                }
+                getAllFolders()
+            }
 
             is BookmarkAction.OnLoadWordsByFolder -> {
 
@@ -58,6 +63,39 @@ class BookmarkViewModel @Inject constructor(
                 _state.update {
                     it.copy(folders = listOf())
                 }
+            }
+
+            is BookmarkAction.OnQueryChanged -> {
+                _state.update { it.copy(searchQuery = action.query) }
+            }
+
+            is BookmarkAction.OnFolderClick -> {
+                _state.update { it.copy(currentFolder = action.folder) }
+            }
+
+            BookmarkAction.OnShowAddFolder -> {
+                _state.update {
+                    it.copy(
+                        showAddFolderDialog = true,
+                    )
+                }
+            }
+
+            BookmarkAction.OnHideAddFolder -> {
+                _state.update {
+                    it.copy(
+                        showAddFolderDialog = false,
+                        folderName = ""
+                    )
+                }
+            }
+
+            is BookmarkAction.OnFolderNameChanged -> {
+                _state.update { it.copy(folderName = action.name) }
+            }
+
+            BookmarkAction.ClearError -> {
+                _state.update { it.copy(errorMessage = null) }
             }
         }
     }
@@ -83,8 +121,21 @@ class BookmarkViewModel @Inject constructor(
     }
 
     private fun addFolder(name: String) {
+        Log.i("add folder", name)
         viewModelScope.launch {
-            addFolderUseCase(name)
+            runCatching {
+                addFolderUseCase(name)
+            }.onSuccess {
+                _state.update {
+                    it.copy(
+                        showAddFolderDialog = false,
+                        folderName = ""
+                    )
+                }
+                getAllFolders()
+            }.onFailure { t ->
+                _state.update { it.copy(errorMessage = t.message) }
+            }
         }
     }
 

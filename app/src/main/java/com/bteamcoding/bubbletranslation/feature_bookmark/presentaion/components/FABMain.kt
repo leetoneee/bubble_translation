@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CreateNewFolder
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -40,12 +41,27 @@ import com.bteamcoding.bubbletranslation.R
 @Composable
 fun FABMain(
     onAddFolder: () -> Unit,
-    onSync: () -> Unit
+    onSync: () -> Unit,
+    onReload: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val onToggleFAB = {
+        expanded = !expanded
+    }
+
     val items = listOf(
-        FABItem(Icons.Filled.CreateNewFolder, "Add folder", onAddFolder),
-        FABItem(Icons.Filled.Sync, "Synchronize", onSync)
+        FABItem(Icons.Filled.Refresh, "Reload", {
+            onReload()
+            onToggleFAB()
+        }),
+        FABItem(Icons.Filled.CreateNewFolder, "Add folder", {
+            onAddFolder()
+            onToggleFAB()
+        }),
+        FABItem(Icons.Filled.Sync, "Synchronize", {
+            onSync()
+            onToggleFAB()
+        })
     )
 
     Column(horizontalAlignment = Alignment.End) {
@@ -54,21 +70,29 @@ fun FABMain(
             if (it) 315f else 0f
         }
 
-        AnimatedVisibility(visible = expanded,
-            enter = fadeIn() + slideInVertically(initialOffsetY = {it})+ expandVertically(),
-            exit = fadeOut() + slideOutVertically(targetOffsetY = {it}) + shrinkVertically(),
+        AnimatedVisibility(
+            visible = expanded,
+            enter = fadeIn() + slideInVertically(initialOffsetY = { it }) + expandVertically(),
+            exit = fadeOut() + slideOutVertically(targetOffsetY = { it }) + shrinkVertically(),
         ) {
-            LazyColumn(modifier = Modifier.padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyColumn(
+                modifier = Modifier.padding(bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 itemsIndexed(items) { _, it ->
                     FABItemUI(it)
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp).background(Color.Transparent))
+        Spacer(
+            modifier = Modifier
+                .height(8.dp)
+                .background(Color.Transparent)
+        )
 
         FloatingActionButton(
-            onClick = { expanded = !expanded },
+            onClick = onToggleFAB,
             modifier = Modifier.rotate(rotation),
             containerColor = colorResource(R.color.b_blue)
         ) {
