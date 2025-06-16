@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity() {
         if (requestCode == REQUEST_CODE_CAPTURE_SCREEN && resultCode == RESULT_OK && data != null) {
             MediaProjectionPermissionHolder.resultCode = resultCode
             MediaProjectionPermissionHolder.resultData = data
+            permissionGrantedState.value = true
 
             // Lưu statusBarHeight vào SharedPreferences
             val statusBarHeight = getStatusBarHeight()
