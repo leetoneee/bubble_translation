@@ -20,6 +20,7 @@ import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_c
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.CameraScreenRoot
 import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryScreenRoot
 import androidx.compose.runtime.State
+import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.BookmarkScreenRoot
 import com.bteamcoding.bubbletranslation.feature_home.presentation.HomeScreenRoot
 
 @Composable
@@ -110,13 +111,13 @@ fun AppNavHost(
             )
         }
         composable(route = NavRoutes.FLASH_CARD) {
-
+            BookmarkScreenRoot()
         }
     }
 }
 
 @Composable
-inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavHostController) : T {
+inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavHostController): T {
     val navGraphRoute = destination.parent?.route ?: return viewModel()
     val parentEntry = remember(this) {
         navController.getBackStackEntry(navGraphRoute)
