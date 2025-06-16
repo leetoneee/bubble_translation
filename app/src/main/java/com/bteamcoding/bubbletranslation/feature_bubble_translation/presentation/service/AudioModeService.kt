@@ -165,6 +165,11 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     onClose = {
                         viewModel.onAction(AudioModeAction.OnReset)
                         speechRecognizerHelper.stopRecognition()
+//                        Khởi tạo lại mediaProjection sau khi stop
+                        mediaProjectionManager =
+                            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                        mediaProjection =
+                            mediaProjectionManager.getMediaProjection(resultCode, resultData!!)
                         stopSelf()
                     },
                     onDrag = { offsetX, offsetY ->

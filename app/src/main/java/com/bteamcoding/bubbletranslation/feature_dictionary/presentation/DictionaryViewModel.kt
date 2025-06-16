@@ -21,6 +21,7 @@ class DictionaryViewModel : ViewModel() {
             is DictionaryAction.Search -> {
                 _state.value = _state.value.copy(
                     searchQuery = action.query,
+                    definitions = emptyList(), // Clear previous definitions
                     isLoading = true,
                     error = null
                 )
@@ -29,7 +30,7 @@ class DictionaryViewModel : ViewModel() {
             is DictionaryAction.ClearSearch -> {
                 _state.value = _state.value.copy(
                     searchQuery = "",
-                    definitions = emptyList(),
+                    // definitions = emptyList(),
                     error = null
                 )
             }
@@ -62,31 +63,80 @@ class DictionaryViewModel : ViewModel() {
         }
     }
 
+//    private fun parseDictionaryEntries(json: String?): List<DictionaryEntry> {
+//        if (json.isNullOrBlank()) return emptyList()
+//        return try {
+//            val arr = JSONArray(json)
+//            List(arr.length()) { i ->
+//                val obj = arr.getJSONObject(i)
+//                DictionaryEntry(
+//                    english = obj.getString("english"),
+//                    phonetic = obj.getString("phonetic"),
+//                    part_of_speech = obj.getString("part_of_speech"),
+//                    meanings = obj.getJSONArray("meanings").let { meaningsArr ->
+//                        List(meaningsArr.length()) { j ->
+//                            val m = meaningsArr.getJSONObject(j)
+//                            Meaning(
+//                                meaning = m.getString("meaning"),
+//                                vietnamese = m.getString("vietnamese"),
+//                                example_sentence = m.getString("example_sentence"),
+//                                vietnamese_translation = m.getString("vietnamese_translation")
+//                            )
+//                        }
+//                    }
+//                )
+//            }
+//        } catch (e: Exception) {
+//            emptyList()
+//        }
+//    }
+
     private fun parseDictionaryEntries(json: String?): List<DictionaryEntry> {
         if (json.isNullOrBlank()) return emptyList()
         return try {
-            val arr = JSONArray(json)
-            List(arr.length()) { i ->
-                val obj = arr.getJSONObject(i)
-                DictionaryEntry(
-                    english = obj.getString("english"),
-                    phonetic = obj.getString("phonetic"),
-                    part_of_speech = obj.getString("part_of_speech"),
-                    meanings = obj.getJSONArray("meanings").let { meaningsArr ->
-                        List(meaningsArr.length()) { j ->
-                            val m = meaningsArr.getJSONObject(j)
-                            Meaning(
-                                meaning = m.getString("meaning"),
-                                vietnamese = m.getString("vietnamese"),
-                                example_sentence = m.getString("example_sentence"),
-                                vietnamese_translation = m.getString("vietnamese_translation")
-                            )
-                        }
-                    }
-                )
+            val entries = mutableListOf<DictionaryEntry>()
+
+            val jsonElement = json.trim()
+
+            // Kiểm tra xem là JSONArray hay JSONObject
+            if (jsonElement.startsWith("[")) {
+                // Nếu là JSONArray
+                val arr = JSONArray(jsonElement)
+                for (i in 0 until arr.length()) {
+                    val obj = arr.getJSONObject(i)
+                    entries.add(parseEntry(obj))
+                }
+            } else {
+                // Nếu là JSONObject đơn lẻ
+                val obj = JSONObject(jsonElement)
+                entries.add(parseEntry(obj))
             }
+
+            entries
         } catch (e: Exception) {
+            e.printStackTrace()
             emptyList()
         }
     }
+
+    // Hàm phụ để parse một DictionaryEntry từ JSONObject
+    private fun parseEntry(obj: JSONObject): DictionaryEntry {
+        return DictionaryEntry(
+            english = obj.getString("english"),
+            phonetic = obj.getString("phonetic"),
+            part_of_speech = obj.getString("part_of_speech"),
+            meanings = obj.getJSONArray("meanings").let { meaningsArr ->
+                List(meaningsArr.length()) { j ->
+                    val m = meaningsArr.getJSONObject(j)
+                    Meaning(
+                        meaning = m.getString("meaning"),
+                        vietnamese = m.getString("vietnamese"),
+                        example_sentence = m.getString("example_sentence"),
+                        vietnamese_translation = m.getString("vietnamese_translation")
+                    )
+                }
+            }
+        )
+    }
+
 }

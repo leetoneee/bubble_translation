@@ -3,8 +3,12 @@ activityKtx = "1.10.1"
 agp = "8.8.1"
 cameraCore = "1.4.2"
 coilCompose = "2.2.2"
-constraintlayoutCompose = "1.1.1"
+coilComposeVersion = "2.5.0"
 datastorePreferences = "1.1.4"
+hiltAndroid = "2.56.2"
+hiltAndroidGradlePlugin = "2.56.2"
+hiltNavigationCompose = "1.2.0"
+graphicsShapes = "1.0.1"
 koinAndroid = "3.5.3"
 koinAndroidxCompose = "3.5.3"
 kotlin = "2.0.0"
@@ -12,6 +16,7 @@ coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+kotlinGradlePlugin = "1.9.10"
 kotlinxCoroutinesAndroid = "1.10.1"
 lifecycleRuntimeKtx = "2.8.7"
 activityCompose = "1.10.1"
@@ -27,6 +32,10 @@ appcompat = "1.7.0"
 material = "1.12.0"
 activity = "1.10.1"
 voskAndroid = "0.3.47"
+constraintlayoutCompose = "1.1.1"
+composeTesting = "1.0.0-alpha04"
+foundationAndroid = "1.6.6"
+composeTestingVersion = "1.0.0-alpha04"
 
 [libraries]
 androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityKtx" }
@@ -39,9 +48,16 @@ androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constr
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastorePreferences" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
+androidx-graphics-shapes = { module = "androidx.graphics:graphics-shapes", version.ref = "graphicsShapes" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+coil-compose-v250 = { module = "io.coil-kt:coil-compose", version.ref = "coilComposeVersion" }
+coil-svg = { module = "io.coil-kt:coil-svg", version.ref = "coilComposeVersion" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
+hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroid" }
+hilt-android-gradle-plugin = { module = "com.google.dagger:hilt-android-gradle-plugin", version.ref = "hiltAndroidGradlePlugin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -59,6 +75,7 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndr
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
 androidx-lifecycle-runtime-compose-android = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose-android", version.ref = "lifecycleRuntimeComposeAndroid" }
 vosk-android = { module = "com.alphacephei:vosk-android", version.ref = "voskAndroid" }
+androidx-foundation-android = { group = "androidx.compose.foundation", name = "foundation-android", version.ref = "foundationAndroid" }
 
 # Ktor
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutinesAndroid" }
@@ -73,6 +90,7 @@ androidx-camera-view = { group = "androidx.camera", name = "camera-view", versio
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+androidx-compose-testing = { group = "androidx.xr.compose", name = "compose-testing", version.ref = "composeTestingVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

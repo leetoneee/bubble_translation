@@ -1,3 +1,6 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+import java.io.FileInputStream
+import java.util.Properties
 import java.util.UUID
 
 plugins {
@@ -5,6 +8,13 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
+}
+
+val envProperties = Properties()
+file("$rootDir/local.properties").takeIf { it.exists() }?.inputStream()?.use {
+    envProperties.load(it)
 }
 
 android {
@@ -19,6 +29,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField ("String", "API_KEY", "\"${envProperties["API_KEY"]}\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -39,6 +54,9 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    packaging {
+        exclude ("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
     }
 }
 
@@ -81,6 +99,9 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
+    implementation(libs.androidx.foundation.android)
+    implementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.compose.testing)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -106,17 +127,39 @@ dependencies {
     implementation (libs.text.recognition)
     implementation (libs.translate)
     implementation (libs.kotlinx.coroutines.android)
+
     implementation(libs.androidx.camera.core)
     implementation(libs.androidx.camera.camera2)
     implementation (libs.androidx.camera.lifecycle)
     implementation (libs.androidx.camera.video)
-
     implementation (libs.androidx.camera.view)
     implementation (libs.androidx.camera.extensions)
     implementation (libs.androidx.constraintlayout.compose)
 
     implementation(libs.androidx.activity.ktx)
     implementation(libs.coil.compose)
-
+    implementation(libs.androidx.graphics.shapes) // or latest version
+    implementation(libs.coil.compose.v250) // Or latest version
+    implementation(libs.coil.svg)
     implementation(libs.vosk.android)
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+
+    // To recognize Latin script
+    implementation ("com.google.mlkit:text-recognition:16.0.1")
+
+    // To recognize Chinese script
+    implementation ("com.google.mlkit:text-recognition-chinese:16.0.1")
+
+    // To recognize Devanagari script
+    implementation ("com.google.mlkit:text-recognition-devanagari:16.0.1")
+
+    // To recognize Japanese script
+    implementation ("com.google.mlkit:text-recognition-japanese:16.0.1")
+
+    // To recognize Korean script
+    implementation ("com.google.mlkit:text-recognition-korean:16.0.1")
+
 }

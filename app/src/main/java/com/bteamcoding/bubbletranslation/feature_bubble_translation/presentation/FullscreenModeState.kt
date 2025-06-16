@@ -3,5 +3,5 @@ package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentatio
 import com.google.mlkit.vision.text.Text
 
 data class FullscreenModeState(
-    val visionText: Text? = null
+    val visionText: Text? = null,
 )

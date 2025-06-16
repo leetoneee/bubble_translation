@@ -1,12 +1,6 @@
 package com.bteamcoding.bubbletranslation.core.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Info
@@ -16,6 +10,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
@@ -23,97 +18,93 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import com.bteamcoding.bubbletranslation.R
+import com.bteamcoding.bubbletranslation.ui.theme.Inter
 
 @Composable
-fun TopBar(title: String, modifier: Modifier = Modifier) {
-    ConstraintLayout(
+fun TopBar(
+    title: String,
+    onNavToAuthScreen: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
         modifier = Modifier
             .padding(top = 8.dp)
             .padding(horizontal = 16.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        val (name, infoBtn, settingBtn, userBtn) = createRefs()
-
         Column(
             modifier = Modifier
-                .constrainAs(name) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom)
-                    start.linkTo(parent.start)
-                }
+                .wrapContentWidth()
+                .height(56.dp)
+                .wrapContentHeight(),
         ) {
             Text(
                 text = title,
                 color = Color.DarkGray,
-                fontWeight = FontWeight.SemiBold,
+                fontFamily = Inter,
+                fontWeight = FontWeight.ExtraBold,
                 fontSize = 20.sp
             )
         }
 
-        FilledIconButton(
-            onClick = {},
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = colorResource(R.color.b_gray),
-            ),
-            modifier = Modifier.constrainAs(infoBtn) {
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-                end.linkTo(settingBtn.start, margin = 8.dp)
-            }
+        Row(
+            modifier = Modifier.wrapContentWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Info,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = colorResource(R.color.b_blue)
-            )
-        }
+            FilledIconButton(
+                onClick = {},
+                modifier = Modifier.size(36.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = colorResource(R.color.b_gray),
+                ),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = null,
+                    modifier = Modifier.size(22.dp),
+                    tint = colorResource(R.color.b_blue)
+                )
+            }
 
-        FilledIconButton(
-            onClick = {},
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = colorResource(R.color.b_gray),
-            ),
-            modifier = Modifier.constrainAs(settingBtn) {
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-                end.linkTo(userBtn.start, margin = 8.dp)
+            FilledIconButton(
+                onClick = {},
+                modifier = Modifier.size(36.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = colorResource(R.color.b_gray),
+                ),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Settings,
+                    contentDescription = null,
+                    modifier = Modifier.size(22.dp),
+                    tint = colorResource(R.color.b_blue)
+                )
             }
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.Settings,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = colorResource(R.color.b_blue)
-            )
-        }
 
-        FilledIconButton(
-            onClick = {},
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = colorResource(R.color.b_gray),
-            ),
-            modifier = Modifier.constrainAs(userBtn) {
-                top.linkTo(parent.top)
-                bottom.linkTo(parent.bottom)
-                end.linkTo(parent.end)
+            FilledIconButton(
+                onClick = onNavToAuthScreen,
+                modifier = Modifier.size(36.dp),
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = colorResource(R.color.b_gray),
+                ),
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.AccountCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(22.dp),
+                    tint = colorResource(R.color.b_blue)
+                )
             }
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.AccountCircle,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = colorResource(R.color.b_blue)
-            )
         }
     }
 }
 
-
-@Composable
 @Preview
+@Composable
 fun TopBarPreview() {
-    TopBar("Image Recognition")
+    TopBar("Image Recognition", onNavToAuthScreen = {})
 }

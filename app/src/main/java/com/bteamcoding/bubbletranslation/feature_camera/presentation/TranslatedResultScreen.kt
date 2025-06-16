@@ -165,11 +165,12 @@ fun TranslatedResultScreen(
                             .constrainAs(actionGroup) {
                                 top.linkTo(parent.top)
                             }
+                            .padding(start = 8.dp)
                     ) {
                         val (sourceLang, copyBtn, voiceBtn) = createRefs()
 
                         Text(
-                            text = "English - Ngôn ngữ được phát hiện",
+                            text = "English - Ngôn ngữ gốc",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Normal,
                             color = Color.Gray,
@@ -244,6 +245,7 @@ fun TranslatedResultScreen(
                         SelectionContainer(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(start = 8.dp, end = 8.dp, top = 0.dp, bottom = 8.dp)
                         ) {
                             Text(
                                 text = text.textBlocks.joinToString("\n") { it.originalBlock.text },
@@ -279,6 +281,7 @@ fun TranslatedResultScreen(
                             .constrainAs(actionGroup) {
                                 top.linkTo(parent.top)
                             }
+                            .padding(start = 8.dp)
                     ) {
                         val (targetLang, copyBtn, voiceBtn) = createRefs()
 
@@ -368,6 +371,7 @@ fun TranslatedResultScreen(
                         SelectionContainer(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .padding(start = 8.dp, end = 8.dp, top = 0.dp, bottom = 8.dp)
                         ) {
                             Text(
                                 text = text.textBlocks.joinToString("\n") { it.translatedText },

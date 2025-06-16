@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -53,16 +55,19 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
+import androidx.navigation.NavController
 import com.bteamcoding.bubbletranslation.R
+import com.bteamcoding.bubbletranslation.core.components.SelectLang
+import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
 import com.bteamcoding.bubbletranslation.core.components.TopBar
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.activity.CameraScreenActivity
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.activity.PreviewImageActivity
+import com.bteamcoding.bubbletranslation.ui.theme.Inter
 
 @Composable
 fun CameraScreenRoot(
-    viewModel: CameraScreenViewModel = viewModel()
+    viewModel: CameraScreenViewModel = viewModel(),
+    navController: NavController
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -77,6 +82,9 @@ fun CameraScreenRoot(
             val intent = Intent(context, PreviewImageActivity::class.java)
             intent.putExtra("imageUri", it.toString())
             context.startActivity(intent)
+        },
+        onNavToAuthScreen = {
+            navController.navigate(NavRoutes.AUTH)
         }
     )
 }
@@ -84,7 +92,8 @@ fun CameraScreenRoot(
 @Composable
 fun CameraScreen(
     onCameraMode: () -> Unit,
-    onImageChosen: (Uri) -> Unit
+    onImageChosen: (Uri) -> Unit,
+    onNavToAuthScreen: () -> Unit
 ) {
     //The URI of the photo that the user has picked
     var photoUri: Uri? by remember { mutableStateOf(null) }
@@ -113,7 +122,10 @@ fun CameraScreen(
                 }
                 .fillMaxWidth()
         ) {
-            TopBar("Image Recognition")
+            TopBar(
+                "Image Recognition",
+                onNavToAuthScreen = onNavToAuthScreen
+            )
         }
 
         Column(
@@ -130,109 +142,95 @@ fun CameraScreen(
                 modifier = Modifier
                     .size(120.dp)
                     .background(
-                        color = colorResource(R.color.blue_400).copy(0.5f),
+                        color = colorResource(R.color.blue_icon).copy(0.5f),
                         shape = RoundedCornerShape(30.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.Image,
+                Image(
+                    painter = painterResource(R.drawable.bee_plain),
                     contentDescription = null,
-                    modifier = Modifier.size(40.dp),
-                    tint = colorResource(R.color.blue_900)
+                    modifier = Modifier.size(100.dp)
                 )
             }
-            Text(text = "Take a picture or\nChoose image from library", fontWeight = FontWeight.Bold, fontSize = 18.sp, textAlign = TextAlign.Center, lineHeight = 20.sp, color = colorResource(R.color.bold_text), modifier = Modifier.padding(top = 30.dp, bottom = 10.dp))
-            Text(text = "Text in the image will be translated\n and displayed here", fontSize = 14.sp, fontWeight = FontWeight.Thin, textAlign = TextAlign.Center, color = colorResource(R.color.normal_text))
+            Text(text = "Take a picture or\nChoose image from library", fontFamily = Inter, fontWeight = FontWeight.Bold, fontSize = 18.sp, textAlign = TextAlign.Center, lineHeight = 20.sp, color = colorResource(R.color.bold_text), modifier = Modifier.padding(top = 30.dp, bottom = 10.dp))
+            Text(text = "Text in the image will be translated\n and displayed here", fontFamily = Inter, fontSize = 14.sp, fontWeight = FontWeight.Normal, textAlign = TextAlign.Center, color = colorResource(R.color.grey_light))
         }
 
         Row(
             modifier = Modifier
                 .wrapContentWidth()
-                .height(60.dp)
+                .wrapContentHeight()
                 .background(
-                    color = colorResource(R.color.blue_400),
-                    shape = RoundedCornerShape(24.dp)
+                    color = colorResource(R.color.blue_lightest),
+                    shape = RoundedCornerShape(26.dp)
                 )
                 .constrainAs(controller) {
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
-                    bottom.linkTo(parent.bottom, margin = 16.dp)
+                    bottom.linkTo(parent.bottom, margin = 26.dp)
                 }
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 10.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(18.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            FilledIconButton(
-                onClick = {},
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = colorResource(R.color.b_blue),
-                )
-            ) {
-                Text("EN", fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Color.White)
-            }
+            Row(
+                modifier = Modifier
+                    .width(144.dp)
+                    .wrapContentHeight()
+                    .padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
 
-            FilledIconButton(
-                onClick = {},
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = colorResource(R.color.b_blue).copy(alpha = 0.7f),
-                )
-            ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.swap_arrow_icon),
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = Color.White
-                )
-            }
-
-            FilledIconButton(
-                onClick = {},
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = colorResource(R.color.b_blue),
-                )
-            ) {
-                Text("VI", fontSize = 20.sp, fontWeight = FontWeight.Medium, color = Color.White)
+            ){
+                SelectLang(shapeSize = 40.dp, textSize = 14.sp)
             }
 
             VerticalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
+                modifier = Modifier.padding(vertical = 8.dp).height(32.dp),
                 thickness = 3.dp,
                 color = Color.White
             )
 
-            OutlinedIconButton(
-                onClick = onCameraMode,
-                border = BorderStroke(2.dp, color = colorResource(R.color.b_blue)),
-                colors = IconButtonDefaults.iconButtonColors(containerColor = colorResource(R.color.b_gray))
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.CameraAlt,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = colorResource(R.color.b_blue)
-                )
-            }
-
-            OutlinedIconButton(
-                onClick = {
-                    //On button press, launch the photo picker
-                    launcher.launch(
-                        PickVisualMediaRequest(
-                            //Here we request only photos. Change this to .ImageAndVideo if you want videos too.
-                            //Or use .VideoOnly if you only want videos.
-                            mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
-                        )
+            Row(
+                modifier = Modifier
+                    .width(100.dp)
+                    .wrapContentHeight(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ){
+                OutlinedIconButton(
+                    onClick = onCameraMode,
+                    border = BorderStroke(2.4.dp, color = colorResource(R.color.blue_dark)),
+                    colors = IconButtonDefaults.iconButtonColors(containerColor = colorResource(R.color.b_gray))
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.CameraAlt,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = colorResource(R.color.blue_dark)
                     )
-                },
-                border = BorderStroke(2.dp, color = colorResource(R.color.b_blue)),
-                colors = IconButtonDefaults.iconButtonColors(containerColor = colorResource(R.color.b_gray))
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Image,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = colorResource(R.color.b_blue)
-                )
+                }
+                OutlinedIconButton(
+                    onClick = {
+                        //On button press, launch the photo picker
+                        launcher.launch(
+                            PickVisualMediaRequest(
+                                //Here we request only photos. Change this to .ImageAndVideo if you want videos too.
+                                //Or use .VideoOnly if you only want videos.
+                                mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    },
+                    border = BorderStroke(2.4.dp, color = colorResource(R.color.blue_dark)),
+                    colors = IconButtonDefaults.iconButtonColors(containerColor = colorResource(R.color.b_gray))
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Image,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = colorResource(R.color.blue_dark)
+                    )
+                }
             }
         }
     }
@@ -243,6 +241,7 @@ fun CameraScreen(
 fun CameraScreenPre() {
     CameraScreen(
         onCameraMode = {},
-        onImageChosen = {}
+        onImageChosen = {},
+        onNavToAuthScreen = {}
     )
 }

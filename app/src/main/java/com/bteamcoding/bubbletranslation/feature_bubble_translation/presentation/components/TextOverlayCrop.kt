@@ -81,7 +81,7 @@ fun BlockOverlayCrop(block: Text.TextBlock, captureRegion: Rect) {
     val offsetDp = with(density) {
         Offset(
             x = ((block.boundingBox?.left ?: 0 ).toDp().value + captureRegion.left),
-            y = (((block.boundingBox?.top ?: 0) - statusBarHeightPx).toDp().value + captureRegion.top)
+            y = ((block.boundingBox?.top ?: 0).toDp().value + captureRegion.top)
         )
     }
 
@@ -100,10 +100,10 @@ fun BlockOverlayCrop(block: Text.TextBlock, captureRegion: Rect) {
         style = TextStyle(
             color = Color.White,
             fontSize = idealTextSizeSp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.SemiBold
         ),
         modifier = Modifier
-            .offset(x = offsetDp.x.dp, y = (offsetDp.y.dp + statusBarHeightDp))
+            .offset(x = offsetDp.x.dp, y = offsetDp.y.dp)
             .width(widthDp)
             .height(heightDp)
             .background(Color(0xFF000000).copy(alpha = 0.7f))
