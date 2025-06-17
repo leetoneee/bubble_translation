@@ -37,12 +37,6 @@ class BookmarkViewModel @Inject constructor(
 
             BookmarkAction.OnAddNewFolder -> addFolder(_state.value.folderName)
 
-
-            is BookmarkAction.OnDeleteFolder -> {
-                deleteFolder(action.folderId)
-                getAllFolders()
-            }
-
             BookmarkAction.OnLoadAllFolders -> {
                 _state.update {
                     it.copy(currentFolder = null)
@@ -52,11 +46,6 @@ class BookmarkViewModel @Inject constructor(
 
             is BookmarkAction.OnLoadWordsByFolder -> {
 
-            }
-
-            is BookmarkAction.OnUpdateFolderName -> {
-                updateFolderName(action.folderId, action.name)
-                getAllFolders()
             }
 
             BookmarkAction.OnClearFolders -> {
@@ -97,6 +86,59 @@ class BookmarkViewModel @Inject constructor(
             BookmarkAction.ClearError -> {
                 _state.update { it.copy(errorMessage = null) }
             }
+
+            BookmarkAction.OnUpdateFolderName -> _state.value.tempFolder?.let {
+                updateFolderName(
+                    it.id,
+                    _state.value.folderName
+                )
+            }
+
+            BookmarkAction.OnHideEditFolder -> {
+                _state.update {
+                    it.copy(
+                        showEditFolderDialog = false,
+                        tempFolder = null,
+                    )
+                }
+            }
+
+            is BookmarkAction.OnShowEditFolder -> {
+                _state.update {
+                    it.copy(
+                        showEditFolderDialog = true,
+                        tempFolder = action.folder,
+                    )
+                }
+            }
+
+            is BookmarkAction.OnDeleteFolder -> _state.value.tempFolder?.let { deleteFolder(it.id) }
+
+            BookmarkAction.OnHideConfirm -> {
+                _state.update {
+                    it.copy(
+                        showConfirmDialog = false,
+                        tempFolder = null
+                    )
+                }
+            }
+
+            is BookmarkAction.OnShowConfirm -> {
+                _state.update {
+                    it.copy(
+                        showConfirmDialog = true,
+                        tempFolder = action.folder
+                    )
+                }
+            }
+
+            is BookmarkAction.OnSetTempFolder -> {
+                _state.update {
+                    it.copy(
+                        tempFolder = action.folder,
+                    )
+                }
+            }
         }
     }
 
@@ -121,7 +163,6 @@ class BookmarkViewModel @Inject constructor(
     }
 
     private fun addFolder(name: String) {
-        Log.i("add folder", name)
         viewModelScope.launch {
             runCatching {
                 addFolderUseCase(name)
@@ -141,13 +182,38 @@ class BookmarkViewModel @Inject constructor(
 
     private fun updateFolderName(id: String, name: String) {
         viewModelScope.launch {
-            updateFolderNameUseCase(id, name)
+            runCatching {
+                updateFolderNameUseCase(id, name)
+            }.onSuccess {
+                _state.update {
+                    it.copy(
+                        showEditFolderDialog = false,
+                        folderName = "",
+                        tempFolder = null
+                    )
+                }
+                getAllFolders()
+            }.onFailure { t ->
+                _state.update { it.copy(errorMessage = t.message) }
+            }
         }
     }
 
     private fun deleteFolder(id: String) {
         viewModelScope.launch {
-            deleteFolderUseCase(id)
+            runCatching {
+                deleteFolderUseCase(id)
+            }.onSuccess {
+                _state.update {
+                    it.copy(
+                        showConfirmDialog = false,
+                        tempFolder = null
+                    )
+                }
+                getAllFolders()
+            }.onFailure { t ->
+                _state.update { it.copy(errorMessage = t.message) }
+            }
         }
     }
 }
