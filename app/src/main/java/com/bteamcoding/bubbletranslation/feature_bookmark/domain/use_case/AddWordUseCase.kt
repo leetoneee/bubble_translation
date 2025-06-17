@@ -7,9 +7,15 @@ import javax.inject.Inject
 
 class AddWordUseCase @Inject constructor(private val repo: BookmarkRepository) {
     suspend operator fun invoke(folderId: String, text: String) {
+        val normalizeWord = text.trim().replaceFirstChar { it.uppercaseChar() }
+
+        val isDuplicate = repo.countActiveWord(normalizeWord) > 0
+        if (isDuplicate) throw Exception("Từ \"$normalizeWord\" đã tồn tại trong hệ thống.")
+
+
         val word = Word(
             id = UUID.randomUUID().toString(),
-            word = text,
+            word = normalizeWord,
             updatedAt = System.currentTimeMillis(),
             folderId = folderId,
             deleted = false

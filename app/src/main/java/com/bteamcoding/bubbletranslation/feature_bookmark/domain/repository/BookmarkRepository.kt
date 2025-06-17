@@ -13,7 +13,9 @@ interface BookmarkRepository {
     suspend fun countActiveFoldersWithName(name: String) : Int
 
     fun getWordsByFolder(folderId: String): Flow<List<Word>>
+    fun getWordById(id: String): Flow<Word>
     suspend fun insertWord(word: Word)
     suspend fun deleteWord(id: String)
     suspend fun deleteWordsByFolder(id: String)
+    suspend fun countActiveWord(word: String) : Int
 }

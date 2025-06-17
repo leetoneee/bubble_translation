@@ -53,6 +53,11 @@ class BookmarkRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getWordById(id: String): Flow<Word> {
+        return wordDao.getWordById(id)
+            .map { it.toDomain() }
+    }
+
     override suspend fun insertWord(word: Word) {
         wordDao.insertWord(word.toEntity())
     }
@@ -63,5 +68,9 @@ class BookmarkRepositoryImpl @Inject constructor(
 
     override suspend fun deleteWordsByFolder(id: String) {
         wordDao.softDeleteWordsByFolder(id, System.currentTimeMillis())
+    }
+
+    override suspend fun countActiveWord(word: String): Int {
+        return wordDao.countActiveWord(word)
     }
 }
