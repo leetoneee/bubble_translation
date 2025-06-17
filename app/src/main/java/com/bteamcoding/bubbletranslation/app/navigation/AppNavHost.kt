@@ -21,6 +21,7 @@ import com.bteamcoding.bubbletranslation.feature_camera.presentation.CameraScree
 import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryScreenRoot
 import androidx.compose.runtime.State
 import com.bteamcoding.bubbletranslation.app.presentation.SplashScreen
+import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryViewModel
 import com.bteamcoding.bubbletranslation.feature_home.presentation.HomeScreenRoot
 import kotlinx.coroutines.delay
 
@@ -116,7 +117,9 @@ fun AppNavHost(
             )
         }
         composable(route = NavRoutes.DICTIONARY) {
+//            val viewModel = it.sharedHiltViewModel<DictionaryViewModel>(navController)
             DictionaryScreenRoot(
+//                viewModel = viewModel,
                 navController = navController
             )
         }
