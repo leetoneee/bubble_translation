@@ -83,7 +83,9 @@ import kotlinx.coroutines.delay
 import java.util.Locale
 import androidx.navigation.NavController
 import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
 import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.CreateFolderDialog
+import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.components.AddWordDialog
 import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.components.FABDictionary
 
 @Composable
@@ -93,6 +95,10 @@ fun DictionaryScreenRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.onAction(DictionaryAction.OnLoadAllFolders)
+    }
+
     DictionaryScreen(
         state = state,
         onAction = { action -> viewModel.onAction(action) },
@@ -101,6 +107,7 @@ fun DictionaryScreenRoot(
         },
         onDismiss = {
             viewModel.onAction(DictionaryAction.OnHideAddFolder)
+            viewModel.onAction(DictionaryAction.OnHideAddWord)
         },
         onShowAddFolder = {
             viewModel.onAction(DictionaryAction.OnShowAddFolder)
@@ -113,6 +120,12 @@ fun DictionaryScreenRoot(
         },
         onAddFolder = {
             viewModel.onAction(DictionaryAction.OnAddNewFolder)
+        },
+        onAddWord = {
+            viewModel.onAction(DictionaryAction.OnAddNewWord(it))
+        },
+        onShowAddWord = {
+            viewModel.onAction(DictionaryAction.OnShowAddWord)
         }
     )
 }
@@ -125,7 +138,9 @@ fun DictionaryScreen(
     onNavToAuthScreen: () -> Unit,
     onDismiss: () -> Unit,
     onFolderNameChanged: (String) -> Unit,
+    onAddWord: (Folder) -> Unit,
     onAddFolder: () -> Unit,
+    onShowAddWord: () -> Unit,
     onShowAddFolder: () -> Unit,
     onDismissError: () -> Unit
 ) {
@@ -150,7 +165,7 @@ fun DictionaryScreen(
         floatingActionButton = {
             FABDictionary(
                 onAddFolder = onShowAddFolder,
-                onAddWord = {}
+                onAddWord = onShowAddWord
             )
         }
     ) {
@@ -345,7 +360,10 @@ fun DictionaryScreen(
                                                     imageVector = Icons.Filled.Save,
                                                     contentDescription = null,
                                                     modifier = Modifier.size(28.dp),
-                                                    tint = colorResource(R.color.grey_medium)
+                                                    tint = if (state.isSavedWord)
+                                                        colorResource(R.color.blue_dark)
+                                                    else
+                                                        colorResource(R.color.grey_medium)
                                                 )
                                             }
                                         }
@@ -410,6 +428,17 @@ fun DictionaryScreen(
                 onDismiss = onDismiss,
                 folderName = state.folderName,
                 onFolderNameChanged = onFolderNameChanged
+            )
+        }
+
+        if (state.showAddWordDialog) {
+            AddWordDialog(
+                onConfirm = {
+                    onAddWord(it)
+                },
+                onDismiss = onDismiss,
+                word = state.searchQuery,
+                folders = state.folders
             )
         }
 

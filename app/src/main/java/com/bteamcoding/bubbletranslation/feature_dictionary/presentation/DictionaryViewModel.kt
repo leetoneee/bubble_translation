@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bteamcoding.bubbletranslation.core.utils.callApiForTranslation
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddFolderUseCase
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddWordUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetAllFoldersUseCase
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetWordByNameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +22,9 @@ import javax.inject.Inject
 @HiltViewModel
 class DictionaryViewModel @Inject constructor(
     private val getAllFoldersUseCase: GetAllFoldersUseCase,
-    private val addFolderUseCase: AddFolderUseCase
+    private val addFolderUseCase: AddFolderUseCase,
+    private val addWordUseCase: AddWordUseCase,
+    private val getWordByNameUseCase: GetWordByNameUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(DictionaryScreenState())
     val state = _state.asStateFlow()
@@ -35,11 +39,13 @@ class DictionaryViewModel @Inject constructor(
                     error = null
                 )
                 searchWord(action.query)
+                getWord(action.query)
             }
 
             is DictionaryAction.ClearSearch -> {
                 _state.value = _state.value.copy(
                     searchQuery = "",
+                    isSavedWord = false,
                     // definitions = emptyList(),
                     error = null
                 )
@@ -67,6 +73,7 @@ class DictionaryViewModel @Inject constructor(
                         showAddFolderDialog = true,
                     )
                 }
+                getAllFolders()
             }
 
             DictionaryAction.ClearError -> {
@@ -75,6 +82,41 @@ class DictionaryViewModel @Inject constructor(
 
             is DictionaryAction.OnFolderNameChanged -> {
                 _state.update { it.copy(folderName = action.name) }
+            }
+
+            is DictionaryAction.OnAddNewWord -> addWord(_state.value.searchQuery, action.folder.id)
+
+            DictionaryAction.OnHideAddWord -> {
+                _state.update {
+                    it.copy(
+                        showAddWordDialog = false,
+                    )
+                }
+            }
+            DictionaryAction.OnShowAddWord -> {
+                _state.update {
+                    it.copy(
+                        showAddWordDialog = true,
+                    )
+                }
+            }
+
+            DictionaryAction.OnLoadAllFolders -> getAllFolders()
+        }
+    }
+
+    private fun addWord(word: String, id: String) {
+        viewModelScope.launch {
+            runCatching {
+                addWordUseCase(folderId = id, text = word)
+            }.onSuccess {
+                _state.update {
+                    it.copy(
+                        showAddWordDialog = false,
+                    )
+                }
+            }.onFailure { t ->
+                _state.update { it.copy(errorMessage = t.message) }
             }
         }
     }
@@ -103,6 +145,20 @@ class DictionaryViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         folders = value
+                    )
+                }
+            }
+        }
+    }
+
+    private fun getWord(query: String) {
+        viewModelScope.launch {
+            runCatching {
+                getWordByNameUseCase(query)
+            }.onSuccess {
+                _state.update {
+                    it.copy(
+                        isSavedWord = true
                     )
                 }
             }

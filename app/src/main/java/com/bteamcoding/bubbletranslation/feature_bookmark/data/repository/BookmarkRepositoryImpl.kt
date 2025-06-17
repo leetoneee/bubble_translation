@@ -58,6 +58,11 @@ class BookmarkRepositoryImpl @Inject constructor(
             .map { it.toDomain() }
     }
 
+    override fun getWordByName(name: String): Flow<Word> {
+        return wordDao.getWordByName(name)
+            .map { it.toDomain() }
+    }
+
     override suspend fun insertWord(word: Word) {
         wordDao.insertWord(word.toEntity())
     }

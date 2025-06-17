@@ -68,13 +68,13 @@ fun CreateFolderDialog(
                         onClick = onDismiss,
                         border = BorderStroke(
                             1.dp, color = colorResource(
-                                R.color.b_blue
+                                R.color.blue_dark
                             )
                         )
                     ) {
                         Text(
                             "Huỷ", color = colorResource(
-                                R.color.b_blue
+                                R.color.blue_dark
                             )
                         )
                     }
@@ -85,7 +85,7 @@ fun CreateFolderDialog(
                         onClick = onConfirm,
                         colors = ButtonColors(
                             containerColor = colorResource(
-                                R.color.b_blue
+                                R.color.blue_dark
                             ),
                             contentColor = Color.White,
                             disabledContainerColor = Color.White,

@@ -24,5 +24,7 @@ data class DictionaryScreenState(
     val errorMessage: String? = null,
     val folders: List<Folder> = listOf(),
     val folderName: String = "",
-    val showAddFolderDialog: Boolean = false
+    val showAddFolderDialog: Boolean = false,
+    val showAddWordDialog: Boolean = false,
+    val isSavedWord: Boolean = false
 )
