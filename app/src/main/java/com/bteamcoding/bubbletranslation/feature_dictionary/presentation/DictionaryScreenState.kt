@@ -1,5 +1,7 @@
 package com.bteamcoding.bubbletranslation.feature_dictionary.presentation
 
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
+
 data class Meaning(
     val meaning: String,
     val vietnamese: String,
@@ -18,5 +20,9 @@ data class DictionaryScreenState(
     val searchQuery: String = "",
     val definitions: List<DictionaryEntry> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val errorMessage: String? = null,
+    val folders: List<Folder> = listOf(),
+    val folderName: String = "",
+    val showAddFolderDialog: Boolean = false
 )

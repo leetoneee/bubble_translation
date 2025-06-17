@@ -31,7 +31,7 @@ class BookmarkViewModel @Inject constructor(
     private val _userInfo = MutableStateFlow<User?>(null)
     val userInfo = _userInfo.asStateFlow()
 
-    var allFolders: List<Folder> = listOf()
+    private var allFolders: List<Folder> = listOf()
 
     fun onAction(action: BookmarkAction) {
         when (action) {

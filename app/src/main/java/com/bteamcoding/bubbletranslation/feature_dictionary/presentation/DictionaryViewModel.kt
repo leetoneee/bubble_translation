@@ -3,16 +3,25 @@ package com.bteamcoding.bubbletranslation.feature_dictionary.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bteamcoding.bubbletranslation.core.utils.callApiForTranslation
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddFolderUseCase
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetAllFoldersUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import javax.inject.Inject
 
-class DictionaryViewModel : ViewModel() {
+@HiltViewModel
+class DictionaryViewModel @Inject constructor(
+    private val getAllFoldersUseCase: GetAllFoldersUseCase,
+    private val addFolderUseCase: AddFolderUseCase
+) : ViewModel() {
     private val _state = MutableStateFlow(DictionaryScreenState())
     val state = _state.asStateFlow()
 
@@ -27,6 +36,7 @@ class DictionaryViewModel : ViewModel() {
                 )
                 searchWord(action.query)
             }
+
             is DictionaryAction.ClearSearch -> {
                 _state.value = _state.value.copy(
                     searchQuery = "",
@@ -34,10 +44,67 @@ class DictionaryViewModel : ViewModel() {
                     error = null
                 )
             }
+
             is DictionaryAction.UpdateQuery -> {
                 _state.value = _state.value.copy(
                     searchQuery = action.query
                 )
+            }
+
+            DictionaryAction.OnAddNewFolder -> addFolder(_state.value.folderName)
+            DictionaryAction.OnHideAddFolder -> {
+                _state.update {
+                    it.copy(
+                        showAddFolderDialog = false,
+                        folderName = ""
+                    )
+                }
+            }
+
+            DictionaryAction.OnShowAddFolder -> {
+                _state.update {
+                    it.copy(
+                        showAddFolderDialog = true,
+                    )
+                }
+            }
+
+            DictionaryAction.ClearError -> {
+                _state.update { it.copy(errorMessage = null) }
+            }
+
+            is DictionaryAction.OnFolderNameChanged -> {
+                _state.update { it.copy(folderName = action.name) }
+            }
+        }
+    }
+
+    private fun addFolder(name: String) {
+        viewModelScope.launch {
+            runCatching {
+                addFolderUseCase(name)
+            }.onSuccess {
+                _state.update {
+                    it.copy(
+                        showAddFolderDialog = false,
+                        folderName = ""
+                    )
+                }
+                getAllFolders()
+            }.onFailure { t ->
+                _state.update { it.copy(errorMessage = t.message) }
+            }
+        }
+    }
+
+    private fun getAllFolders() {
+        viewModelScope.launch {
+            getAllFoldersUseCase().collect { value ->
+                _state.update {
+                    it.copy(
+                        folders = value
+                    )
+                }
             }
         }
     }

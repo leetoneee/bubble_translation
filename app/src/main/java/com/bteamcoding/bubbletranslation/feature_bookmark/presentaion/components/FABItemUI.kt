@@ -35,7 +35,7 @@ fun FABItemUI(
         Spacer(modifier = Modifier.weight(1f))
         Box(
             modifier = Modifier
-                .border(2.dp, colorResource(R.color.b_blue), RoundedCornerShape(10.dp))
+                .border(2.dp, colorResource(R.color.blue_dark), RoundedCornerShape(10.dp))
                 .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
             Text(
@@ -51,7 +51,7 @@ fun FABItemUI(
 
         FloatingActionButton(
             onClick = item.onClick,
-            containerColor = colorResource(R.color.b_blue),
+            containerColor = colorResource(R.color.blue_dark),
             modifier = Modifier.size(45.dp)
         ) {
             Icon(imageVector = item.icon, contentDescription = null, tint = Color.White)

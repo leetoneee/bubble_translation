@@ -19,7 +19,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -50,10 +53,19 @@ fun ConfirmDeleteDialog(
                 )
 
                 Text(
-                    text = "Bạn có chắc chắn muốn xoá bộ thẻ \"${folder.name}\"? Hành động này không thể hoàn tác.",
+                    text = buildAnnotatedString {
+                        append("Bạn có chắc chắn muốn xoá bộ thẻ ")
+
+                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                            append("\"${folder.name}\"")
+                        }
+
+                        append("? Hành động này không thể hoàn tác.")
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+
 
                 Row(
                     horizontalArrangement = Arrangement.End,
@@ -63,10 +75,10 @@ fun ConfirmDeleteDialog(
                     OutlinedButton(
                         onClick = onDismiss,
                         border = BorderStroke(
-                            1.dp, color = colorResource(R.color.b_blue)
+                            1.dp, color = colorResource(R.color.blue_dark)
                         )
                     ) {
-                        Text("Huỷ", color = colorResource(R.color.b_blue))
+                        Text("Huỷ", color = colorResource(R.color.blue_dark))
                     }
 
                     Spacer(modifier = Modifier.width(8.dp))

@@ -23,7 +23,6 @@ import androidx.compose.runtime.State
 import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.BookmarkScreenRoot
 import com.bteamcoding.bubbletranslation.app.presentation.SplashScreen
 import com.bteamcoding.bubbletranslation.feature_home.presentation.HomeScreenRoot
-import kotlinx.coroutines.delay
 
 @Composable
 fun AppNavHost(
@@ -34,7 +33,7 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.SPLASH,
+        startDestination = NavRoutes.HOME,
     ) {
         navigation(
             startDestination = NavRoutes.ACCOUNT,
@@ -90,15 +89,6 @@ fun AppNavHost(
                     }
                 )
             }
-        }
-        composable(route = NavRoutes.SPLASH) {
-            SplashScreen(
-                onAnimationEnd = {
-                    navController.navigate(NavRoutes.HOME) {
-                        popUpTo(NavRoutes.SPLASH) { inclusive = true }
-                    }
-                }
-            )
         }
         composable(route = NavRoutes.HOME) {
             val startFWUseCase = StartFloatingWidgetUseCase(LocalContext.current)

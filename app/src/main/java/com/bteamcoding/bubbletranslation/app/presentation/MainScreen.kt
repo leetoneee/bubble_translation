@@ -16,6 +16,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bteamcoding.bubbletranslation.app.navigation.AppNavHost
 import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 
 import com.bteamcoding.bubbletranslation.app.navigation.BottomNavRoutes
@@ -32,25 +34,36 @@ fun MainScreen(
     val currentRoute = navBackStackEntry?.destination
 
     val shouldShowBottomBar = currentRoute?.route in BottomNavRoutes.list
+    val showSplash = remember { mutableStateOf(true) }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
-        Scaffold(
-            bottomBar = {
-                if (shouldShowBottomBar) {
-                    BottomBar(navController)
-                }
+    if (showSplash.value) {
+        SplashScreen(
+            onAnimationEnd = {
+                showSplash.value = false
             }
-        ) { paddingValues: PaddingValues ->
-            Box(modifier = Modifier.padding(paddingValues).consumeWindowInsets(paddingValues)) {
-                AppNavHost(
-                    navController,
-                    onRequestScreenCapturePermission,
-                    onPermissionGranted,
-                    permissionGranted
-                )
+        )
+    } else {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Scaffold(
+                bottomBar = {
+                    if (shouldShowBottomBar) {
+                        BottomBar(navController)
+                    }
+                }
+            ) { paddingValues: PaddingValues ->
+                Box(modifier = Modifier
+                    .padding(paddingValues)
+                    .consumeWindowInsets(paddingValues)) {
+                    AppNavHost(
+                        navController,
+                        onRequestScreenCapturePermission,
+                        onPermissionGranted,
+                        permissionGranted
+                    )
+                }
             }
         }
     }

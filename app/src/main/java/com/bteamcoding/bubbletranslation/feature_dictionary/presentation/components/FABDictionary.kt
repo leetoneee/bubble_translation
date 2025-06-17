@@ -1,4 +1,4 @@
-package com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components
+package com.bteamcoding.bubbletranslation.feature_dictionary.presentation.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloat
@@ -15,12 +15,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CreateNewFolder
+import androidx.compose.material.icons.filled.PostAdd
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.FloatingActionButton
@@ -37,12 +37,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.bteamcoding.bubbletranslation.R
+import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.FABItem
+import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.FABItemUI
 
 @Composable
-fun FABMain(
+fun FABDictionary(
     onAddFolder: () -> Unit,
-    onSync: () -> Unit,
-    onReload: () -> Unit
+    onAddWord: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     val onToggleFAB = {
@@ -50,16 +51,12 @@ fun FABMain(
     }
 
     val items = listOf(
-        FABItem(Icons.Filled.Refresh, "Reload", {
-            onReload()
+        FABItem(Icons.Filled.PostAdd, "Add word", {
+            onAddWord()
             onToggleFAB()
         }),
         FABItem(Icons.Filled.CreateNewFolder, "Add folder", {
             onAddFolder()
-            onToggleFAB()
-        }),
-        FABItem(Icons.Filled.Sync, "Synchronize", {
-            onSync()
             onToggleFAB()
         })
     )
