@@ -7,17 +7,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
@@ -25,6 +30,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,19 +44,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
 import com.bteamcoding.bubbletranslation.core.components.TopBar
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
@@ -60,6 +73,8 @@ import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components
 import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.FolderItem
 import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.FolderItemUI
 import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.UpdateFolderDialog
+import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.WordItem
+import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.WordItemUI
 
 @Composable
 fun BookmarkScreenRoot(
@@ -73,6 +88,7 @@ fun BookmarkScreenRoot(
             viewModel.onAction(BookmarkAction.OnLoadAllFolders)
         } else {
             viewModel.onAction(BookmarkAction.OnClearFolders)
+            viewModel.onAction(BookmarkAction.OnLoadWordsByFolder(state.currentFolder!!.id))
         }
     }
 
@@ -157,6 +173,11 @@ fun BookmarkScreen(
     val folderStates = remember(state.folders) {
         state.folders.map { FolderItemUI(it, false) }.toMutableStateList()
     }
+
+    val wordStates = remember(state.words) {
+        state.words.map { WordItemUI(it, false) }.toMutableStateList()
+    }
+
     var hasInitializedFolderName by remember { mutableStateOf(false) }
 
     if (!state.showEditFolderDialog) {
@@ -233,54 +254,122 @@ fun BookmarkScreen(
                     )
             )
 
-            Text(
+            Row(
                 modifier = Modifier
                     .constrainAs(textList) {
                         top.linkTo(searchBar.bottom, margin = 16.dp)
                     }
                     .fillMaxWidth()
-                    .padding(
-                        horizontal = 16.dp
-                    ),
-                textAlign = TextAlign.Left,
-                text = if (state.currentFolder == null) "Danh sách bộ thẻ" else "Danh sách từ vựng",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-            )
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .constrainAs(list) {
-                        top.linkTo(textList.bottom, margin = 16.dp)
-                    }
-                    .padding(
-                        horizontal = 16.dp
-                    ),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(horizontal = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                itemsIndexed(folderStates) { _, folderState ->
-                    FolderItem(
-                        folder = folderState.folder,
-                        onFolderClick = onFolderClick,
-                        onEditClick = { onShowEditFolder(it) },
-                        onDeleteClick = { onShowConfirm(it) },
-                        isOptionsRevealed = folderState.isOptionsRevealed,
-                        onExpanded = {
-                            val index =
-                                folderStates.indexOfFirst { it.folder.id == folderState.folder.id }
-                            if (index != -1) {
-                                folderStates[index] = folderState.copy(isOptionsRevealed = true)
+                // Icon back
+                if (state.currentFolder != null) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .clickable {
+                                onReload()
                             }
-                        },
-                        onCollapsed = {
-                            val index =
-                                folderStates.indexOfFirst { it.folder.id == folderState.folder.id }
-                            if (index != -1) {
-                                folderStates[index] = folderState.copy(isOptionsRevealed = false)
-                            }
-                        }
                     )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Text
+                val labelText = if (state.currentFolder == null) {
+                    AnnotatedString("Danh sách bộ thẻ")
+                } else {
+                    buildAnnotatedString {
+                        append("Danh sách từ vựng của ")
+                        withStyle(style = SpanStyle(color = colorResource(R.color.blue_dark))) {
+                            append(state.currentFolder.name)
+                        }
+                    }
+                }
+
+                Text(
+                    text = labelText,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Start
+                )
+            }
+
+            if (state.currentFolder == null) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .constrainAs(list) {
+                            top.linkTo(textList.bottom, margin = 16.dp)
+                        }
+                        .padding(
+                            horizontal = 16.dp
+                        ),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    itemsIndexed(folderStates) { _, folderState ->
+                        FolderItem(
+                            folder = folderState.folder,
+                            onFolderClick = onFolderClick,
+                            onEditClick = { onShowEditFolder(it) },
+                            onDeleteClick = { onShowConfirm(it) },
+                            isOptionsRevealed = folderState.isOptionsRevealed,
+                            onExpanded = {
+                                val index =
+                                    folderStates.indexOfFirst { it.folder.id == folderState.folder.id }
+                                if (index != -1) {
+                                    folderStates[index] = folderState.copy(isOptionsRevealed = true)
+                                }
+                            },
+                            onCollapsed = {
+                                val index =
+                                    folderStates.indexOfFirst { it.folder.id == folderState.folder.id }
+                                if (index != -1) {
+                                    folderStates[index] = folderState.copy(isOptionsRevealed = false)
+                                }
+                            }
+                        )
+                    }
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .constrainAs(list) {
+                            top.linkTo(textList.bottom, margin = 16.dp)
+                        }
+                        .padding(
+                            horizontal = 16.dp
+                        ),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    itemsIndexed(wordStates) { _, wordState ->
+                        WordItem(
+                            onDeleteClick = {},
+                            isOptionsRevealed = wordState.isOptionsRevealed,
+                            onExpanded = {
+                                val index =
+                                    wordStates.indexOfFirst { it.word.id == wordState.word.id }
+                                if (index != -1) {
+                                    wordStates[index] = wordState.copy(isOptionsRevealed = true)
+                                }
+                            },
+                            onCollapsed = {
+                                val index =
+                                    wordStates.indexOfFirst { it.word.id == wordState.word.id }
+                                if (index != -1) {
+                                    wordStates[index] = wordState.copy(isOptionsRevealed = false)
+                                }
+                            },
+                            word = wordState.word,
+                            onWordClick = {}
+                        )
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@ import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddFolderUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.DeleteFolderUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetAllFoldersUseCase
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetWordsByFolderUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.UpdateFolderNameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,7 +24,8 @@ class BookmarkViewModel @Inject constructor(
     private val getAllFoldersUseCase: GetAllFoldersUseCase,
     private val addFolderUseCase: AddFolderUseCase,
     private val updateFolderNameUseCase: UpdateFolderNameUseCase,
-    private val deleteFolderUseCase: DeleteFolderUseCase
+    private val deleteFolderUseCase: DeleteFolderUseCase,
+    private val getWordsByFolderUseCase: GetWordsByFolderUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(BookmarkState())
     val state = _state.asStateFlow()
@@ -41,13 +43,13 @@ class BookmarkViewModel @Inject constructor(
 
             BookmarkAction.OnLoadAllFolders -> {
                 _state.update {
-                    it.copy(currentFolder = null, searchQuery = "")
+                    it.copy(currentFolder = null, searchQuery = "", words = listOf())
                 }
                 getAllFolders()
             }
 
             is BookmarkAction.OnLoadWordsByFolder -> {
-
+                getAllWordsByFolder(action.folderId)
             }
 
             BookmarkAction.OnClearFolders -> {
@@ -171,6 +173,19 @@ class BookmarkViewModel @Inject constructor(
                     )
                 }
                 allFolders = value
+            }
+        }
+    }
+
+    private fun getAllWordsByFolder(folderId: String) {
+        viewModelScope.launch {
+            getWordsByFolderUseCase(folderId = folderId).collect { value ->
+                Log.i("words", value.toString())
+                _state.update {
+                    it.copy(
+                        words = value
+                    )
+                }
             }
         }
     }
