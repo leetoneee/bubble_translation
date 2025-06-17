@@ -15,7 +15,7 @@ interface WordDao {
     @Query("SELECT * FROM words WHERE id = :id")
     fun getWordById(id: String): Flow<WordEntity>
 
-    @Query("SELECT * FROM words WHERE word = :name")
+    @Query("SELECT * FROM words WHERE word = :name AND deleted = 0")
     fun getWordByName(name: String): Flow<WordEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

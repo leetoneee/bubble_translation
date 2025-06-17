@@ -6,7 +6,11 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetWordByNameUseCase @Inject constructor(private val repo: BookmarkRepository) {
-    operator fun invoke(name: String) : Flow<Word> {
-        return repo.getWordByName(name)
+    suspend operator fun invoke(name: String) : Boolean {
+        val normalizeWord = name.trim().replaceFirstChar { it.uppercaseChar() }
+
+        val isExist = repo.countActiveWord(normalizeWord) == 1
+
+        return isExist
     }
 }

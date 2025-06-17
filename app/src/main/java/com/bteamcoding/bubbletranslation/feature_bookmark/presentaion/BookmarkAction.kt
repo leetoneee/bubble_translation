@@ -1,6 +1,7 @@
 package com.bteamcoding.bubbletranslation.feature_bookmark.presentaion
 
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Word
 
 
 sealed interface BookmarkAction {
@@ -25,6 +26,10 @@ sealed interface BookmarkAction {
     data class OnShowConfirm(val folder: Folder) : BookmarkAction
     data object OnHideConfirm : BookmarkAction
     data object OnDeleteFolder : BookmarkAction
+
+    data class OnShowConfirmDeleteWord(val word: Word) : BookmarkAction
+    data object OnHideConfirmDeleteWord : BookmarkAction
+    data object OnDeleteWord : BookmarkAction
 
     data class OnQueryChanged(val query: String) : BookmarkAction
 

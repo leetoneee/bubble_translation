@@ -8,10 +8,12 @@ data class BookmarkState(
     val words: List<Word> = listOf(),
     val currentFolder: Folder? = null,
     val tempFolder: Folder? = null,
+    val tempWord: Word? = null,
     val searchQuery: String = "",
     val showAddFolderDialog: Boolean = false,
     val showEditFolderDialog: Boolean = false,
     val showConfirmDialog: Boolean = false,
+    val showConfirmDeleteWordDialog: Boolean = false,
     val folderName: String = "",
     val errorMessage: String? = null,
 )

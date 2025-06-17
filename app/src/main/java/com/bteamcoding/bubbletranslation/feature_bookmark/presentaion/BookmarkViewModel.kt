@@ -8,6 +8,7 @@ import com.bteamcoding.bubbletranslation.feature_auth.domain.model.User
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddFolderUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.DeleteFolderUseCase
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.DeleteWordUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetAllFoldersUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetWordsByFolderUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.UpdateFolderNameUseCase
@@ -25,7 +26,8 @@ class BookmarkViewModel @Inject constructor(
     private val addFolderUseCase: AddFolderUseCase,
     private val updateFolderNameUseCase: UpdateFolderNameUseCase,
     private val deleteFolderUseCase: DeleteFolderUseCase,
-    private val getWordsByFolderUseCase: GetWordsByFolderUseCase
+    private val getWordsByFolderUseCase: GetWordsByFolderUseCase,
+    private val deleteWordUseCase: DeleteWordUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(BookmarkState())
     val state = _state.asStateFlow()
@@ -61,7 +63,7 @@ class BookmarkViewModel @Inject constructor(
             is BookmarkAction.OnQueryChanged -> {
                 _state.update { it.copy(searchQuery = action.query) }
                 if (action.query != "") {
-                    val filterFolders =  searchFolder(action.query, allFolders)
+                    val filterFolders = searchFolder(action.query, allFolders)
                     _state.update {
                         it.copy(
                             folders = filterFolders
@@ -153,6 +155,26 @@ class BookmarkViewModel @Inject constructor(
                     )
                 }
             }
+
+            BookmarkAction.OnDeleteWord -> _state.value.tempWord?.let { deleteWord(it.id) }
+
+            BookmarkAction.OnHideConfirmDeleteWord -> {
+                _state.update {
+                    it.copy(
+                        showConfirmDeleteWordDialog = false,
+                        tempWord = null
+                    )
+                }
+            }
+
+            is BookmarkAction.OnShowConfirmDeleteWord -> {
+                _state.update {
+                    it.copy(
+                        showConfirmDeleteWordDialog = true,
+                        tempWord = action.word
+                    )
+                }
+            }
         }
     }
 
@@ -227,6 +249,23 @@ class BookmarkViewModel @Inject constructor(
         }
     }
 
+    private fun deleteWord(id: String) {
+        viewModelScope.launch {
+            runCatching {
+                deleteWordUseCase(id = id)
+            }.onSuccess {
+                _state.update {
+                    it.copy(
+                        showConfirmDeleteWordDialog = false,
+                        tempFolder = null
+                    )
+                }
+            }.onFailure { t ->
+                _state.update { it.copy(errorMessage = t.message) }
+            }
+        }
+    }
+
     private fun deleteFolder(id: String) {
         viewModelScope.launch {
             runCatching {
@@ -245,7 +284,7 @@ class BookmarkViewModel @Inject constructor(
         }
     }
 
-    private fun searchFolder(query: String, folders: List<Folder>) : List<Folder> {
+    private fun searchFolder(query: String, folders: List<Folder>): List<Folder> {
         val normalizedQuery = query.trim().lowercase()
 
         if (normalizedQuery.isBlank()) {

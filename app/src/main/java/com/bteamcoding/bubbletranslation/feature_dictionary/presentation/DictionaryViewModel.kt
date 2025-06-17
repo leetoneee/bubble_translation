@@ -1,5 +1,6 @@
 package com.bteamcoding.bubbletranslation.feature_dictionary.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bteamcoding.bubbletranslation.core.utils.callApiForTranslation
@@ -8,7 +9,6 @@ import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddWor
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetAllFoldersUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetWordByNameUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -93,6 +93,7 @@ class DictionaryViewModel @Inject constructor(
                     )
                 }
             }
+
             DictionaryAction.OnShowAddWord -> {
                 _state.update {
                     it.copy(
@@ -155,10 +156,17 @@ class DictionaryViewModel @Inject constructor(
         viewModelScope.launch {
             runCatching {
                 getWordByNameUseCase(query)
-            }.onSuccess {
+            }.onSuccess { value ->
+                Log.i("word", value.toString())
                 _state.update {
                     it.copy(
-                        isSavedWord = true
+                        isSavedWord = value
+                    )
+                }
+            }.onFailure {
+                _state.update {
+                    it.copy(
+                        isSavedWord = false
                     )
                 }
             }

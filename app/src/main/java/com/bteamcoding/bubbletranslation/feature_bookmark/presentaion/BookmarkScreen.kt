@@ -67,7 +67,9 @@ import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
 import com.bteamcoding.bubbletranslation.core.components.TopBar
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Word
 import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.ConfirmDeleteDialog
+import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.ConfirmDeleteWordDialog
 import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.CreateFolderDialog
 import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.FABMain
 import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.components.FolderItem
@@ -144,7 +146,14 @@ fun BookmarkScreenRoot(
         },
         onDismissConfirm = {
             viewModel.onAction(BookmarkAction.OnHideConfirm)
-        }
+            viewModel.onAction(BookmarkAction.OnHideConfirmDeleteWord)
+        },
+        onDeleteWord = {
+            viewModel.onAction(BookmarkAction.OnDeleteWord)
+        },
+        onShowConfirmDeleteWord = {
+            viewModel.onAction(BookmarkAction.OnShowConfirmDeleteWord(it))
+        },
     )
 }
 
@@ -168,7 +177,9 @@ fun BookmarkScreen(
     onDeleteFolder: () -> Unit,
     onShowConfirm: (Folder) -> Unit,
     onDismissConfirm: () -> Unit,
-    onDismissError: () -> Unit
+    onDismissError: () -> Unit,
+    onDeleteWord: () -> Unit,
+    onShowConfirmDeleteWord: (Word) -> Unit
 ) {
     val folderStates = remember(state.folders) {
         state.folders.map { FolderItemUI(it, false) }.toMutableStateList()
@@ -350,7 +361,9 @@ fun BookmarkScreen(
                 ) {
                     itemsIndexed(wordStates) { _, wordState ->
                         WordItem(
-                            onDeleteClick = {},
+                            onDeleteClick = {
+                                onShowConfirmDeleteWord(it)
+                            },
                             isOptionsRevealed = wordState.isOptionsRevealed,
                             onExpanded = {
                                 val index =
@@ -405,6 +418,14 @@ fun BookmarkScreen(
             ConfirmDeleteDialog(
                 folder = state.tempFolder,
                 onConfirm = onDeleteFolder,
+                onDismiss = onDismissConfirm
+            )
+        }
+
+        if (state.showConfirmDeleteWordDialog && state.tempWord != null) {
+            ConfirmDeleteWordDialog(
+                word = state.tempWord,
+                onConfirm = onDeleteWord,
                 onDismiss = onDismissConfirm
             )
         }
