@@ -31,6 +31,8 @@ class BookmarkViewModel @Inject constructor(
     private val _userInfo = MutableStateFlow<User?>(null)
     val userInfo = _userInfo.asStateFlow()
 
+    var allFolders: List<Folder> = listOf()
+
     fun onAction(action: BookmarkAction) {
         when (action) {
             BookmarkAction.OnLoadCurrentUser -> getUserInfo()
@@ -39,7 +41,7 @@ class BookmarkViewModel @Inject constructor(
 
             BookmarkAction.OnLoadAllFolders -> {
                 _state.update {
-                    it.copy(currentFolder = null)
+                    it.copy(currentFolder = null, searchQuery = "")
                 }
                 getAllFolders()
             }
@@ -56,6 +58,16 @@ class BookmarkViewModel @Inject constructor(
 
             is BookmarkAction.OnQueryChanged -> {
                 _state.update { it.copy(searchQuery = action.query) }
+                if (action.query != "") {
+                    val filterFolders =  searchFolder(action.query, allFolders)
+                    _state.update {
+                        it.copy(
+                            folders = filterFolders
+                        )
+                    }
+                } else {
+                    getAllFolders()
+                }
             }
 
             is BookmarkAction.OnFolderClick -> {
@@ -158,6 +170,7 @@ class BookmarkViewModel @Inject constructor(
                         folders = value
                     )
                 }
+                allFolders = value
             }
         }
     }
@@ -215,6 +228,21 @@ class BookmarkViewModel @Inject constructor(
                 _state.update { it.copy(errorMessage = t.message) }
             }
         }
+    }
+
+    private fun searchFolder(query: String, folders: List<Folder>) : List<Folder> {
+        val normalizedQuery = query.trim().lowercase()
+
+        if (normalizedQuery.isBlank()) {
+            // Trả lại toàn bộ nếu không có query
+            return folders
+        }
+
+        val filtered = allFolders.filter { folder ->
+            folder.name.lowercase().contains(normalizedQuery)
+        }
+
+        return filtered
     }
 }
 
