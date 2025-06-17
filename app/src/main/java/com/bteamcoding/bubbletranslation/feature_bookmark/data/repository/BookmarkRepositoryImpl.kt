@@ -23,6 +23,11 @@ class BookmarkRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getFolderById(id: String): Flow<Folder> {
+        return folderDao.getFolderById(id)
+            .map { it.toDomain() }
+    }
+
     override suspend fun insertFolder(folder: Folder) {
         folderDao.insertFolder(folder.toEntity())
     }
@@ -34,6 +39,10 @@ class BookmarkRepositoryImpl @Inject constructor(
     override suspend fun updateFolderName(id: String, name: String) {
         val now = System.currentTimeMillis()
         folderDao.updateFolderName(id, name, now)
+    }
+
+    override suspend fun countActiveFoldersWithName(name: String): Int {
+        return folderDao.countActiveFoldersWithName(name)
     }
 
     override fun getWordsByFolder(folderId: String): Flow<List<Word>> {

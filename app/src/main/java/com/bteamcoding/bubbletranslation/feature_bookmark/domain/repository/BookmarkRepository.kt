@@ -6,9 +6,11 @@ import kotlinx.coroutines.flow.Flow
 
 interface BookmarkRepository {
     fun getAllFolders(): Flow<List<Folder>>
+    fun getFolderById(id: String): Flow<Folder>
     suspend fun insertFolder(folder: Folder)
     suspend fun deleteFolder(id: String)
     suspend fun updateFolderName(id: String, name: String)
+    suspend fun countActiveFoldersWithName(name: String) : Int
 
     fun getWordsByFolder(folderId: String): Flow<List<Word>>
     suspend fun insertWord(word: Word)

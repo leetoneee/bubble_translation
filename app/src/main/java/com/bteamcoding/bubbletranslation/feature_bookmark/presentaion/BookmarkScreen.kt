@@ -327,7 +327,7 @@ fun BookmarkScreen(
                     onDismissError()
                 },
                 title = {
-                    Text(text = "Đăng nhập thất bại", fontWeight = FontWeight.Bold)
+                    Text(text = "Lỗi", fontWeight = FontWeight.Bold)
                 },
                 text = {
                     Text(text = state.errorMessage ?: "")
