@@ -25,6 +25,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.SavedStateRegistry
@@ -40,6 +41,9 @@ import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.DraggableFloatingWidget
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.PartialScreenModeState
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.DraggableTranslateWord
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+
 
 class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
@@ -196,10 +200,19 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 Log.d("DraggableTranslateWord", "params.x: ${params.x}")
                                 Log.d("DraggableTranslateWord", "params.y: ${params.y}")
 
-                                handleTranslateWord(params)
+                                lifecycleScope.launch {
+                                    handleTranslateWord(params) // Gọi hàm trước
 
-                                params.alpha = 1f
-                                windowManager.updateViewLayout(floatingView, params)
+                                    delay(2000) // Chờ 2 giây (2000 milliseconds)
+
+                                    params.alpha = 1f
+                                    windowManager.updateViewLayout(floatingView, params)
+                                }
+
+//                                handleTranslateWord(params)
+//
+//                                params.alpha = 1f
+//                                windowManager.updateViewLayout(floatingView, params)
                             },
                             onShowBeeTranslateChanged = {showBeeTranslate = false}
                         )
