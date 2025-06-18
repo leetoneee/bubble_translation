@@ -36,7 +36,8 @@ fun FABItemUI(
         Box(
             modifier = Modifier
                 .border(2.dp, colorResource(R.color.blue_dark), RoundedCornerShape(10.dp))
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .background(Color.White.copy(0.5f))// Use Color.Transparent to avoid background color
+                .padding(horizontal = 16.dp, vertical = 8.dp),
         ) {
             Text(
                 text = item.title,

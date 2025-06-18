@@ -22,6 +22,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +30,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -58,9 +61,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.TextOverlayCrop
+import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryViewModel
+import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryViewModel2
 import com.google.mlkit.vision.text.Text
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.EntryPointAccessors
 import kotlin.math.sqrt
 
+@AndroidEntryPoint
 class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
 
@@ -70,6 +78,8 @@ class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     private lateinit var floatingView: ComposeView
     private lateinit var layoutParams: WindowManager.LayoutParams
     private lateinit var viewModel: WordScreenModeViewModel
+//    private lateinit var dicViewModel: DictionaryViewModel
+
 
     private var state by mutableStateOf(WordScreenModeState())
 
@@ -135,7 +145,6 @@ class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 viewModel =
                     ViewModelProvider(this@WordScreenModeService)[WordScreenModeViewModel::class.java]
                 val state by viewModel.state.collectAsState()
-
                 if (state.isShowBottomSheet) {
                     if (state.sourceText != null && state.sourceText != "") {
                         BottomSheetOnScreen(
@@ -157,8 +166,17 @@ class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 viewModel.onAction(WordScreenModeAction.OnReset)
                                 stopSelf()
                             },
-                            sourceText = state.sourceText!!
+                            sourceText = state.sourceText!!,
+//                            viewModel = dicViewModel,
                         )
+                    } else {
+                        viewModel.onAction(
+                            WordScreenModeAction.OnShowBottomSheet(
+                                false
+                            )
+                        )
+                        viewModel.onAction(WordScreenModeAction.OnReset)
+                        stopSelf()
                     }
                 }
             }
