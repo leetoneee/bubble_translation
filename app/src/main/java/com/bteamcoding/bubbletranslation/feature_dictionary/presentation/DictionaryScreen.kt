@@ -46,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PowerSettingsNew
 import androidx.compose.material.icons.filled.Save
@@ -54,8 +55,10 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.CopyAll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextButton
@@ -91,10 +94,18 @@ import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.compone
 @Composable
 fun DictionaryScreenRoot(
     viewModel: DictionaryViewModel = hiltViewModel(),
-    navController: NavController
+    navController: NavController,
+    searchQuery: String? = null,
+    onBack: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        if (searchQuery != null) {
+            viewModel.onAction(DictionaryAction.UpdateQuery(searchQuery))
+            viewModel.onAction(DictionaryAction.Search(searchQuery))
+        }
+    }
     LaunchedEffect(Unit) {
         viewModel.onAction(DictionaryAction.OnLoadAllFolders)
     }
@@ -126,7 +137,9 @@ fun DictionaryScreenRoot(
         },
         onShowAddWord = {
             viewModel.onAction(DictionaryAction.OnShowAddWord)
-        }
+        },
+        onBack = onBack,
+        searchQuery = searchQuery
     )
 }
 
@@ -142,7 +155,9 @@ fun DictionaryScreen(
     onAddFolder: () -> Unit,
     onShowAddWord: () -> Unit,
     onShowAddFolder: () -> Unit,
-    onDismissError: () -> Unit
+    onDismissError: () -> Unit,
+    onBack: () -> Unit,
+    searchQuery: String?
 ) {
     lateinit var tts: TextToSpeech
     val context = LocalContext.current
@@ -186,14 +201,36 @@ fun DictionaryScreen(
         ) {
             val (topBar, content) = createRefs()
 
-            Box(
+            Row(
                 modifier = Modifier
                     .constrainAs(topBar) {
                         top.linkTo(parent.top)
                     }
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                TopBar("Dictionary Lookup", onNavToAuthScreen = onNavToAuthScreen)
+                if (searchQuery != null) {
+                    FilledIconButton(
+                        onClick = onBack,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = Color.Transparent
+                        ),
+                        modifier = Modifier
+                            .size(50.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back icon",
+                            modifier = Modifier.size(30.dp),
+                            tint = Color.Black
+                        )
+                    }
+                }
+
+                TopBar(
+                    title = if (searchQuery != null) "Dictionary" else "Dictionary Lookup",
+                    onNavToAuthScreen = onNavToAuthScreen
+                )
             }
 
             Column(

@@ -20,9 +20,11 @@ import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_c
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.CameraScreenRoot
 import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryScreenRoot
 import androidx.compose.runtime.State
+import androidx.navigation.toRoute
 import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.BookmarkScreenRoot
 import com.bteamcoding.bubbletranslation.app.presentation.SplashScreen
 import com.bteamcoding.bubbletranslation.feature_home.presentation.HomeScreenRoot
+import kotlinx.serialization.Serializable
 
 @Composable
 fun AppNavHost(
@@ -111,6 +113,17 @@ fun AppNavHost(
                 navController = navController
             )
         }
+        composable<DictionaryScreenParams> {
+            val args = it.toRoute<DictionaryScreenParams>()
+
+            DictionaryScreenRoot(
+                navController = navController,
+                searchQuery = args.searchQuery,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
         composable(route = NavRoutes.FLASH_CARD) {
             BookmarkScreenRoot(
                 navController = navController
@@ -137,3 +150,7 @@ inline fun <reified T : ViewModel> NavBackStackEntry.sharedHiltViewModel(navCont
     return hiltViewModel(parentEntry)
 }
 
+@Serializable
+data class DictionaryScreenParams(
+    val searchQuery: String? =null
+)

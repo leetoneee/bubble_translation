@@ -27,9 +27,11 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -64,6 +66,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.bteamcoding.bubbletranslation.R
+import com.bteamcoding.bubbletranslation.app.navigation.DictionaryScreenParams
 import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
 import com.bteamcoding.bubbletranslation.core.components.TopBar
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
@@ -154,6 +157,9 @@ fun BookmarkScreenRoot(
         onShowConfirmDeleteWord = {
             viewModel.onAction(BookmarkAction.OnShowConfirmDeleteWord(it))
         },
+        onWordClick = {
+            navController.navigate(DictionaryScreenParams(it.word))
+        }
     )
 }
 
@@ -166,6 +172,7 @@ fun BookmarkScreen(
     onClearSearchQuery: () -> Unit,
     onSync: () -> Unit,
     onFolderClick: (Folder) -> Unit,
+    onWordClick: (Word) -> Unit,
     onReload: () -> Unit,
     onDismiss: () -> Unit,
     onFolderNameChanged: (String) -> Unit,
@@ -234,7 +241,14 @@ fun BookmarkScreen(
             OutlinedTextField(
                 value = state.searchQuery,
                 onValueChange = onQueryChanged,
-                label = { Text("Search folder") },
+                label = {
+                    Text(
+                        text = if (state.currentFolder != null)
+                            "Search word"
+                        else
+                            "Search folder"
+                    )
+                },
                 keyboardOptions = KeyboardOptions(
                     imeAction = ImeAction.Search,
                     autoCorrectEnabled = true
@@ -276,17 +290,21 @@ fun BookmarkScreen(
             ) {
                 // Icon back
                 if (state.currentFolder != null) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .clickable {
-                                onReload()
-                            }
-                    )
+                    FilledIconButton(
+                        onClick = onReload,
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = Color.Transparent
+                        ),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -341,7 +359,8 @@ fun BookmarkScreen(
                                 val index =
                                     folderStates.indexOfFirst { it.folder.id == folderState.folder.id }
                                 if (index != -1) {
-                                    folderStates[index] = folderState.copy(isOptionsRevealed = false)
+                                    folderStates[index] =
+                                        folderState.copy(isOptionsRevealed = false)
                                 }
                             }
                         )
@@ -380,7 +399,9 @@ fun BookmarkScreen(
                                 }
                             },
                             word = wordState.word,
-                            onWordClick = {}
+                            onWordClick = {
+                                onWordClick(it)
+                            }
                         )
                     }
                 }

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.bteamcoding.bubbletranslation.app.domain.use_case.GetUserInfoUseCase
 import com.bteamcoding.bubbletranslation.feature_auth.domain.model.User
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Word
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddFolderUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.DeleteFolderUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.DeleteWordUseCase
@@ -36,6 +37,7 @@ class BookmarkViewModel @Inject constructor(
     val userInfo = _userInfo.asStateFlow()
 
     private var allFolders: List<Folder> = listOf()
+    private var allWords: List<Word> = listOf()
 
     fun onAction(action: BookmarkAction) {
         when (action) {
@@ -63,14 +65,27 @@ class BookmarkViewModel @Inject constructor(
             is BookmarkAction.OnQueryChanged -> {
                 _state.update { it.copy(searchQuery = action.query) }
                 if (action.query != "") {
-                    val filterFolders = searchFolder(action.query, allFolders)
-                    _state.update {
-                        it.copy(
-                            folders = filterFolders
-                        )
+                    if (_state.value.currentFolder != null) {
+                        val filterWords = searchWord(action.query, allWords)
+                        _state.update {
+                            it.copy(
+                                words = filterWords
+                            )
+                        }
+                    } else {
+                        val filterFolders = searchFolder(action.query, allFolders)
+                        _state.update {
+                            it.copy(
+                                folders = filterFolders
+                            )
+                        }
                     }
                 } else {
-                    getAllFolders()
+                    if (_state.value.currentFolder != null) {
+                        getAllWordsByFolder(_state.value.currentFolder!!.id)
+                    } else {
+                        getAllFolders()
+                    }
                 }
             }
 
@@ -208,6 +223,7 @@ class BookmarkViewModel @Inject constructor(
                         words = value
                     )
                 }
+                allWords = value
             }
         }
     }
@@ -294,6 +310,21 @@ class BookmarkViewModel @Inject constructor(
 
         val filtered = allFolders.filter { folder ->
             folder.name.lowercase().contains(normalizedQuery)
+        }
+
+        return filtered
+    }
+
+    private fun searchWord(query: String, words: List<Word>): List<Word> {
+        val normalizedQuery = query.trim().lowercase()
+
+        if (normalizedQuery.isBlank()) {
+            // Trả lại toàn bộ nếu không có query
+            return words
+        }
+
+        val filtered = allWords.filter { word ->
+            word.word.lowercase().contains(normalizedQuery)
         }
 
         return filtered
