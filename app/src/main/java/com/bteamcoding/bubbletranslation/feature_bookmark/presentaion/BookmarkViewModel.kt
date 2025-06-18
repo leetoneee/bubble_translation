@@ -3,7 +3,9 @@ package com.bteamcoding.bubbletranslation.feature_bookmark.presentaion
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bteamcoding.bubbletranslation.app.domain.use_case.GetLastSyncTimeUseCase
 import com.bteamcoding.bubbletranslation.app.domain.use_case.GetUserInfoUseCase
+import com.bteamcoding.bubbletranslation.app.domain.use_case.SaveLastSyncTimeUseCase
 import com.bteamcoding.bubbletranslation.feature_auth.domain.model.User
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Word
@@ -28,13 +30,18 @@ class BookmarkViewModel @Inject constructor(
     private val updateFolderNameUseCase: UpdateFolderNameUseCase,
     private val deleteFolderUseCase: DeleteFolderUseCase,
     private val getWordsByFolderUseCase: GetWordsByFolderUseCase,
-    private val deleteWordUseCase: DeleteWordUseCase
+    private val deleteWordUseCase: DeleteWordUseCase,
+    private val getLastSyncTimeUseCase: GetLastSyncTimeUseCase,
+    private val saveLastSyncTimeUseCase: SaveLastSyncTimeUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(BookmarkState())
     val state = _state.asStateFlow()
 
     private val _userInfo = MutableStateFlow<User?>(null)
     val userInfo = _userInfo.asStateFlow()
+
+    private val _lastSyncTime = MutableStateFlow<Long>(0)
+    val lastSyncTime = _lastSyncTime.asStateFlow()
 
     private var allFolders: List<Folder> = listOf()
     private var allWords: List<Word> = listOf()
@@ -197,6 +204,24 @@ class BookmarkViewModel @Inject constructor(
         viewModelScope.launch {
             getUserInfoUseCase().collect { user ->
                 _userInfo.value = user
+            }
+        }
+    }
+
+    private fun getLastSyncTime() {
+        viewModelScope.launch {
+            getLastSyncTimeUseCase().collect { time ->
+                _lastSyncTime.value = time
+            }
+        }
+    }
+
+    private fun saveLastSyncTime(time: Long) {
+        viewModelScope.launch {
+            runCatching {
+                saveLastSyncTimeUseCase(time)
+            }.onSuccess {
+                _lastSyncTime.value = time
             }
         }
     }

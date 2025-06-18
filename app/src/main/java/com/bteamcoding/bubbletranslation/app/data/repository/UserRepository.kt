@@ -19,4 +19,12 @@ class UserRepository @Inject constructor(
     suspend fun logout() {
         userDataStore.clearUserInfo()
     }
+
+    suspend fun saveLastSyncTime(time: Long) {
+        userDataStore.saveLastSyncTime(time)
+    }
+
+    fun getLastSyncTime(): Flow<Long> {
+        return userDataStore.lastSyncTime
+    }
 }
