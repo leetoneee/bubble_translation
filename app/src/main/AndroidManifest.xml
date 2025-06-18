@@ -82,6 +82,11 @@
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="mediaProjection"/>
+        <service
+            android:name=".feature_bubble_translation.presentation.service.WordScreenModeService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection"/>
     </application>
 
 </manifest>
