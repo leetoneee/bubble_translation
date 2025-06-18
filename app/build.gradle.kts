@@ -162,4 +162,6 @@ dependencies {
     // To recognize Korean script
     implementation ("com.google.mlkit:text-recognition-korean:16.0.1")
 
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
 }

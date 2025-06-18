@@ -1,18 +1,31 @@
 package com.bteamcoding.bubbletranslation.feature_dictionary.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bteamcoding.bubbletranslation.core.utils.callApiForTranslation
-import kotlinx.coroutines.delay
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddFolderUseCase
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddWordUseCase
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetAllFoldersUseCase
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.GetWordByNameUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
+import javax.inject.Inject
 
-class DictionaryViewModel : ViewModel() {
+@HiltViewModel
+class DictionaryViewModel @Inject constructor(
+    private val getAllFoldersUseCase: GetAllFoldersUseCase,
+    private val addFolderUseCase: AddFolderUseCase,
+    private val addWordUseCase: AddWordUseCase,
+    private val getWordByNameUseCase: GetWordByNameUseCase
+) : ViewModel() {
     private val _state = MutableStateFlow(DictionaryScreenState())
     val state = _state.asStateFlow()
 
@@ -26,18 +39,136 @@ class DictionaryViewModel : ViewModel() {
                     error = null
                 )
                 searchWord(action.query)
+                getWord(action.query)
             }
+
             is DictionaryAction.ClearSearch -> {
                 _state.value = _state.value.copy(
                     searchQuery = "",
+                    isSavedWord = false,
                     // definitions = emptyList(),
                     error = null
                 )
             }
+
             is DictionaryAction.UpdateQuery -> {
                 _state.value = _state.value.copy(
                     searchQuery = action.query
                 )
+            }
+
+            DictionaryAction.OnAddNewFolder -> addFolder(_state.value.folderName)
+            DictionaryAction.OnHideAddFolder -> {
+                _state.update {
+                    it.copy(
+                        showAddFolderDialog = false,
+                        folderName = ""
+                    )
+                }
+            }
+
+            DictionaryAction.OnShowAddFolder -> {
+                _state.update {
+                    it.copy(
+                        showAddFolderDialog = true,
+                    )
+                }
+                getAllFolders()
+            }
+
+            DictionaryAction.ClearError -> {
+                _state.update { it.copy(errorMessage = null) }
+            }
+
+            is DictionaryAction.OnFolderNameChanged -> {
+                _state.update { it.copy(folderName = action.name) }
+            }
+
+            is DictionaryAction.OnAddNewWord -> addWord(_state.value.searchQuery, action.folder.id)
+
+            DictionaryAction.OnHideAddWord -> {
+                _state.update {
+                    it.copy(
+                        showAddWordDialog = false,
+                    )
+                }
+            }
+
+            DictionaryAction.OnShowAddWord -> {
+                _state.update {
+                    it.copy(
+                        showAddWordDialog = true,
+                    )
+                }
+            }
+
+            DictionaryAction.OnLoadAllFolders -> getAllFolders()
+        }
+    }
+
+    private fun addWord(word: String, id: String) {
+        viewModelScope.launch {
+            runCatching {
+                addWordUseCase(folderId = id, text = word)
+            }.onSuccess {
+                _state.update {
+                    it.copy(
+                        showAddWordDialog = false,
+                    )
+                }
+            }.onFailure { t ->
+                _state.update { it.copy(errorMessage = t.message) }
+            }
+        }
+    }
+
+    private fun addFolder(name: String) {
+        viewModelScope.launch {
+            runCatching {
+                addFolderUseCase(name)
+            }.onSuccess {
+                _state.update {
+                    it.copy(
+                        showAddFolderDialog = false,
+                        folderName = ""
+                    )
+                }
+                getAllFolders()
+            }.onFailure { t ->
+                _state.update { it.copy(errorMessage = t.message) }
+            }
+        }
+    }
+
+    private fun getAllFolders() {
+        viewModelScope.launch {
+            getAllFoldersUseCase().collect { value ->
+                _state.update {
+                    it.copy(
+                        folders = value
+                    )
+                }
+            }
+        }
+    }
+
+    private fun getWord(query: String) {
+        viewModelScope.launch {
+            runCatching {
+                getWordByNameUseCase(query)
+            }.onSuccess { value ->
+                Log.i("word", value.toString())
+                _state.update {
+                    it.copy(
+                        isSavedWord = value
+                    )
+                }
+            }.onFailure {
+                _state.update {
+                    it.copy(
+                        isSavedWord = false
+                    )
+                }
             }
         }
     }

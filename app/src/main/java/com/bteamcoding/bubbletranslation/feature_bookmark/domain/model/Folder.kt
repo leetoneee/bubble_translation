@@ -1,0 +1,19 @@
+package com.bteamcoding.bubbletranslation.feature_bookmark.domain.model
+
+import com.bteamcoding.bubbletranslation.feature_bookmark.data.local.entity.FolderEntity
+
+data class Folder(
+    val id: String,
+    val name: String,
+    val updatedAt: Long,
+    val deleted: Boolean
+)
+
+fun Folder.toEntity(): FolderEntity {
+    return FolderEntity(
+        id = id,
+        name = name,
+        updatedAt = updatedAt,
+        deleted = deleted
+    )
+}

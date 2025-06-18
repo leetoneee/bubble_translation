@@ -20,9 +20,11 @@ import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_c
 import com.bteamcoding.bubbletranslation.feature_camera.presentation.CameraScreenRoot
 import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryScreenRoot
 import androidx.compose.runtime.State
+import androidx.navigation.toRoute
+import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.BookmarkScreenRoot
 import com.bteamcoding.bubbletranslation.app.presentation.SplashScreen
 import com.bteamcoding.bubbletranslation.feature_home.presentation.HomeScreenRoot
-import kotlinx.coroutines.delay
+import kotlinx.serialization.Serializable
 
 @Composable
 fun AppNavHost(
@@ -33,7 +35,7 @@ fun AppNavHost(
 ) {
     NavHost(
         navController = navController,
-        startDestination = NavRoutes.SPLASH,
+        startDestination = NavRoutes.HOME,
     ) {
         navigation(
             startDestination = NavRoutes.ACCOUNT,
@@ -90,15 +92,6 @@ fun AppNavHost(
                 )
             }
         }
-        composable(route = NavRoutes.SPLASH) {
-            SplashScreen(
-                onAnimationEnd = {
-                    navController.navigate(NavRoutes.HOME) {
-                        popUpTo(NavRoutes.SPLASH) { inclusive = true }
-                    }
-                }
-            )
-        }
         composable(route = NavRoutes.HOME) {
             val startFWUseCase = StartFloatingWidgetUseCase(LocalContext.current)
 
@@ -120,14 +113,27 @@ fun AppNavHost(
                 navController = navController
             )
         }
-        composable(route = NavRoutes.FLASH_CARD) {
+        composable<DictionaryScreenParams> {
+            val args = it.toRoute<DictionaryScreenParams>()
 
+            DictionaryScreenRoot(
+                navController = navController,
+                searchQuery = args.searchQuery,
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(route = NavRoutes.FLASH_CARD) {
+            BookmarkScreenRoot(
+                navController = navController
+            )
         }
     }
 }
 
 @Composable
-inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavHostController) : T {
+inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(navController: NavHostController): T {
     val navGraphRoute = destination.parent?.route ?: return viewModel()
     val parentEntry = remember(this) {
         navController.getBackStackEntry(navGraphRoute)
@@ -144,3 +150,7 @@ inline fun <reified T : ViewModel> NavBackStackEntry.sharedHiltViewModel(navCont
     return hiltViewModel(parentEntry)
 }
 
+@Serializable
+data class DictionaryScreenParams(
+    val searchQuery: String? =null
+)
