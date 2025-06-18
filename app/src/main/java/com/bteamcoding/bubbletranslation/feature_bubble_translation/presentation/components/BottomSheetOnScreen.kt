@@ -128,37 +128,39 @@ fun BottomSheetOnScreen(
     ModalBottomSheet(
         onDismissRequest = { onDismissRequest() },
         sheetState = sheetState,
+//        containerColor = colorResource(R.color.white_lightest),
     ) {
-        Surface (
-            modifier = Modifier.fillMaxSize(),
-//            floatingActionButton = {
-//                FABDictionary(
-//                    onAddFolder = {
-//                        viewModel.onAction(DictionaryAction.OnShowAddFolder)
-//                    },
-//                    onAddWord = {
-//                        viewModel.onAction(DictionaryAction.OnShowAddWord)
-//                    },
-//                )
-//            }
+        Scaffold (
+            modifier = Modifier.fillMaxSize().padding(top = 0.dp),
+            floatingActionButton = {
+                FABDictionary(
+                    onAddFolder = {
+                        viewModel.onAction(DictionaryAction.OnShowAddFolder)
+                    },
+                    onAddWord = {
+                        viewModel.onAction(DictionaryAction.OnShowAddWord)
+                    },
+                )
+            }
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(start = 16.dp, end = 16.dp, top = 0.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(itemPadding.dp),
+                        .fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         text = LanguageManager.sourceLang.value.countryName + " -> " + LanguageManager.targetLang.value.countryName,
                         style = textStyle,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).padding(start = 4.dp),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(onClick = { /* handle settings click */ }) {
@@ -170,7 +172,7 @@ fun BottomSheetOnScreen(
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButton(onClick = { onDismissRequest() }) {
                             Icon(
-                                imageVector = Icons.Default.Close,
+                                imageVector = Icons.Filled.Close,
                                 contentDescription = "Close"
                             )
                         }
@@ -327,22 +329,21 @@ fun BottomSheetOnScreen(
 //                    searchQuery = sourceText
 //                )
                 // Divider
-                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
+//                HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
             }
         }
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun BottomSheetOnScreenPreview() {
-//    BottomSheetOnScreen(
-//        onDismissRequest = { /* handle dismiss */ },
-//        textStyle = MaterialTheme.typography.titleMedium,
-//        itemPadding = 10,
-//        backgroundColor = MaterialTheme.colorScheme.surface,
-//        sourceText = "Hello, world!",
-//        onTap = { /* handle tap */ },
-//        viewModel = ,
-//    )
-//}
+@Preview(showBackground = true)
+@Composable
+fun BottomSheetOnScreenPreview() {
+    BottomSheetOnScreen(
+        onDismissRequest = { /* handle dismiss */ },
+        textStyle = MaterialTheme.typography.titleMedium,
+        itemPadding = 10,
+        backgroundColor = MaterialTheme.colorScheme.surface,
+        sourceText = "Hello, world!",
+        onTap = { /* handle tap */ },
+    )
+}

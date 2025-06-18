@@ -22,6 +22,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -143,7 +145,6 @@ class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 viewModel =
                     ViewModelProvider(this@WordScreenModeService)[WordScreenModeViewModel::class.java]
                 val state by viewModel.state.collectAsState()
-
                 if (state.isShowBottomSheet) {
                     if (state.sourceText != null && state.sourceText != "") {
                         BottomSheetOnScreen(
@@ -168,6 +169,14 @@ class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                             sourceText = state.sourceText!!,
 //                            viewModel = dicViewModel,
                         )
+                    } else {
+                        viewModel.onAction(
+                            WordScreenModeAction.OnShowBottomSheet(
+                                false
+                            )
+                        )
+                        viewModel.onAction(WordScreenModeAction.OnReset)
+                        stopSelf()
                     }
                 }
             }
