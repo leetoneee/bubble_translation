@@ -1,8 +1,12 @@
 package com.bteamcoding.bubbletranslation.feature_dictionary.presentation
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bteamcoding.bubbletranslation.core.utils.ContextProvider
 import com.bteamcoding.bubbletranslation.core.utils.callApiForTranslation
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddFolderUseCase
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.use_case.AddWordUseCase
@@ -188,14 +192,23 @@ class DictionaryViewModel2 : ViewModel() {
                     error = "Please enter a word."
                 )
             } else {
-                val text = withContext(Dispatchers.IO) { callApiForTranslation(query) }
-                // val text = "[{\"english\":\"watch\",\"phonetic\":\"\\/wɑːtʃ\\/\",\"part_of_speech\":\"verb\",\"meanings\":[{\"meaning\":\"To look at (something or someone) for an extended period of time.\",\"vietnamese\":\"Xem, quan sát\",\"example_sentence\":\"I like to watch the sunset every evening.\",\"vietnamese_translation\":\"Tôi thích xem hoàng hôn mỗi buổi tối.\"},{\"meaning\":\"To observe attentively so as to guard or protect something or someone.\",\"vietnamese\":\"Canh giữ, trông chừng\",\"example_sentence\":\"Please watch my bag while I go to the restroom.\",\"vietnamese_translation\":\"Vui lòng trông chừng túi của tôi trong khi tôi đi vệ sinh.\"},{\"meaning\":\"To be careful or wary; to be on one's guard.\",\"vietnamese\":\"Cẩn thận, dè chừng\",\"example_sentence\":\"Watch out for pickpockets in crowded areas.\",\"vietnamese_translation\":\"Hãy coi chừng móc túi ở những khu vực đông người.\"}]},{\"english\":\"watch\",\"phonetic\":\"\\/wɑːtʃ\\/\",\"part_of_speech\":\"noun\",\"meanings\":[{\"meaning\":\"A small timepiece worn typically on a strap on one's wrist.\",\"vietnamese\":\"Đồng hồ đeo tay\",\"example_sentence\":\"He received a new watch for his birthday.\",\"vietnamese_translation\":\"Anh ấy đã nhận được một chiếc đồng hồ mới cho ngày sinh nhật của mình.\"},{\"meaning\":\"The act of keeping guard; surveillance.\",\"vietnamese\":\"Sự canh gác, sự giám sát\",\"example_sentence\":\"The security guard kept a close watch on the building.\",\"vietnamese_translation\":\"Nhân viên bảo vệ canh gác tòa nhà cẩn thận.\"},{\"meaning\":\"A period of time, typically four hours, during which some of a ship's crew are on duty.\",\"vietnamese\":\"Ca trực (trên tàu)\",\"example_sentence\":\"The captain assigned him to the night watch.\",\"vietnamese_translation\":\"Thuyền trưởng đã giao anh ấy ca trực đêm.\"}]}]"
-                val entries = parseDictionaryEntries(text)
-                _state.value = _state.value.copy(
-                    definitions = entries,
-                    isLoading = false,
-                    error = null
-                )
+                if (!isNetworkAvailable()) {
+                    // Hiển thị thông báo cho người dùng cần kết nối mạng
+                    _state.value = _state.value.copy(
+                        definitions = emptyList(),
+                        isLoading = false,
+                        error = "Please connect to the internet."
+                    )
+                } else {
+                    val text = withContext(Dispatchers.IO) { callApiForTranslation(query) }
+                    // val text = "[{\"english\":\"watch\",\"phonetic\":\"\\/wɑːtʃ\\/\",\"part_of_speech\":\"verb\",\"meanings\":[{\"meaning\":\"To look at (something or someone) for an extended period of time.\",\"vietnamese\":\"Xem, quan sát\",\"example_sentence\":\"I like to watch the sunset every evening.\",\"vietnamese_translation\":\"Tôi thích xem hoàng hôn mỗi buổi tối.\"},{\"meaning\":\"To observe attentively so as to guard or protect something or someone.\",\"vietnamese\":\"Canh giữ, trông chừng\",\"example_sentence\":\"Please watch my bag while I go to the restroom.\",\"vietnamese_translation\":\"Vui lòng trông chừng túi của tôi trong khi tôi đi vệ sinh.\"},{\"meaning\":\"To be careful or wary; to be on one's guard.\",\"vietnamese\":\"Cẩn thận, dè chừng\",\"example_sentence\":\"Watch out for pickpockets in crowded areas.\",\"vietnamese_translation\":\"Hãy coi chừng móc túi ở những khu vực đông người.\"}]},{\"english\":\"watch\",\"phonetic\":\"\\/wɑːtʃ\\/\",\"part_of_speech\":\"noun\",\"meanings\":[{\"meaning\":\"A small timepiece worn typically on a strap on one's wrist.\",\"vietnamese\":\"Đồng hồ đeo tay\",\"example_sentence\":\"He received a new watch for his birthday.\",\"vietnamese_translation\":\"Anh ấy đã nhận được một chiếc đồng hồ mới cho ngày sinh nhật của mình.\"},{\"meaning\":\"The act of keeping guard; surveillance.\",\"vietnamese\":\"Sự canh gác, sự giám sát\",\"example_sentence\":\"The security guard kept a close watch on the building.\",\"vietnamese_translation\":\"Nhân viên bảo vệ canh gác tòa nhà cẩn thận.\"},{\"meaning\":\"A period of time, typically four hours, during which some of a ship's crew are on duty.\",\"vietnamese\":\"Ca trực (trên tàu)\",\"example_sentence\":\"The captain assigned him to the night watch.\",\"vietnamese_translation\":\"Thuyền trưởng đã giao anh ấy ca trực đêm.\"}]}]"
+                    val entries = parseDictionaryEntries(text)
+                    _state.value = _state.value.copy(
+                        definitions = entries,
+                        isLoading = false,
+                        error = null
+                    )
+                }
             }
         }
     }
@@ -274,6 +287,13 @@ class DictionaryViewModel2 : ViewModel() {
                 }
             }
         )
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = ContextProvider.context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork
+        val capabilities = connectivityManager.getNetworkCapabilities(network)
+        return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
     }
 
 }

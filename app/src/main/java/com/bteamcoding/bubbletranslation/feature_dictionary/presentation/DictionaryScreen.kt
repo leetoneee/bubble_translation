@@ -315,24 +315,37 @@ fun DictionaryScreen(
                                     modifier = Modifier.size(100.dp)
                                 )
                             }
-                            Text(
-                                text = "Enter the English word\nyou want to look up",
-                                fontFamily = Inter,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                textAlign = TextAlign.Center,
-                                lineHeight = 20.sp,
-                                color = colorResource(R.color.bold_text),
-                                modifier = Modifier.padding(top = 30.dp, bottom = 10.dp)
-                            )
-                            Text(
-                                text = "Its meaning and example sentences\nwill be displayed here",
-                                fontFamily = Inter,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Normal,
-                                textAlign = TextAlign.Center,
-                                color = colorResource(R.color.grey_light)
-                            )
+                            if(state.error == null || state.error == "") {
+                                Text(
+                                    text = "Enter the English word\nyou want to look up",
+                                    fontFamily = Inter,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 20.sp,
+                                    color = colorResource(R.color.bold_text),
+                                    modifier = Modifier.padding(top = 30.dp, bottom = 10.dp)
+                                )
+                                Text(
+                                    text = "Its meaning and example sentences\nwill be displayed here",
+                                    fontFamily = Inter,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal,
+                                    textAlign = TextAlign.Center,
+                                    color = colorResource(R.color.grey_light)
+                                )
+                            } else {
+                                Text(
+                                    text = state.error,
+                                    fontFamily = Inter,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 20.sp,
+                                    color = colorResource(R.color.bold_text),
+                                    modifier = Modifier.padding(top = 30.dp, bottom = 10.dp)
+                                )
+                            }
                         }
                     }
 
