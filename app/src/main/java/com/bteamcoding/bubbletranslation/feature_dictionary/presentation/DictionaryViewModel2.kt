@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bteamcoding.bubbletranslation.core.utils.ContextProvider
@@ -24,15 +23,21 @@ import org.json.JSONArray
 import org.json.JSONObject
 import javax.inject.Inject
 
-@HiltViewModel
-class DictionaryViewModel @Inject constructor(
-    private val getAllFoldersUseCase: GetAllFoldersUseCase,
-    private val addFolderUseCase: AddFolderUseCase,
-    private val addWordUseCase: AddWordUseCase,
-    private val getWordByNameUseCase: GetWordByNameUseCase
-) : ViewModel() {
+class DictionaryViewModel2 : ViewModel() {
     private val _state = MutableStateFlow(DictionaryScreenState())
     val state = _state.asStateFlow()
+//    private val getAllFoldersUseCase = GetAllFoldersUseCase(
+//        repo = TODO()
+//    )
+//    private val addFolderUseCase = AddFolderUseCase(
+//        repo = TODO()
+//    )
+//    private val addWordUseCase = AddWordUseCase(
+//        repo = TODO()
+//    )
+//    private val getWordByNameUseCase = GetWordByNameUseCase(
+//        repo = TODO()
+//    )
 
     fun onAction(action: DictionaryAction) {
         when (action) {
@@ -112,70 +117,70 @@ class DictionaryViewModel @Inject constructor(
     }
 
     private fun addWord(word: String, id: String) {
-        viewModelScope.launch {
-            runCatching {
-                addWordUseCase(folderId = id, text = word)
-            }.onSuccess {
-                _state.update {
-                    it.copy(
-                        showAddWordDialog = false,
-                    )
-                }
-            }.onFailure { t ->
-                _state.update { it.copy(errorMessage = t.message) }
-            }
-        }
+//        viewModelScope.launch {
+//            runCatching {
+//                addWordUseCase(folderId = id, text = word)
+//            }.onSuccess {
+//                _state.update {
+//                    it.copy(
+//                        showAddWordDialog = false,
+//                    )
+//                }
+//            }.onFailure { t ->
+//                _state.update { it.copy(errorMessage = t.message) }
+//            }
+//        }
     }
 
     private fun addFolder(name: String) {
-        viewModelScope.launch {
-            runCatching {
-                addFolderUseCase(name)
-            }.onSuccess {
-                _state.update {
-                    it.copy(
-                        showAddFolderDialog = false,
-                        folderName = ""
-                    )
-                }
-                getAllFolders()
-            }.onFailure { t ->
-                _state.update { it.copy(errorMessage = t.message) }
-            }
-        }
+//        viewModelScope.launch {
+//            runCatching {
+//                addFolderUseCase(name)
+//            }.onSuccess {
+//                _state.update {
+//                    it.copy(
+//                        showAddFolderDialog = false,
+//                        folderName = ""
+//                    )
+//                }
+//                getAllFolders()
+//            }.onFailure { t ->
+//                _state.update { it.copy(errorMessage = t.message) }
+//            }
+//        }
     }
 
     private fun getAllFolders() {
-        viewModelScope.launch {
-            getAllFoldersUseCase().collect { value ->
-                _state.update {
-                    it.copy(
-                        folders = value
-                    )
-                }
-            }
-        }
+//        viewModelScope.launch {
+//            getAllFoldersUseCase().collect { value ->
+//                _state.update {
+//                    it.copy(
+//                        folders = value
+//                    )
+//                }
+//            }
+//        }
     }
 
     private fun getWord(query: String) {
-        viewModelScope.launch {
-            runCatching {
-                getWordByNameUseCase(query)
-            }.onSuccess { value ->
-                Log.i("word", value.toString())
-                _state.update {
-                    it.copy(
-                        isSavedWord = value
-                    )
-                }
-            }.onFailure {
-                _state.update {
-                    it.copy(
-                        isSavedWord = false
-                    )
-                }
-            }
-        }
+//        viewModelScope.launch {
+//            runCatching {
+//                getWordByNameUseCase(query)
+//            }.onSuccess { value ->
+//                Log.i("word", value.toString())
+//                _state.update {
+//                    it.copy(
+//                        isSavedWord = value
+//                    )
+//                }
+//            }.onFailure {
+//                _state.update {
+//                    it.copy(
+//                        isSavedWord = false
+//                    )
+//                }
+//            }
+//        }
     }
 
     private fun searchWord(query: String) {
@@ -290,4 +295,5 @@ class DictionaryViewModel @Inject constructor(
         val capabilities = connectivityManager.getNetworkCapabilities(network)
         return capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
     }
+
 }

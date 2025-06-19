@@ -77,7 +77,7 @@ fun SplashScreen(
                 lineHeight = 20.sp,
                 textAlign = TextAlign.Center,
                 color = colorResource(R.color.blue_medium))
-            Text(text = "Đàn ong đồng hành cùng bạn trên\nhành trình học ngoại ngữ",
+            Text(text = "Những chú ong đồng hành cùng bạn\ntrên hành trình học ngoại ngữ",
                 fontFamily = Inter, fontSize = 14.sp,
                 fontWeight = FontWeight.Normal,
                 textAlign = TextAlign.Center,

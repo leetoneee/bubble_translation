@@ -1,6 +1,5 @@
 package com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.service
 
-//import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.CaptureRegion
 import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
@@ -23,7 +22,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
-import androidx.compose.runtime.LaunchedEffect
+import android.widget.Toast
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,7 +30,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
@@ -48,17 +49,27 @@ import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.core.utils.MediaProjectionSingleton
 import com.bteamcoding.bubbletranslation.core.utils.VirtualDisplaySingleton
 import com.bteamcoding.bubbletranslation.core.utils.recognizeTextFromImage
-import com.bteamcoding.bubbletranslation.core.utils.translateVisionText
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetState
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModelHolder
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.PartialScreenModeAction
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.PartialScreenModeViewModel
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.PartialScreenModeState
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.WordScreenModeAction
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.WordScreenModeViewModel
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.WordScreenModeState
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.BottomSheetOnScreen
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.CropArea
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.TextOverlayCrop
+import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryViewModel
+import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryViewModel2
+import com.google.mlkit.vision.text.Text
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.EntryPointAccessors
+import kotlin.math.sqrt
 
-class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
+@AndroidEntryPoint
+class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
@@ -66,16 +77,26 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: ComposeView
     private lateinit var layoutParams: WindowManager.LayoutParams
-    private lateinit var viewModel: PartialScreenModeViewModel
+    private lateinit var viewModel: WordScreenModeViewModel
+//    private lateinit var dicViewModel: DictionaryViewModel
 
-    private var state by mutableStateOf(PartialScreenModeState())
+
+    private var state by mutableStateOf(WordScreenModeState())
 
     private val lifecycleRegistry = LifecycleRegistry(this)
     private val viewModelStoreInstance = ViewModelStore()
     private val savedStateRegistryController = SavedStateRegistryController.create(this)
 
     private val screenHeight = Resources.getSystem().displayMetrics.heightPixels
+    private val screenWidth = Resources.getSystem().displayMetrics.widthPixels
     private var statusBarHeight: Int = 0
+
+    private var paramsX: Int = 0
+    private var paramsY: Int = 0
+
+    private var widthBee: Int = 304
+    private var heightBee: Int = 148
+
 
     //private var captureRegion: CaptureRegion? = null
 
@@ -105,7 +126,7 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         startForeground(notificationId, notification)
 
         // Tiến hành thực hiện các tác vụ khác (như yêu cầu quyền ghi màn hình...)
-        Log.d("PartialScreenModeService", "Service is now running in the foreground")
+        Log.d("WordScreenModeService", "Service is now running in the foreground")
 
         // Initialize SavedStateRegistry
         savedStateRegistryController.performAttach()
@@ -113,55 +134,51 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
         // Create ComposeView for Floating Widget
         floatingView = ComposeView(this).apply {
-            setViewTreeLifecycleOwner(this@PartialScreenModeService)
-            setViewTreeViewModelStoreOwner(this@PartialScreenModeService)
-            setViewTreeSavedStateRegistryOwner(this@PartialScreenModeService)
+            setViewTreeLifecycleOwner(this@WordScreenModeService)
+            setViewTreeViewModelStoreOwner(this@WordScreenModeService)
+            setViewTreeSavedStateRegistryOwner(this@WordScreenModeService)
 
             // Log để kiểm tra ComposeView được tạo
-            Log.d("PartialScreenModeService", "Creating ComposeView")
+            Log.d("WordScreenModeService", "Creating ComposeView")
 
             setContent {
                 viewModel =
-                    ViewModelProvider(this@PartialScreenModeService)[PartialScreenModeViewModel::class.java]
+                    ViewModelProvider(this@WordScreenModeService)[WordScreenModeViewModel::class.java]
                 val state by viewModel.state.collectAsState()
-                val params = layoutParams as WindowManager.LayoutParams
-
-                // Logic Crop Area: sử dụng captureRegion để cắt màn hình
-                var isResizingOrDragging by remember { mutableStateOf(false) }
-
-                CropArea(
-                    state = state,
-                    onCaptureRegionChange = { newRegion ->
-                        Log.i("captureRegion", newRegion.toString())
-                        // Cập nhật captureRegion qua ViewModel khi người dùng thay đổi nó
-                        viewModel.onAction(PartialScreenModeAction.SetCaptureRegion(newRegion))
-                        viewModel.onAction(PartialScreenModeAction.OnChange(null))
-                        viewModel.onAction(PartialScreenModeAction.OnChangeTextVisibility(false))
-                        startScreenshot(newRegion)
-                    },
-                    onTap = {
-                        viewModel.onAction(PartialScreenModeAction.OnReset)
-                        stopSelf()
-                    },
-                    onResizeStateChanged = {
-                        isResizingOrDragging = it
-                        viewModel.onAction(PartialScreenModeAction.OnChangeTextVisibility(false))
-                    },
-                    onChangeTextVisibility = {
-                        viewModel.onAction(PartialScreenModeAction.OnChangeTextVisibility(it))
-                    }
-                )
-                //startScreenshot(state.captureRegion)
-                if (!isResizingOrDragging && state.isTextVisibility) {
-                    state.translatedVisionText?.let {
-                        Log.d("PartialScreenModeService", "Creating ComposeView ${it.text}")
-                        TextOverlayCrop(
-                            visionText = state.translatedVisionText!!,
-                            captureRegion = state.captureRegion
+                if (state.isShowBottomSheet) {
+                    if (state.sourceText != null && state.sourceText != "") {
+                        BottomSheetOnScreen(
+                            onDismissRequest = {
+                                viewModel.onAction(
+                                    WordScreenModeAction.OnShowBottomSheet(
+                                        false
+                                    )
+                                )
+                                viewModel.onAction(WordScreenModeAction.OnReset)
+                                stopSelf()
+                            },
+                            onTap = {
+                                viewModel.onAction(
+                                    WordScreenModeAction.OnShowBottomSheet(
+                                        false
+                                    )
+                                )
+                                viewModel.onAction(WordScreenModeAction.OnReset)
+                                stopSelf()
+                            },
+                            sourceText = state.sourceText!!,
+//                            viewModel = dicViewModel,
                         )
+                    } else {
+                        viewModel.onAction(
+                            WordScreenModeAction.OnShowBottomSheet(
+                                false
+                            )
+                        )
+                        viewModel.onAction(WordScreenModeAction.OnReset)
+                        stopSelf()
                     }
                 }
-
             }
         }
 
@@ -184,15 +201,15 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         }
 
         // Log để kiểm tra WindowManager
-        Log.d("PartialScreenModeService", "Adding view to WindowManager")
+        Log.d("WordScreenModeService", "Adding view to WindowManager")
 
         // Add Floating Widget to WindowManager
         try {
             windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
             windowManager.addView(floatingView, layoutParams)
-            Log.d("PartialScreenModeService", "View added successfully")
+            Log.d("WordScreenModeService", "View added successfully")
         } catch (e: Exception) {
-            Log.e("PartialScreenModeService", "Error adding view: ${e.message}")
+            Log.e("WordScreenModeService", "Error adding view: ${e.message}")
         }
 
         // Update Lifecycle
@@ -202,13 +219,17 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i("PartialScreenModeService", "Service started")
+        Log.i("WordScreenModeService", "Service started")
+
+        paramsX = intent?.getIntExtra("params_x", 0) ?: 0
+        paramsY = intent?.getIntExtra("params_y", 0) ?: 0
+
         viewModel =
-            ViewModelProvider(this@PartialScreenModeService)[PartialScreenModeViewModel::class.java]
+            ViewModelProvider(this@WordScreenModeService)[WordScreenModeViewModel::class.java]
 
         val sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE)
         statusBarHeight = sharedPreferences.getInt("STATUS_BAR_HEIGHT", 0)
-        Log.d("PartialScreenModeService", "StatusBar Height received: $statusBarHeight")
+        Log.d("WordScreenModeService", "StatusBar Height received: $statusBarHeight")
 
         if (MediaProjectionSingleton.mediaProjection == null) {
             val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED)
@@ -221,10 +242,10 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             MediaProjectionSingleton.mediaProjection =
                 mediaProjectionManager.getMediaProjection(resultCode, resultData)
         } else {
-            Log.d("PartialScreenModeService", "Using existing MediaProjection instance.")
+            Log.d("WordScreenModeService", "Using existing MediaProjection instance.")
         }
 
-        startScreenshot(state.captureRegion)
+        startScreenshot()
 
         return START_NOT_STICKY
     }
@@ -233,14 +254,14 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("PartialScreenModeService", "Service onDestroy called")
+        Log.d("WordScreenModeService", "Service onDestroy called")
 
         if (::floatingView.isInitialized) {
             try {
                 windowManager.removeView(floatingView)
-                Log.d("PartialScreenModeService", "View removed successfully")
+                Log.d("WordScreenModeService", "View removed successfully")
             } catch (e: Exception) {
-                Log.e("PartialScreenModeService", "Error removing view: ${e.message}")
+                Log.e("WordScreenModeService", "Error removing view: ${e.message}")
             }
         }
 
@@ -260,8 +281,8 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     override val savedStateRegistry: SavedStateRegistry
         get() = savedStateRegistryController.savedStateRegistry
 
-    private fun startScreenshot(captureRegion: Rect) {
-        Log.d("PartialScreenModeService", "StatusBar Height received: $statusBarHeight")
+    private fun startScreenshot() {
+        Log.d("WordScreenModeService", "StatusBar Height received: $statusBarHeight")
 
 //      Lấy thông tin về màn hình
         val windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
@@ -280,7 +301,7 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
         // Kiểm tra nếu mediaProjection còn hợp lệ
         if (MediaProjectionSingleton.mediaProjection == null) {
-            Log.e("PartialScreenModeService", "MediaProjection is not initialized")
+            Log.e("WordScreenModeService", "MediaProjection is not initialized")
             stopSelf() // Dừng service nếu mediaProjection không hợp lệ
             return
         }
@@ -289,7 +310,7 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         val mediaProjectionCallback = object : MediaProjection.Callback() {
             override fun onStop() {
                 super.onStop()
-                Log.d("PartialScreenModeService", "MediaProjection stopped")
+                Log.d("WordScreenModeService", "MediaProjection stopped")
                 // Giải phóng tài nguyên khi MediaProjection dừng
                 releaseResources()
             }
@@ -314,13 +335,13 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                         imageReader.surface, null, null
                     )
                 if (VirtualDisplaySingleton.virtualDisplay == null) {
-                    Log.e("PartialscreenModeService", "Failed to create virtual display")
+                    Log.e("WordscreenModeService", "Failed to create virtual display")
                     releaseResources()
                     stopSelf() // Dừng service nếu không thể tạo virtual display
                     return
                 }
             } catch (e: Exception) {
-                Log.e("PartialscreenModeService", "Error creating virtual display: ${e.message}")
+                Log.e("WordscreenModeService", "Error creating virtual display: ${e.message}")
                 e.printStackTrace()
                 releaseResources()
                 stopSelf() // Dừng service nếu có lỗi
@@ -345,13 +366,14 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             )
             bitmap.copyPixelsFromBuffer(buffer)
 
+
             // Crop the image based on CaptureRegion
             val croppedBitmap = Bitmap.createBitmap(
                 bitmap,
-                (captureRegion.left * density).toInt(),
-                (captureRegion.top * density + statusBarHeight).toInt(),
-                (captureRegion.right * density - captureRegion.left * density).toInt(),
-                (captureRegion.bottom * density - captureRegion.top * density).toInt()
+                paramsX,
+                paramsY + statusBarHeight,
+                widthBee,
+                heightBee
             )
 
 //          Dọn dẹp
@@ -360,6 +382,7 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             //releaseResources()
 
             processBitmap(croppedBitmap)
+            Log.d("WordscreenModeService", "closestText 1: ${state.sourceText}")
 //            stopSelf()
         }, Handler(Looper.getMainLooper()))
     }
@@ -370,9 +393,9 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             VirtualDisplaySingleton.virtualDisplay?.release()
             VirtualDisplaySingleton.virtualDisplay = null
             MediaProjectionSingleton.mediaProjection?.stop()
-            Log.d("PartialscreenModeService", "Resources released successfully")
+            Log.d("WordscreenModeService", "Resources released successfully")
         } catch (e: Exception) {
-            Log.e("PartialscreenModeService", "Error releasing resources: ${e.message}")
+            Log.e("WordscreenModeService", "Error releasing resources: ${e.message}")
         }
     }
 
@@ -380,17 +403,53 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val result = recognizeTextFromImage(bitmap)
-                Log.d("PartialScreenOCR", "Detected text: ${result.text}")
-                val translatedResult = translateVisionText(result)
+                Log.d("WordScreenOCR", "Detected text: ${result.text}")
 
-                viewModel.onAction(PartialScreenModeAction.OnChange(result))
-                viewModel.onAction(PartialScreenModeAction.OnChangeTranslatedVisionText(translatedResult))
-                viewModel.onAction(PartialScreenModeAction.OnChangeTextVisibility(true))
+                val closestText = getClosestText(result)
+                viewModel.onAction(WordScreenModeAction.OnChangeSourceText(closestText))
+                viewModel.onAction(WordScreenModeAction.OnShowBottomSheet(true))
+
             } catch (e: Exception) {
-                Log.e("PartialScreenOCR", "Error: ${e.message}")
+                Log.e("WordScreenOCR", "Error: ${e.message}")
             }
         }
     }
 
+    private fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Float {
+        return sqrt(((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)).toFloat())
+    }
 
+    fun getClosestText(recognizedTexts: Text): String {
+        var closestText = ""
+        var minDistance = Float.MAX_VALUE
+
+        // Tính tọa độ trung tâm của param (floating view)
+        val centerXParam = paramsX
+        val centerYParam = paramsY
+
+        // Duyệt qua các văn bản nhận dạng và tính toán khoảng cách
+        // Duyệt qua từng textBlock
+        recognizedTexts.textBlocks.forEach { block ->
+            // Duyệt qua từng line trong block
+            block.lines.forEach { line ->
+                // Duyệt qua từng element trong line
+                line.elements.forEach { element ->
+                    // Tính tọa độ trung tâm của element (x, y) từ frame của element
+                    val centerX = (element.boundingBox?.left ?: 0)
+                    val centerY = (element.boundingBox?.top ?: 0)
+
+                    // Tính khoảng cách giữa tọa độ (params.x, params.y) và tọa độ trung tâm của element
+                    val distance = distance(widthBee / 3, heightBee / 3, centerX, centerY)
+
+                    // Nếu khoảng cách nhỏ hơn khoảng cách tối thiểu hiện tại, cập nhật văn bản gần nhất
+                    if (distance < minDistance) {
+                        minDistance = distance
+                        closestText = element.text
+                    }
+                }
+            }
+        }
+
+        return closestText
+    }
 }

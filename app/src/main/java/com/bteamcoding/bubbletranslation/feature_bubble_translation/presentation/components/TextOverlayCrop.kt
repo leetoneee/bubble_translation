@@ -8,38 +8,39 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
-import com.bteamcoding.bubbletranslation.core.utils.translateText
 import com.google.mlkit.vision.text.Text
 import kotlin.math.pow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.font.FontWeight
+import com.bteamcoding.bubbletranslation.feature_camera.domain.TranslatedVisionText
 
 @Composable
 fun TextOverlayCrop(
-    visionText: Text,
+    visionText: TranslatedVisionText,
     captureRegion: Rect,
     modifier: Modifier = Modifier
 ) {
+
     Box(modifier = modifier) {
         visionText.textBlocks.forEach { block ->
-            BlockOverlayCrop(block = block, captureRegion = captureRegion)
+            BlockOverlayCrop(
+                block = block.originalBlock,
+                translatedText = block.translatedText,
+                captureRegion = captureRegion
+            )
         }
     }
 }
 
 @Composable
-fun BlockOverlayCrop(block: Text.TextBlock, captureRegion: Rect) {
+fun BlockOverlayCrop(block: Text.TextBlock, translatedText: String, captureRegion: Rect) {
     val density = LocalDensity.current
 
     // 1. Tính tổng chiều cao (px) và max chiều rộng (px) của block
@@ -80,7 +81,7 @@ fun BlockOverlayCrop(block: Text.TextBlock, captureRegion: Rect) {
 
     val offsetDp = with(density) {
         Offset(
-            x = ((block.boundingBox?.left ?: 0 ).toDp().value + captureRegion.left),
+            x = ((block.boundingBox?.left ?: 0).toDp().value + captureRegion.left),
             y = ((block.boundingBox?.top ?: 0).toDp().value + captureRegion.top)
         )
     }
@@ -89,14 +90,14 @@ fun BlockOverlayCrop(block: Text.TextBlock, captureRegion: Rect) {
     val heightDp = with(density) { (totalHeightPx + idealTextSizePx).toDp() }
 
     // 4. Dịch văn bản bất đồng bộ
-    var translated by remember(block.text) { mutableStateOf("") }
-    LaunchedEffect(block.text) {
-        translated = translateText(block.text)
-    }
+//    var translated by remember(block.text) { mutableStateOf("") }
+//    LaunchedEffect(block.text) {
+//        translated = translateText(block.text)
+//    }
 
     // 5. Hiển thị Text composable
     Text(
-        text = translated,
+        text = translatedText,
         style = TextStyle(
             color = Color.White,
             fontSize = idealTextSizeSp,

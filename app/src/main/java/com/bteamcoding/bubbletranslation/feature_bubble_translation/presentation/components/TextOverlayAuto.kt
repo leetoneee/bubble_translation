@@ -49,7 +49,7 @@ fun TextOverlayAuto(
     Box(modifier = modifier
         .background(Color(0xFF000000).copy(alpha = 0.7f))
         .width((captureRegion.right - captureRegion.left).dp)
-        .height(((captureRegion.bottom - captureRegion.top) / 2).dp)
+        .height(((captureRegion.bottom - captureRegion.top) / 1).dp)
         .pointerInput(Unit) {
             detectDragGestures { change, dragAmount ->
                 change.consume()
@@ -64,7 +64,7 @@ fun TextOverlayAuto(
 
             Box(
                 modifier = Modifier
-                    .offset(x = blockOffsetX, y = blockOffsetY / 2 )
+                    .offset(x = blockOffsetX, y = blockOffsetY / 1 )
             ) {
                 BlockOverlayAuto(block = block, captureRegion = captureRegion)
             }
@@ -100,7 +100,7 @@ fun BlockOverlayAuto(block: Text.TextBlock, captureRegion: Rect) {
     // 2. Tính idealTextSize (px) và convert sang sp
     val totalChars = block.text.length.coerceAtLeast(1)
     val idealTextSizePx = remember(totalHeightPx, maxWidthPx, totalChars) {
-        ((maxWidthPx * totalHeightPx / totalChars.toFloat()).pow(1f / 2.0f))
+        ((maxWidthPx * totalHeightPx / totalChars.toFloat()).pow(1f / 1.9f))
     }
     val idealTextSizeSp = with(density) { idealTextSizePx.toSp() }
 

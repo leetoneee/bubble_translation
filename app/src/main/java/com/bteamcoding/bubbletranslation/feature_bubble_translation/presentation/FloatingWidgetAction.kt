@@ -10,4 +10,5 @@ sealed interface FloatingWidgetAction {
     data class OnDisplayChange(val newMode: DisplayMode) : FloatingWidgetAction
     data class OnSourceLanguageChange(val newSourceLanguage: Country) : FloatingWidgetAction
     data class OnTargetLanguageChange(val newTargetLanguage: Country) : FloatingWidgetAction
+
 }

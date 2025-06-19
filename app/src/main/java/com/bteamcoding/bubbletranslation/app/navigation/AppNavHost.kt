@@ -23,8 +23,11 @@ import androidx.compose.runtime.State
 import androidx.navigation.toRoute
 import com.bteamcoding.bubbletranslation.feature_bookmark.presentaion.BookmarkScreenRoot
 import com.bteamcoding.bubbletranslation.app.presentation.SplashScreen
+import com.bteamcoding.bubbletranslation.app.presentation.SplashScreen
+import com.bteamcoding.bubbletranslation.feature_dictionary.presentation.DictionaryViewModel
 import com.bteamcoding.bubbletranslation.feature_home.presentation.HomeScreenRoot
 import kotlinx.serialization.Serializable
+import kotlinx.coroutines.delay
 
 @Composable
 fun AppNavHost(
