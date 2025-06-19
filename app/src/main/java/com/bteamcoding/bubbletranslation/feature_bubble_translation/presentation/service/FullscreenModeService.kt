@@ -50,6 +50,7 @@ import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissio
 import com.bteamcoding.bubbletranslation.core.utils.MediaProjectionSingleton
 import com.bteamcoding.bubbletranslation.core.utils.VirtualDisplaySingleton
 import com.bteamcoding.bubbletranslation.core.utils.recognizeTextFromImage
+import com.bteamcoding.bubbletranslation.core.utils.translateVisionText
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetAction
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModel
@@ -132,7 +133,7 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 val state by viewModel.state.collectAsState()
                 val params = layoutParams as WindowManager.LayoutParams
 
-                state.visionText?.let {
+                state.translatedVisionText?.let {
                     Log.d("FullscreenModeService", "Creating ComposeView ${it.text}")
                     CoatingLayer(
                         text = it,
@@ -151,6 +152,10 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 params.y = 0
                                 windowManager.updateViewLayout(floatingView, layoutParams)
                             }
+                        },
+                        isTextVisibility = state.isTextVisibility,
+                        onChangeVisibility = {
+                            viewModel.onAction(FullscreenModeAction.OnChangeTextVisibility(it))
                         }
                     )
                 }
@@ -356,7 +361,15 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             try {
                 val result = recognizeTextFromImage(bitmap)
                 Log.d("FullScreenOCR", "Detected text: ${result.text}")
+                val translatedResult = translateVisionText(result)
+
                 viewModel.onAction(FullscreenModeAction.OnChange(result))
+                viewModel.onAction(
+                    FullscreenModeAction.OnChangeTranslatedVisionText(
+                        translatedResult
+                    )
+                )
+                viewModel.onAction(FullscreenModeAction.OnChangeTextVisibility(true))
             } catch (e: Exception) {
                 Log.e("FullScreenOCR", "Error: ${e.message}")
             }
