@@ -97,7 +97,7 @@ class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     private var paramsX: Int = 0
     private var paramsY: Int = 0
 
-    private var widthBee: Int = 304
+    private var widthBee: Int = 204
     private var heightBee: Int = 148
 
 
@@ -365,15 +365,16 @@ class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             )
             bitmap.copyPixelsFromBuffer(buffer)
 
+            val adjustedWidthBee = screenWidth - paramsX
 
-            // Crop the image based on CaptureRegion
             val croppedBitmap = Bitmap.createBitmap(
                 bitmap,
-                paramsX,
+                0,
                 paramsY + statusBarHeight,
-                widthBee,
+                screenWidth,
                 heightBee
             )
+
 
 //          Dọn dẹp
             image.close()
@@ -438,7 +439,7 @@ class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     val centerY = (element.boundingBox?.top ?: 0)
 
                     // Tính khoảng cách giữa tọa độ (params.x, params.y) và tọa độ trung tâm của element
-                    val distance = distance(widthBee / 3, heightBee / 3, centerX, centerY)
+                    val distance = distance(paramsX + 60, paramsY + 60, centerX, centerY)
 
                     // Nếu khoảng cách nhỏ hơn khoảng cách tối thiểu hiện tại, cập nhật văn bản gần nhất
                     if (distance < minDistance) {

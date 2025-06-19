@@ -228,8 +228,8 @@ class BookmarkViewModel @Inject constructor(
                             updateFolderUser(userId)
 
                             // Bước 2: Lấy dữ liệu mới nhất từ DB một cách tuần tự.
-                            val currentFolders = getAllFoldersIncludingDeletedUseCase().first()
-                            val currentWords = getAllWordsIncludingDeletedUseCase().first()
+                            val currentFolders = getAllFoldersUseCase().first()
+                            val currentWords = getAllWordsUseCase().first()
 
                             _state.update { it.copy(allFolders = currentFolders, allLocalWords = currentWords) }
 
