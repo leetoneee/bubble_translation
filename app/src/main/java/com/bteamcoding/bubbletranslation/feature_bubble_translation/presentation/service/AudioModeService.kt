@@ -45,8 +45,8 @@ import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation
 
 class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
-    val resultCode = MediaProjectionPermissionHolder.resultCode
-    val resultData = MediaProjectionPermissionHolder.resultData
+    private val resultCode = MediaProjectionPermissionHolder.resultCode
+    private val resultData = MediaProjectionPermissionHolder.resultData
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private lateinit var speechRecognizerHelper: SpeechRecognizerHelper
@@ -153,7 +153,9 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 mediaProjection
                             )
                         } else {
-                            speechRecognizerHelper.startRecognitionFromMediaProjection(mediaProjection)
+                            speechRecognizerHelper.startRecognitionFromMediaProjection(
+                                mediaProjection
+                            )
                         }
                         viewModel.onAction(AudioModeAction.OnChangeIsRecognizing(true))
                     },
@@ -225,15 +227,15 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         Log.i("AudioModeService", "Service started")
 
         if (MediaProjectionSingleton.mediaProjection == null) {
-            val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED)
-                ?: return START_NOT_STICKY
-            val resultData =
-                intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
+//            val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED)
+//                ?: return START_NOT_STICKY
+//            val resultData =
+//                intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
 
             mediaProjectionManager =
                 getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             mediaProjection =
-                mediaProjectionManager.getMediaProjection(resultCode, resultData)
+                resultData?.let { mediaProjectionManager.getMediaProjection(resultCode, it) }!!
         } else {
             Log.d("AudioModeService", "Using existing MediaProjection instance.")
         }
