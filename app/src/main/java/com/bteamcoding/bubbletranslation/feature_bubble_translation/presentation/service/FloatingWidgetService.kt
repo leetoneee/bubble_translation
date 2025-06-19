@@ -47,6 +47,8 @@ import kotlinx.coroutines.delay
 
 class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
+    private val resultCode = MediaProjectionPermissionHolder.resultCode
+    private val resultData = MediaProjectionPermissionHolder.resultData
 
     private lateinit var windowManager: WindowManager
     private lateinit var floatingView: ComposeView
@@ -137,7 +139,8 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 }
 
                 LaunchedEffect(showLanguageScreen) {
-                    val params = if (showLanguageScreen) chooseLanguageLayoutParams else floatingLayoutParams
+                    val params =
+                        if (showLanguageScreen) chooseLanguageLayoutParams else floatingLayoutParams
                     try {
                         windowManager.updateViewLayout(floatingView, params)
                     } catch (e: Exception) {
@@ -150,10 +153,18 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     ChooseLanguageScreen(
                         state = state,
                         onUpdateSourceLanguage = { newSourceLanguage ->
-                            viewModel.onAction(FloatingWidgetAction.OnSourceLanguageChange(newSourceLanguage))
+                            viewModel.onAction(
+                                FloatingWidgetAction.OnSourceLanguageChange(
+                                    newSourceLanguage
+                                )
+                            )
                         },
                         onUpdateTargetLanguage = { newTargetLanguage ->
-                            viewModel.onAction(FloatingWidgetAction.OnTargetLanguageChange(newTargetLanguage))
+                            viewModel.onAction(
+                                FloatingWidgetAction.OnTargetLanguageChange(
+                                    newTargetLanguage
+                                )
+                            )
                         },
                         onShowLanguageScreenChanged = {
                             // Cập nhật showLanguageScreen trong service
@@ -214,7 +225,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
 //                                params.alpha = 1f
 //                                windowManager.updateViewLayout(floatingView, params)
                             },
-                            onShowBeeTranslateChanged = {showBeeTranslate = false}
+                            onShowBeeTranslateChanged = { showBeeTranslate = false }
                         )
                     } else {
                         DraggableFloatingWidget(
@@ -284,7 +295,7 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 handleTranslateService(state.translateMode)
                             },
                             onShowLanguageScreenChanged = { showLanguageScreen = true },
-                            onShowBeeTranslateChanged = {showBeeTranslate = true}
+                            onShowBeeTranslateChanged = { showBeeTranslate = true }
                         )
                     }
                 }
