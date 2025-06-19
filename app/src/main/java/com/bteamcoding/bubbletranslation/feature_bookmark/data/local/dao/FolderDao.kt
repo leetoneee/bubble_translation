@@ -12,8 +12,8 @@ interface FolderDao {
     @Query("SELECT * FROM folders WHERE deleted = 0 ORDER BY updatedAt DESC")
     fun getAllFolders(): Flow<List<FolderEntity>>
 
-    @Query("SELECT * FROM folders ORDER BY updatedAt DESC")
-    fun getAllFoldersIncludingDeleted(): Flow<List<FolderEntity>>
+    @Query("SELECT * FROM folders WHERE deleted = 1 AND updatedAt > :lastSync ORDER BY updatedAt DESC")
+    fun getAllFoldersIncludingDeleted(lastSync: Long): Flow<List<FolderEntity>>
 
     @Query("SELECT * FROM folders WHERE id = :id")
     fun getFolderById(id: String): Flow<FolderEntity>

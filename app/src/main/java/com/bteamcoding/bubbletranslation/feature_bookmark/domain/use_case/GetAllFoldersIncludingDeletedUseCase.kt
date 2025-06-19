@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetAllFoldersIncludingDeletedUseCase @Inject constructor(private val repo: BookmarkRepository) {
-    operator fun invoke(): Flow<List<Folder>> {
-        return repo.getAllFoldersIncludingDeleted()
+    operator fun invoke(lastSync: Long): Flow<List<Folder>> {
+        return repo.getAllFoldersIncludingDeleted(lastSync)
     }
 }

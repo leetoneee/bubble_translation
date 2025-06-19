@@ -234,10 +234,22 @@ class BookmarkViewModel @Inject constructor(
                             _state.update { it.copy(allFolders = currentFolders, allLocalWords = currentWords) }
 
                             // Bước 3: Đồng bộ folders và words lên server.
-                            val foldersToSync = filterFoldersToSync(currentFolders,lastSync)
+                            var foldersToSync = filterFoldersToSync(currentFolders,lastSync)
+                            foldersToSync = if (lastSync == 0L)
+                                foldersToSync + listOf()
+                            else {
+                                val deletedFolder = getAllFoldersIncludingDeletedUseCase(lastSync).first()
+                                foldersToSync + deletedFolder
+                            }
                             val syncedFolders = syncFolders(userId, foldersToSync, lastSync)
 
-                            val wordsToSync = filterWordsToSync(currentWords, lastSync)
+                            var wordsToSync = filterWordsToSync(currentWords, lastSync)
+                            wordsToSync = if (lastSync == 0L)
+                                wordsToSync + listOf()
+                            else {
+                                val deletedWord = getAllWordsIncludingDeletedUseCase(lastSync).first()
+                                wordsToSync + deletedWord
+                            }
                             val syncedWords = syncWords(userId, wordsToSync, lastSync)
 
                             // Bước 4: Lưu dữ liệu mới từ server vào DB (nếu có).

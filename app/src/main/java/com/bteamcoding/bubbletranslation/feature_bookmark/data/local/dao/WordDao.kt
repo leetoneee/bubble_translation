@@ -13,8 +13,8 @@ interface WordDao {
     @Query("SELECT * FROM words WHERE deleted = 0 ORDER BY updatedAt DESC")
     fun getAllWords(): Flow<List<WordEntity>>
 
-    @Query("SELECT * FROM words ORDER BY updatedAt DESC")
-    fun getAllWordsIncludingDeleted(): Flow<List<WordEntity>>
+    @Query("SELECT * FROM words WHERE deleted = 1 AND updatedAt > :lastSync ORDER BY updatedAt DESC")
+    fun getAllWordsIncludingDeleted(lastSync: Long): Flow<List<WordEntity>>
 
     @Query("SELECT * FROM words WHERE folderId = :folderId AND deleted = 0")
     fun getWordsByFolder(folderId: String): Flow<List<WordEntity>>
