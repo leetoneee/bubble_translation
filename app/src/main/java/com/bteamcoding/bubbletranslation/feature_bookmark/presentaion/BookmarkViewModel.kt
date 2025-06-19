@@ -222,7 +222,6 @@ class BookmarkViewModel @Inject constructor(
                         _state.update { it.copy(isLoading = true) }
                         runCatching {
                             val userId = _userInfo.value!!.id
-                            val lastSync = _lastSyncTime.value
 
                             // Bước 1: Cập nhật user ID cho các folder cục bộ.
                             updateFolderUser(userId)
@@ -232,6 +231,8 @@ class BookmarkViewModel @Inject constructor(
                             val currentWords = getAllWordsUseCase().first()
 
                             _state.update { it.copy(allFolders = currentFolders, allLocalWords = currentWords) }
+
+                            val lastSync = _lastSyncTime.value
 
                             // Bước 3: Đồng bộ folders và words lên server.
                             var foldersToSync = filterFoldersToSync(currentFolders,lastSync)
