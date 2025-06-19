@@ -1,6 +1,7 @@
 package com.bteamcoding.bubbletranslation.feature_bookmark.presentaion
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -61,6 +63,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -88,6 +91,10 @@ fun BookmarkScreenRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.onAction(BookmarkAction.OnLoadCurrentUser)
+    }
+
     LaunchedEffect(state.currentFolder) {
         if (state.currentFolder == null) {
             viewModel.onAction(BookmarkAction.OnLoadAllFolders)
@@ -112,7 +119,7 @@ fun BookmarkScreenRoot(
             viewModel.onAction(BookmarkAction.OnAddNewFolder)
         },
         onSync = {
-
+            viewModel.onAction(BookmarkAction.OnSync)
         },
         onFolderClick = {
             viewModel.onAction(BookmarkAction.OnFolderClick(it))
@@ -478,6 +485,22 @@ fun BookmarkScreen(
                 titleContentColor = Color.Black,
                 textContentColor = Color.DarkGray
             )
+        }
+
+        if (state.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF0A0D12).copy(alpha = 0.4f))
+                    .zIndex(30f),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier.width(64.dp),
+                    color = MaterialTheme.colorScheme.secondary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                )
+            }
         }
     }
 }

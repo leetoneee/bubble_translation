@@ -162,7 +162,7 @@ fun FolderItem(
 fun FolderItemPreview() {
     BubbleTranslationTheme {
         FolderItem(
-            folder = Folder(id = "1", updatedAt = 1, name = "Tech", deleted = false),
+            folder = Folder(id = "1", updatedAt = 1, name = "Tech", userId=1, deleted = false),
             onFolderClick = {},
             onDeleteClick = {},
             onEditClick = {},
