@@ -36,9 +36,19 @@ android {
         buildConfig = true
     }
 
+//    signingConfigs {
+//        release {
+//            storeFile = file("my-release-key.jks")
+//            storePassword = "01012004"
+//            keyAlias = "my-alias"
+//            keyPassword = "01012004"
+//        }
+//    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
+//            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -58,6 +68,11 @@ android {
     packaging {
         exclude ("META-INF/versions/9/OSGI-INF/MANIFEST.MF")
     }
+//    configurations.all {
+//        resolutionStrategy {
+//            force("androidx.test.ext:junit:1.1.5")
+//        }
+//    }
 }
 
 fun registerUuidTask(modelName: String) {
@@ -109,6 +124,7 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+//    androidTestImplementation("androidx.test.ext:junit:1.1.5") // ✅ khớp với compose
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.koin.android)
