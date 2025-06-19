@@ -12,6 +12,9 @@ interface FolderDao {
     @Query("SELECT * FROM folders WHERE deleted = 0 ORDER BY updatedAt DESC")
     fun getAllFolders(): Flow<List<FolderEntity>>
 
+    @Query("SELECT * FROM folders ORDER BY updatedAt DESC")
+    fun getAllFoldersIncludingDeleted(): Flow<List<FolderEntity>>
+
     @Query("SELECT * FROM folders WHERE id = :id")
     fun getFolderById(id: String): Flow<FolderEntity>
 
@@ -20,6 +23,9 @@ interface FolderDao {
 
     @Query("UPDATE folders SET name = :name, updatedAt = :updatedAt WHERE id = :id")
     suspend fun updateFolderName(id: String, name: String, updatedAt: Long)
+
+    @Query("UPDATE folders SET userId = :userId WHERE deleted = 0")
+    suspend fun updateFolderUserId(userId: Long)
 
     @Query("UPDATE folders SET deleted = 1, updatedAt = :time WHERE id = :id")
     suspend fun softDeleteFolder(id: String, time: Long)

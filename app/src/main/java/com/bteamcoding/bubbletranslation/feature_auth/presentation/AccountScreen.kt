@@ -62,10 +62,8 @@ fun AccountScreenRoot(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val user by viewModel.userInfo.collectAsStateWithLifecycle()
 
-    LaunchedEffect(state.user) {
-        if (state.user != null) {
-            viewModel.onAction(AuthAction.OnLoadCurrentUser)
-        }
+    LaunchedEffect(Unit) {
+        viewModel.onAction(AuthAction.OnLoadCurrentUser)
     }
 
     AccountScreen(

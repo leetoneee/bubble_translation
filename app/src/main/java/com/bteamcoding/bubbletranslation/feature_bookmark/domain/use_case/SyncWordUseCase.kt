@@ -4,13 +4,14 @@ import com.bteamcoding.bubbletranslation.app.data.remote.dto.ApiResponse
 import com.bteamcoding.bubbletranslation.feature_bookmark.data.remote.dto.WordDto
 import com.bteamcoding.bubbletranslation.feature_bookmark.data.remote.dto.WordSyncRequest
 import com.bteamcoding.bubbletranslation.feature_bookmark.data.remote.dto.WordSyncResponse
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Word
 import com.bteamcoding.bubbletranslation.feature_bookmark.domain.repository.WordRepository
 import javax.inject.Inject
 
 class SyncWordUseCase @Inject constructor(private val repo: WordRepository) {
     suspend operator fun invoke(
         lastSyncTime: Long,
-        words: List<WordDto>,
+        words: List<Word>,
         userId: Long
     ): ApiResponse<WordSyncResponse> {
         val dto = WordSyncRequest(lastSyncTime, words)

@@ -1,5 +1,6 @@
 package com.bteamcoding.bubbletranslation.feature_bookmark.data.remote.dto
 
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Folder
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -13,12 +14,12 @@ data class FolderDto(
 
 @Serializable
 data class FolderSyncRequest(
-    val lasSyncTime: Long,
-    val folders: List<FolderDto>
+    val lastSyncTime: Long,
+    val folders: List<Folder>
 )
 
 @Serializable
 data class FolderSyncResponse(
-    val synced: List<FolderDto>,
-    val conflicts: List<FolderDto>
+    val synced: List<Folder>,
+    val conflicts: List<Folder>
 )

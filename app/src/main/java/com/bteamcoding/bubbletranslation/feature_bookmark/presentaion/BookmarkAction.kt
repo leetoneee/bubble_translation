@@ -34,4 +34,5 @@ sealed interface BookmarkAction {
     data class OnQueryChanged(val query: String) : BookmarkAction
 
     data object ClearError : BookmarkAction
+    data object OnSync : BookmarkAction
 }

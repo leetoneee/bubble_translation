@@ -1,7 +1,9 @@
 package com.bteamcoding.bubbletranslation.feature_bookmark.domain.model
 
 import com.bteamcoding.bubbletranslation.feature_bookmark.data.local.entity.FolderEntity
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Folder(
     val id: String,
     val name: String,

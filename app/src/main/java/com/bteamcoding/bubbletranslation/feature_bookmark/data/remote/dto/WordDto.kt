@@ -1,5 +1,6 @@
 package com.bteamcoding.bubbletranslation.feature_bookmark.data.remote.dto
 
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.model.Word
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -13,14 +14,14 @@ data class WordDto(
 
 @Serializable
 data class WordSyncRequest(
-    val lasSyncTime: Long,
-    val folders: List<WordDto>
+    val lastSyncTime: Long,
+    val words: List<Word>
 )
 
 @Serializable
 data class WordSyncResponse(
-    val synced: List<WordDto>,
-    val conflicts: List<WordDto>
+    val synced: List<Word>,
+    val conflicts: List<Word>
 )
 
 
