@@ -23,6 +23,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Gravity
 import android.view.WindowManager
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +48,7 @@ import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.core.utils.MediaProjectionSingleton
 import com.bteamcoding.bubbletranslation.core.utils.VirtualDisplaySingleton
 import com.bteamcoding.bubbletranslation.core.utils.recognizeTextFromImage
+import com.bteamcoding.bubbletranslation.core.utils.translateVisionText
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.PartialScreenModeAction
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.PartialScreenModeViewModel
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.PartialScreenModeState
@@ -151,14 +153,15 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 )
                 //startScreenshot(state.captureRegion)
                 if (!isResizingOrDragging && state.isTextVisibility) {
-                    state.visionText?.let {
+                    state.translatedVisionText?.let {
                         Log.d("PartialScreenModeService", "Creating ComposeView ${it.text}")
                         TextOverlayCrop(
-                            visionText = state.visionText!!,
+                            visionText = state.translatedVisionText!!,
                             captureRegion = state.captureRegion
                         )
                     }
                 }
+
             }
         }
 
@@ -378,7 +381,10 @@ class PartialScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             try {
                 val result = recognizeTextFromImage(bitmap)
                 Log.d("PartialScreenOCR", "Detected text: ${result.text}")
+                val translatedResult = translateVisionText(result)
+
                 viewModel.onAction(PartialScreenModeAction.OnChange(result))
+                viewModel.onAction(PartialScreenModeAction.OnChangeTranslatedVisionText(translatedResult))
                 viewModel.onAction(PartialScreenModeAction.OnChangeTextVisibility(true))
             } catch (e: Exception) {
                 Log.e("PartialScreenOCR", "Error: ${e.message}")
