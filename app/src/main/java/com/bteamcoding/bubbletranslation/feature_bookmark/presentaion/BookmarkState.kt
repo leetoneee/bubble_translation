@@ -19,5 +19,6 @@ data class BookmarkState(
     val showConfirmDeleteWordDialog: Boolean = false,
     val folderName: String = "",
     val errorMessage: String? = null,
+    val successMessage: String? = null,
     val isLoading: Boolean = false
 )
