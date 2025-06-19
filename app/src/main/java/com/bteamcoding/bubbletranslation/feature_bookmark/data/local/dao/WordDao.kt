@@ -4,11 +4,18 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.bteamcoding.bubbletranslation.feature_bookmark.data.local.entity.FolderEntity
 import com.bteamcoding.bubbletranslation.feature_bookmark.data.local.entity.WordEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WordDao {
+    @Query("SELECT * FROM words WHERE deleted = 0 ORDER BY updatedAt DESC")
+    fun getAllWords(): Flow<List<WordEntity>>
+
+    @Query("SELECT * FROM words ORDER BY updatedAt DESC")
+    fun getAllWordsIncludingDeleted(): Flow<List<WordEntity>>
+
     @Query("SELECT * FROM words WHERE folderId = :folderId AND deleted = 0")
     fun getWordsByFolder(folderId: String): Flow<List<WordEntity>>
 

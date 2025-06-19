@@ -235,10 +235,6 @@ class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         Log.d("WordScreenModeService", "StatusBar Height received: $statusBarHeight")
 
         if (MediaProjectionSingleton.mediaProjection == null) {
-//            val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED)
-//                ?: return START_NOT_STICKY
-//            val resultData =
-//                intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
 
             mediaProjectionManager =
                 getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager

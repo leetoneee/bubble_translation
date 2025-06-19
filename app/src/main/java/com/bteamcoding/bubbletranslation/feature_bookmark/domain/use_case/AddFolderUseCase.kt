@@ -20,7 +20,8 @@ class AddFolderUseCase @Inject constructor(private val repo: BookmarkRepository)
             id = UUID.randomUUID().toString(),
             name = normalizeName,
             updatedAt = System.currentTimeMillis(),
-            deleted = false
+            deleted = false,
+            userId = 0
         )
         repo.insertFolder(folder)
     }

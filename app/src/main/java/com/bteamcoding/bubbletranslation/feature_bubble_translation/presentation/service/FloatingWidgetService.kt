@@ -316,8 +316,8 @@ class FloatingWidgetService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
-            x = 0
-            y = 0
+            x = initialX
+            y = initialY
             gravity = Gravity.TOP or Gravity.START
         }
 

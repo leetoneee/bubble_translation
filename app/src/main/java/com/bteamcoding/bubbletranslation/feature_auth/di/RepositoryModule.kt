@@ -6,6 +6,10 @@ import com.bteamcoding.bubbletranslation.feature_auth.data.repository.AuthReposi
 import com.bteamcoding.bubbletranslation.feature_auth.data.repository.UserRepositoryImpl
 import com.bteamcoding.bubbletranslation.feature_auth.domain.repository.AuthRepository
 import com.bteamcoding.bubbletranslation.feature_auth.domain.repository.UserRepository
+import com.bteamcoding.bubbletranslation.feature_bookmark.data.repository.FolderRepositoryImpl
+import com.bteamcoding.bubbletranslation.feature_bookmark.data.repository.WordRepositoryImpl
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.repository.FolderRepository
+import com.bteamcoding.bubbletranslation.feature_bookmark.domain.repository.WordRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -26,4 +30,16 @@ abstract class RepositoryModule {
     abstract fun bindUserRepository(
         impl: UserRepositoryImpl
     ) : UserRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFolderRepository(
+        impl: FolderRepositoryImpl
+    ) : FolderRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindWordRepository(
+        impl: WordRepositoryImpl
+    ) : WordRepository
 }

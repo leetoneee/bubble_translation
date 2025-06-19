@@ -23,6 +23,14 @@ class BookmarkRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getAllFoldersIncludingDeleted(): Flow<List<Folder>> {
+        return folderDao.getAllFoldersIncludingDeleted().map { flowList ->
+            flowList.map { entityList ->
+                entityList.toDomain()
+            }
+        }
+    }
+
     override fun getFolderById(id: String): Flow<Folder> {
         return folderDao.getFolderById(id)
             .map { it.toDomain() }
@@ -41,12 +49,32 @@ class BookmarkRepositoryImpl @Inject constructor(
         folderDao.updateFolderName(id, name, now)
     }
 
+    override suspend fun updateFolderUserId(userId: Long) {
+        folderDao.updateFolderUserId(userId)
+    }
+
     override suspend fun countActiveFoldersWithName(name: String): Int {
         return folderDao.countActiveFoldersWithName(name)
     }
 
     override fun getWordsByFolder(folderId: String): Flow<List<Word>> {
         return wordDao.getWordsByFolder(folderId).map { flowList ->
+            flowList.map { entityList ->
+                entityList.toDomain()
+            }
+        }
+    }
+
+    override fun getAllWordsIncludingDeleted(): Flow<List<Word>> {
+        return wordDao.getAllWordsIncludingDeleted().map { flowList ->
+            flowList.map { entityList ->
+                entityList.toDomain()
+            }
+        }
+    }
+
+    override fun getAllWords(): Flow<List<Word>> {
+        return wordDao.getAllWords().map { flowList ->
             flowList.map { entityList ->
                 entityList.toDomain()
             }

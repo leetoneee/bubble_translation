@@ -106,7 +106,7 @@ fun ConfirmDeleteDialog(
 fun DeleteDialogPreview() {
     BubbleTranslationTheme {
         ConfirmDeleteDialog(
-            folder = Folder("1", "avc", 1, false),
+            folder = Folder("1", "avc", 1, 0, false),
             onDismiss = {},
             onConfirm = {}
         )
