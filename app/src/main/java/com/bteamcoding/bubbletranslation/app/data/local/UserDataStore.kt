@@ -20,6 +20,7 @@ class UserDataStore @Inject constructor(private val context: Context) {
     private val ID_KEY = longPreferencesKey("id")
     private val USERNAME_KEY = stringPreferencesKey("username")
     private val EMAIL_KEY = stringPreferencesKey("email")
+    private val LAST_SYNC_TIME = longPreferencesKey("lastSyncTime")
 
     suspend fun saveUserInfo(id: Long, username: String, email: String) {
         dataStore.edit { preferences ->
@@ -42,4 +43,15 @@ class UserDataStore @Inject constructor(private val context: Context) {
             preferences.clear()
         }
     }
+
+    suspend fun saveLastSyncTime(time: Long) {
+        dataStore.edit { preferences ->
+            preferences[LAST_SYNC_TIME] = time
+        }
+    }
+
+    val lastSyncTime: Flow<Long> = dataStore.data
+        .map { preferences ->
+            preferences[LAST_SYNC_TIME] ?: 0L
+        }
 }
