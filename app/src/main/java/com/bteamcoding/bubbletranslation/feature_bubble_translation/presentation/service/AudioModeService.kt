@@ -36,6 +36,7 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissionHolder
+import com.bteamcoding.bubbletranslation.core.utils.LanguageManager
 import com.bteamcoding.bubbletranslation.core.utils.MediaProjectionSingleton
 import com.bteamcoding.bubbletranslation.core.utils.SpeechRecognizerHelper
 import com.bteamcoding.bubbletranslation.core.utils.getLastWords
@@ -124,8 +125,12 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 val state by viewModel.state.collectAsState()
                 val params = layoutParams as WindowManager.LayoutParams
                 val context = LocalContext.current
+                val sourceLanguage by LanguageManager.sourceLang.collectAsState()
 
-                speechRecognizerHelper = SpeechRecognizerHelper(context) {
+                speechRecognizerHelper = SpeechRecognizerHelper(
+                    context,
+                    country = sourceLanguage
+                ) {
                     Log.d("AudioModeService", "Recognized: $it")
                     viewModel.onAction(AudioModeAction.OnChangeText(it))
                 }
@@ -145,7 +150,7 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     },
                     onStartRecognition = {
                         mediaProjectionManager =
-                            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                            getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                         mediaProjection =
                             mediaProjectionManager.getMediaProjection(resultCode, resultData!!)
                         if (state.isTranslateMode) {
@@ -169,7 +174,7 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                         speechRecognizerHelper.stopRecognition()
 //                        Khởi tạo lại mediaProjection sau khi stop
                         mediaProjectionManager =
-                            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                            getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                         mediaProjection =
                             mediaProjectionManager.getMediaProjection(resultCode, resultData!!)
                         stopSelf()
@@ -233,7 +238,7 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
 //                intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
 
             mediaProjectionManager =
-                getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             mediaProjection =
                 resultData?.let { mediaProjectionManager.getMediaProjection(resultCode, it) }!!
         } else {

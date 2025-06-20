@@ -35,4 +35,5 @@ sealed interface BookmarkAction {
 
     data object ClearError : BookmarkAction
     data object OnSync : BookmarkAction
+    data object OnSuccess : BookmarkAction
 }

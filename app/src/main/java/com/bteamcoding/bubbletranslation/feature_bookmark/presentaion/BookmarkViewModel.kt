@@ -222,7 +222,6 @@ class BookmarkViewModel @Inject constructor(
                         _state.update { it.copy(isLoading = true) }
                         runCatching {
                             val userId = _userInfo.value!!.id
-                            val lastSync = _lastSyncTime.value
 
                             // Bước 1: Cập nhật user ID cho các folder cục bộ.
                             updateFolderUser(userId)
@@ -231,13 +230,34 @@ class BookmarkViewModel @Inject constructor(
                             val currentFolders = getAllFoldersUseCase().first()
                             val currentWords = getAllWordsUseCase().first()
 
-                            _state.update { it.copy(allFolders = currentFolders, allLocalWords = currentWords) }
+                            _state.update {
+                                it.copy(
+                                    allFolders = currentFolders,
+                                    allLocalWords = currentWords
+                                )
+                            }
+
+                            val lastSync = _lastSyncTime.value
 
                             // Bước 3: Đồng bộ folders và words lên server.
-                            val foldersToSync = filterFoldersToSync(currentFolders,lastSync)
+                            var foldersToSync = filterFoldersToSync(currentFolders, lastSync)
+                            foldersToSync = if (lastSync == 0L)
+                                foldersToSync + listOf()
+                            else {
+                                val deletedFolder =
+                                    getAllFoldersIncludingDeletedUseCase(lastSync).first()
+                                foldersToSync + deletedFolder
+                            }
                             val syncedFolders = syncFolders(userId, foldersToSync, lastSync)
 
-                            val wordsToSync = filterWordsToSync(currentWords, lastSync)
+                            var wordsToSync = filterWordsToSync(currentWords, lastSync)
+                            wordsToSync = if (lastSync == 0L)
+                                wordsToSync + listOf()
+                            else {
+                                val deletedWord =
+                                    getAllWordsIncludingDeletedUseCase(lastSync).first()
+                                wordsToSync + deletedWord
+                            }
                             val syncedWords = syncWords(userId, wordsToSync, lastSync)
 
                             // Bước 4: Lưu dữ liệu mới từ server vào DB (nếu có).
@@ -255,6 +275,13 @@ class BookmarkViewModel @Inject constructor(
                             getAllFolders()
                             getAllWords()
 
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    successMessage = "Đồng bộ thành công!"
+                                )
+                            }
+
                         }.onFailure { t ->
                             _state.update {
                                 it.copy(errorMessage = t.message ?: "Đã có lỗi đồng bộ xảy ra")
@@ -268,6 +295,10 @@ class BookmarkViewModel @Inject constructor(
                         it.copy(errorMessage = "Vui lòng đăng nhập để sử dụng chức năng này")
                     }
                 }
+            }
+
+            BookmarkAction.OnSuccess -> {
+                _state.update { it.copy(successMessage = null) }
             }
         }
     }

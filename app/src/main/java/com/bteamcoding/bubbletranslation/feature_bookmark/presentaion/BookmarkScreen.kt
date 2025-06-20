@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
@@ -166,6 +167,9 @@ fun BookmarkScreenRoot(
         },
         onWordClick = {
             navController.navigate(DictionaryScreenParams(it.word))
+        },
+        onSuccess = {
+            viewModel.onAction(BookmarkAction.OnSuccess)
         }
     )
 }
@@ -193,7 +197,8 @@ fun BookmarkScreen(
     onDismissConfirm: () -> Unit,
     onDismissError: () -> Unit,
     onDeleteWord: () -> Unit,
-    onShowConfirmDeleteWord: (Word) -> Unit
+    onShowConfirmDeleteWord: (Word) -> Unit,
+    onSuccess: () -> Unit
 ) {
     val folderStates = remember(state.folders) {
         state.folders.map { FolderItemUI(it, false) }.toMutableStateList()
@@ -484,6 +489,38 @@ fun BookmarkScreen(
                 containerColor = Color.White,
                 titleContentColor = Color.Black,
                 textContentColor = Color.DarkGray
+            )
+        }
+
+        if (!state.successMessage.isNullOrEmpty()) {
+            AlertDialog(
+                onDismissRequest = onSuccess,
+                title = {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = Color(0xFF4CAF50), // màu xanh lá
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = state.successMessage,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF4CAF50)
+                        )
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = onSuccess) {
+                        Text("OK", color = Color(0xFF4CAF50), fontWeight = FontWeight.Medium)
+                    }
+                },
+                containerColor = Color.White,
+                shape = RoundedCornerShape(12.dp)
             )
         }
 

@@ -23,8 +23,8 @@ class BookmarkRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getAllFoldersIncludingDeleted(): Flow<List<Folder>> {
-        return folderDao.getAllFoldersIncludingDeleted().map { flowList ->
+    override fun getAllFoldersIncludingDeleted(lastSync: Long): Flow<List<Folder>> {
+        return folderDao.getAllFoldersIncludingDeleted(lastSync).map { flowList ->
             flowList.map { entityList ->
                 entityList.toDomain()
             }
@@ -65,8 +65,8 @@ class BookmarkRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getAllWordsIncludingDeleted(): Flow<List<Word>> {
-        return wordDao.getAllWordsIncludingDeleted().map { flowList ->
+    override fun getAllWordsIncludingDeleted(lastSync: Long): Flow<List<Word>> {
+        return wordDao.getAllWordsIncludingDeleted(lastSync).map { flowList ->
             flowList.map { entityList ->
                 entityList.toDomain()
             }

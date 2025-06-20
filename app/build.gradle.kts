@@ -94,9 +94,11 @@ fun registerUuidTask(modelName: String) {
 }
 
 registerUuidTask("model-en")
+registerUuidTask("model-cn")
+registerUuidTask("model-jp")
 
 tasks.named("preBuild") {
-    dependsOn( "generateUuidFormodel-en")
+    dependsOn( "generateUuidFormodel-en", "generateUuidFormodel-cn", "generateUuidFormodel-jp")
 }
 
 dependencies {

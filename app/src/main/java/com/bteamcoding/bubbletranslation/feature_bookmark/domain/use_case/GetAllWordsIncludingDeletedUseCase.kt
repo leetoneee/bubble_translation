@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class GetAllWordsIncludingDeletedUseCase @Inject constructor(private val repo: BookmarkRepository) {
-    operator fun invoke(): Flow<List<Word>> {
-        return repo.getAllWordsIncludingDeleted()
+    operator fun invoke(lastSync: Long): Flow<List<Word>> {
+        return repo.getAllWordsIncludingDeleted(lastSync)
     }
 }
