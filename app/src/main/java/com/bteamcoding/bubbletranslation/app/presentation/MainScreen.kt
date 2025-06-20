@@ -2,7 +2,6 @@ package com.bteamcoding.bubbletranslation.app.presentation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -16,8 +15,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.bteamcoding.bubbletranslation.app.navigation.AppNavHost
 import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 
 import com.bteamcoding.bubbletranslation.app.navigation.BottomNavRoutes
@@ -34,36 +31,25 @@ fun MainScreen(
     val currentRoute = navBackStackEntry?.destination
 
     val shouldShowBottomBar = currentRoute?.route in BottomNavRoutes.list
-    val showSplash = remember { mutableStateOf(true) }
 
-    if (showSplash.value) {
-        SplashScreen(
-            onAnimationEnd = {
-                showSplash.value = false
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        Scaffold(
+            bottomBar = {
+                if (shouldShowBottomBar) {
+                    BottomBar(navController)
+                }
             }
-        )
-    } else {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Scaffold(
-                bottomBar = {
-                    if (shouldShowBottomBar) {
-                        BottomBar(navController)
-                    }
-                }
-            ) { paddingValues: PaddingValues ->
-                Box(modifier = Modifier
-                    .padding(paddingValues)
-                    .consumeWindowInsets(paddingValues)) {
-                    AppNavHost(
-                        navController,
-                        onRequestScreenCapturePermission,
-                        onPermissionGranted,
-                        permissionGranted
-                    )
-                }
+        ) { paddingValues: PaddingValues ->
+            Box(modifier = Modifier.padding(paddingValues)) {
+                AppNavHost(
+                    navController,
+                    onRequestScreenCapturePermission,
+                    onPermissionGranted,
+                    permissionGranted
+                )
             }
         }
     }

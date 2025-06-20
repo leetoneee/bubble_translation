@@ -234,17 +234,6 @@ fun HomeScreen(
                         enabled = currentMode == TranslateMode.AUDIO,
                         contentColor = colorResource(R.color.purple_dark)
                     )
-
-                    TransModeButton(
-                        onClick = {
-                            viewModel.onAction(FloatingWidgetAction.OnModeChange(TranslateMode.WORD))
-                        },
-                        icon = R.drawable.look_word,
-                        content = "Tra cứu từ điển",
-                        description = "Tra nghĩa trong từ điển của một từ trên màn hình",
-                        enabled = currentMode == TranslateMode.WORD,
-                        contentColor = colorResource(R.color.pink_medium)
-                    )
                 }
             }
             item {

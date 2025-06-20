@@ -16,19 +16,16 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
-import com.bteamcoding.bubbletranslation.feature_camera.domain.TranslatedVisionText
 import com.google.mlkit.vision.text.Text
 
 @Composable
 fun CoatingLayer(
-    text: TranslatedVisionText,
-    isTextVisibility: Boolean,
+    text: Text,
     onDrag: (Float) -> Unit,
-    onDragEnd: () -> Unit,
-    onChangeVisibility: (Boolean) -> Unit
+    onDragEnd: () -> Unit
 ) {
     var offsetY by remember { mutableFloatStateOf(0f) }
-//    var isVisible = remember { mutableStateOf(true) } // ← use mutableStateOf
+    var isVisible = remember { mutableStateOf(true) } // ← use mutableStateOf
 
     Box(
         modifier = Modifier
@@ -37,8 +34,10 @@ fun CoatingLayer(
             .pointerInput(Unit) {
 //                detectTapGestures(
 //                    onPress = {
+//                        isVisible.value = false
 //                        try {
 //                            awaitRelease()
+//                            isVisible.value = true
 //                        } catch (e: Exception) {
 //                            e.printStackTrace()
 //                        }
@@ -60,7 +59,7 @@ fun CoatingLayer(
                         // Handle press
                         val press = event.changes.firstOrNull()
                         if (press != null && press.pressed) {
-                            onChangeVisibility(false) // for example
+                            isVisible.value = false // for example
                         }
 
                         // Handle drag
@@ -76,14 +75,13 @@ fun CoatingLayer(
                         // Handle release
                         if (event.changes.all { !it.pressed }) {
                             onDragEnd()
-                            onChangeVisibility(true)
+                            isVisible.value = true
                         }
                     }
                 }
             }
     ) {
-        if (isTextVisibility)
-            TextOverlay(visionText = text, modifier = Modifier.fillMaxSize())
+        if (isVisible.value == true) TextOverlay(visionText = text, modifier = Modifier.fillMaxSize())
     }
 }
 

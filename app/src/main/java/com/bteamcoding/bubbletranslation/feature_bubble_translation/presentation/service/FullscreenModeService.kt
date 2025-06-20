@@ -46,11 +46,9 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.bteamcoding.bubbletranslation.R
-import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissionHolder
 import com.bteamcoding.bubbletranslation.core.utils.MediaProjectionSingleton
 import com.bteamcoding.bubbletranslation.core.utils.VirtualDisplaySingleton
 import com.bteamcoding.bubbletranslation.core.utils.recognizeTextFromImage
-import com.bteamcoding.bubbletranslation.core.utils.translateVisionText
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetAction
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModel
@@ -67,8 +65,6 @@ import kotlin.math.abs
 
 class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
-    private val resultCode = MediaProjectionPermissionHolder.resultCode
-    private val resultData = MediaProjectionPermissionHolder.resultData
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
 
@@ -133,7 +129,7 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 val state by viewModel.state.collectAsState()
                 val params = layoutParams as WindowManager.LayoutParams
 
-                state.translatedVisionText?.let {
+                state.visionText?.let {
                     Log.d("FullscreenModeService", "Creating ComposeView ${it.text}")
                     CoatingLayer(
                         text = it,
@@ -152,10 +148,6 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 params.y = 0
                                 windowManager.updateViewLayout(floatingView, layoutParams)
                             }
-                        },
-                        isTextVisibility = state.isTextVisibility,
-                        onChangeVisibility = {
-                            viewModel.onAction(FullscreenModeAction.OnChangeTextVisibility(it))
                         }
                     )
                 }
@@ -204,13 +196,12 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         Log.i("FullScreenModeService", "Service started")
 
         if (MediaProjectionSingleton.mediaProjection == null) {
-//            val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED) ?: return START_NOT_STICKY
-//            val resultData = intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
+            val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED) ?: return START_NOT_STICKY
+            val resultData = intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
 
             mediaProjectionManager =
                 getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-            MediaProjectionSingleton.mediaProjection =
-                resultData?.let { mediaProjectionManager.getMediaProjection(resultCode, it) }
+            MediaProjectionSingleton.mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, resultData)
         } else {
             Log.d("FullscreenModeService", "Using existing MediaProjection instance.")
         }
@@ -283,10 +274,7 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 releaseResources()
             }
         }
-        MediaProjectionSingleton.mediaProjection?.registerCallback(
-            mediaProjectionCallback,
-            Handler(Looper.getMainLooper())
-        )
+        MediaProjectionSingleton.mediaProjection?.registerCallback(mediaProjectionCallback, Handler(Looper.getMainLooper()))
 
         // Nếu VirtualDisplay đã tồn tại, chỉ cần cập nhật Surface mới
         if (VirtualDisplaySingleton.virtualDisplay != null) {
@@ -295,13 +283,12 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         } else {
             // Nếu VirtualDisplay chưa tồn tại, tạo mới
             try {
-                VirtualDisplaySingleton.virtualDisplay =
-                    MediaProjectionSingleton.mediaProjection?.createVirtualDisplay(
-                        "ScreenCapture",
-                        width, height, density,
-                        DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                        imageReader.surface, null, null
-                    )
+                VirtualDisplaySingleton.virtualDisplay = MediaProjectionSingleton.mediaProjection?.createVirtualDisplay(
+                    "ScreenCapture",
+                    width, height, density,
+                    DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                    imageReader.surface, null, null
+                )
                 if (VirtualDisplaySingleton.virtualDisplay == null) {
                     Log.e("FullscreenModeService", "Failed to create virtual display")
                     releaseResources()
@@ -361,15 +348,7 @@ class FullscreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
             try {
                 val result = recognizeTextFromImage(bitmap)
                 Log.d("FullScreenOCR", "Detected text: ${result.text}")
-                val translatedResult = translateVisionText(result)
-
                 viewModel.onAction(FullscreenModeAction.OnChange(result))
-                viewModel.onAction(
-                    FullscreenModeAction.OnChangeTranslatedVisionText(
-                        translatedResult
-                    )
-                )
-                viewModel.onAction(FullscreenModeAction.OnChangeTextVisibility(true))
             } catch (e: Exception) {
                 Log.e("FullScreenOCR", "Error: ${e.message}")
             }

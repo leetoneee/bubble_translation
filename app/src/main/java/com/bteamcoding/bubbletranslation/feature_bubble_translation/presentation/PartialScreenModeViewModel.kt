@@ -23,12 +23,6 @@ class PartialScreenModeViewModel : ViewModel() {
                 _state.update { it.copy(visionText = null) }
             }
 
-            is PartialScreenModeAction.OnChangeTranslatedVisionText -> {
-                _state.update {
-                    it.copy(translatedVisionText = action.newText)
-                }
-            }
-
             is PartialScreenModeAction.OnChangeTextVisibility -> {
                 _state.update { it.copy(isTextVisibility = action.newState) }
             }

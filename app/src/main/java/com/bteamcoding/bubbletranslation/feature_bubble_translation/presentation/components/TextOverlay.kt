@@ -31,11 +31,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.DisplayMode
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModelHolder
-import com.bteamcoding.bubbletranslation.feature_camera.domain.TranslatedVisionText
 
 @Composable
 fun TextOverlay(
-    visionText: TranslatedVisionText,
+    visionText: Text,
     modifier: Modifier = Modifier
 ) {
     val viewModel = FloatingWidgetViewModelHolder.instance
@@ -44,11 +43,7 @@ fun TextOverlay(
 
     Box(modifier = modifier) {
         visionText.textBlocks.forEach { block ->
-            BlockOverlay(
-                block = block.originalBlock,
-                translatedText = block.translatedText,
-                displayMode = currentDisplay
-            )
+            BlockOverlay(block = block, displayMode = currentDisplay)
         }
     }
 }
@@ -56,7 +51,6 @@ fun TextOverlay(
 @Composable
 fun BlockOverlay(
     block: Text.TextBlock,
-    translatedText: String,
     displayMode: DisplayMode = DisplayMode.GLOBAL,
 ) {
     val density = LocalDensity.current
@@ -106,16 +100,16 @@ fun BlockOverlay(
     val heightDp = with(density) { (totalHeightPx + idealTextSizePx).toDp() }
 
     // 4. Dịch văn bản bất đồng bộ
-//    var translated by remember(block.text) { mutableStateOf("") }
-//    LaunchedEffect(block.text) {
-//        translated = translateText(block.text)
-//    }
+    var translated by remember(block.text) { mutableStateOf("") }
+    LaunchedEffect(block.text) {
+        translated = translateText(block.text)
+    }
 
     // 5. Hiển thị Text composable
     when {
         displayMode == DisplayMode.GLOBAL -> {
             Text(
-                text = translatedText,
+                text = translated,
                 style = TextStyle(
                     color = Color.White,
                     fontSize = idealTextSizeSp,
@@ -131,16 +125,16 @@ fun BlockOverlay(
 
         displayMode == DisplayMode.COMIC -> {
             Text(
-                text = translatedText,
+                text = translated,
                 style = TextStyle(
                     color = Color.Yellow,
-                    fontSize = idealTextSizeSp * 1.6, // Slightly larger for visibility
+                    fontSize = idealTextSizeSp*1.6, // Slightly larger for visibility
                 ),
                 modifier = Modifier
                     .padding(vertical = 4.dp)
                     .offset(x = offsetDp.x.dp, y = offsetDp.y.dp)
-                    .width(widthDp * 1.5f) // Slightly smaller for padding
-                    .height(heightDp * 1.5f)
+                    .width(widthDp*1.5f) // Slightly smaller for padding
+                    .height(heightDp*1.5f)
             )
         }
 
@@ -148,16 +142,16 @@ fun BlockOverlay(
             Box(
                 modifier = Modifier
                     .offset(x = offsetDp.x.dp, y = offsetDp.y.dp)
-                    .width(widthDp * 1.2f)
-                    .height(heightDp * 1.2f)
+                    .width(widthDp*1.2f)
+                    .height(heightDp*1.2f)
                     .background(Color(0xFF000000).copy(alpha = 0.8f)),
                 contentAlignment = Alignment.Center
-            ) {
+            ){
                 Text(
-                    text = translatedText,
+                    text = translated,
                     style = TextStyle(
                         color = Color.White,
-                        fontSize = idealTextSizeSp * 1.5,
+                        fontSize = idealTextSizeSp*1.5,
                         fontWeight = FontWeight.SemiBold
                     )
                 )
