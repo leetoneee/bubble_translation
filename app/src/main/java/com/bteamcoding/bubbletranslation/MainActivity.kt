@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.media.projection.MediaProjectionManager
 import android.os.Bundle
 import android.widget.Toast
@@ -20,6 +21,7 @@ import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.content.ContextCompat
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -33,6 +35,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.RECORD_AUDIO
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            // Permission is granted
+            // You can use the microphone here
+        } else {
+            // Request permission
+            microphonePermissionRequest.launch(Manifest.permission.RECORD_AUDIO)
+        }
 
         // Lấy chiều rộng màn hình theo pixel
         val displayMetrics = resources.displayMetrics
@@ -80,4 +94,19 @@ class MainActivity : ComponentActivity() {
         window.decorView.getWindowVisibleDisplayFrame(rectangle)
         return rectangle.top
     }
+
+    private val microphonePermissionRequest =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                // Permission is granted, you can proceed with microphone operations
+                Toast.makeText(this, "Đã cấp quyền ghi âm", Toast.LENGTH_SHORT).show()
+            } else {
+                // Permission is not granted, inform the user
+                Toast.makeText(
+                    this,
+                    "Từ chối quyền ghi âm, bạn sẽ không sử dụng được chức năng dịch audio",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
 }

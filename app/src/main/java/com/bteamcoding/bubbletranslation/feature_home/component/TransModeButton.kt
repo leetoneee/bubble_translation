@@ -144,7 +144,7 @@ fun TransModeButton(
                     color = colorResource(R.color.grey_medium)
                 )
             }
-            CircleCheckbox(selected = enabled) { }
+            CircleCheckbox(selected = enabled, onChecked = onClick)
         }
     }
 }

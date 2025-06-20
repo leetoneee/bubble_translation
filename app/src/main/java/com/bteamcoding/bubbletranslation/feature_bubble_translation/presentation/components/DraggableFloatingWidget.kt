@@ -41,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -50,6 +51,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.consumeDownChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -61,12 +64,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bteamcoding.bubbletranslation.MainActivity
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.core.components.SelectLang
 import com.bteamcoding.bubbletranslation.core.utils.LanguageManager
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.DisplayMode
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetAction
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetState
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModel
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FloatingWidgetViewModelHolder
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.FullscreenModeViewModel
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.TranslateMode
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.WordScreenModeAction
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.WordScreenModeViewModel
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.ccp.Country
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.ccp.Utils.Companion.getEmojiFlag
 import com.bteamcoding.bubbletranslation.feature_home.component.HexagonButton
@@ -79,8 +90,10 @@ fun DraggableFloatingWidget(
     onToggleExpand: () -> Unit,
     onModeChange: (TranslateMode) -> Unit,
     onDrag: (Float, Float) -> Unit,
+    onDragEnd: () -> Unit,
     onClick: () -> Unit,
-    onShowLanguageScreenChanged: () -> Unit
+    onShowLanguageScreenChanged: () -> Unit,
+    onShowBeeTranslateChanged: () -> Unit
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
     var offsetY by remember { mutableFloatStateOf(0f) }
@@ -92,12 +105,17 @@ fun DraggableFloatingWidget(
     Box(
         modifier = Modifier
             .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    change.consume()
-                    offsetX += dragAmount.x
-                    offsetY += dragAmount.y
-                    onDrag(dragAmount.x, dragAmount.y)
-                }
+                detectDragGestures (
+                    onDragEnd = {
+                        onDragEnd()
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        offsetX += dragAmount.x
+                        offsetY += dragAmount.y
+                        onDrag(dragAmount.x, dragAmount.y)
+                    }
+                )
             }
     ) {
 
@@ -111,7 +129,8 @@ fun DraggableFloatingWidget(
             onModeChange = onModeChange,
             onToggleExpand = onToggleExpand,
             onClick = onClick,
-            onShowLanguageScreenChanged = onShowLanguageScreenChanged
+            onShowLanguageScreenChanged = onShowLanguageScreenChanged,
+            onShowBeeTranslateChanged = onShowBeeTranslateChanged,
         )
     }
 }
@@ -126,9 +145,9 @@ fun FloatingWidget(
     onModeChange: (TranslateMode) -> Unit,
     onToggleExpand: () -> Unit,
     onClick: () -> Unit,
-    onShowLanguageScreenChanged: () -> Unit
+    onShowLanguageScreenChanged: () -> Unit,
+    onShowBeeTranslateChanged: () -> Unit
 ) {
-
     if (isExpanded) {
         Box(
             modifier = Modifier
@@ -189,6 +208,18 @@ fun FloatingWidget(
                     enabled = translateMode == TranslateMode.AUDIO,
                     buttonColor = colorResource(R.color.purple_dark),
                     contentColor = colorResource(R.color.purple_dark)
+                )
+
+                ModeButton(
+                    onClick = {
+                        onModeChange(TranslateMode.WORD)
+                        onToggleExpand()
+                    },
+                    icon = R.drawable.look_word,
+                    content = "Tra từ trên\nmàn hình",
+                    enabled = translateMode == TranslateMode.WORD,
+                    buttonColor = colorResource(R.color.pink_medium),
+                    contentColor = colorResource(R.color.pink_medium)
                 )
 
                 HorizontalDivider(
@@ -346,7 +377,13 @@ fun FloatingWidget(
                 .combinedClickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = rememberRipple(bounded = true, radius = 40.dp),
-                    onClick = { onClick() },
+                    onClick = {
+                        if (translateMode == TranslateMode.WORD) {
+                            onShowBeeTranslateChanged()
+                        } else {
+                            onClick()
+                        }
+                    },
                     onLongClick = {
                         Log.i("OnToggleExpand", "đã nhấn")
                         onToggleExpand()
@@ -383,12 +420,17 @@ fun FloatingWidget(
                     )
 
                     TranslateMode.AUTO -> Image(
-                        painter = painterResource(R.drawable.bee_2yellow),
+                        painter = painterResource(R.drawable.bee_yellow),
                         contentDescription = null,
                     )
 
                     TranslateMode.AUDIO -> Image(
                         painter = painterResource(R.drawable.bee_purple),
+                        contentDescription = null,
+                    )
+
+                    TranslateMode.WORD -> Image(
+                        painter = painterResource(R.drawable.bee_pink),
                         contentDescription = null,
                     )
                 }
@@ -404,12 +446,13 @@ fun FloatingWidgetPreview() {
         sourceLanguage = Country.Thai,
         targetLanguage = Country.Vietnamese,
         isExpanded = true,
-        translateMode = TranslateMode.FULLSCREEN,
+        translateMode = TranslateMode.WORD,
         onToggleExpand = {},
         onModeChange = {},
         onClose = {},
         onClick = {},
-        onShowLanguageScreenChanged ={}
+        onShowLanguageScreenChanged ={},
+        onShowBeeTranslateChanged = {}
     )
 }
 
@@ -420,11 +463,40 @@ fun FloatingWidgetPreview2() {
         sourceLanguage = Country.Thai,
         targetLanguage = Country.Vietnamese,
         isExpanded = false,
-        translateMode = TranslateMode.AUDIO,
+        translateMode = TranslateMode.WORD,
         onToggleExpand = {},
         onModeChange = {},
         onClose = {},
         onClick = {},
-        onShowLanguageScreenChanged = {}
+        onShowLanguageScreenChanged = {},
+        onShowBeeTranslateChanged = {}
+    )
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun DraggableFloatingWidgetPreview() {
+    // Sample state
+    val state = FloatingWidgetState(
+        isExpanded = true,
+        translateMode = TranslateMode.FULLSCREEN,
+        isOn = true,
+        sourceLanguage = Country.English,
+        targetLanguage = Country.Vietnamese,
+        displayMode = DisplayMode.GLOBAL
+    )
+
+    // Preview of DraggableFloatingWidget
+    DraggableFloatingWidget(
+        state = state,
+        onClose = { /* Close action */ },
+        onToggleExpand = { /* Toggle expand action */ },
+        onModeChange = { },
+        onDrag = { _, _ -> },
+        onClick = {  },
+        onShowLanguageScreenChanged = {},
+        onDragEnd = {},
+        onShowBeeTranslateChanged = {}
     )
 }

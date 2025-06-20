@@ -4,6 +4,10 @@ import com.bteamcoding.bubbletranslation.feature_auth.data.network.AuthApi
 import com.bteamcoding.bubbletranslation.feature_auth.data.network.UserApi
 import com.bteamcoding.bubbletranslation.feature_auth.data.remote.api.AuthApiService
 import com.bteamcoding.bubbletranslation.feature_auth.data.remote.api.UserApiService
+import com.bteamcoding.bubbletranslation.feature_bookmark.data.network.FolderApi
+import com.bteamcoding.bubbletranslation.feature_bookmark.data.network.WordApi
+import com.bteamcoding.bubbletranslation.feature_bookmark.data.remote.api.FolderApiService
+import com.bteamcoding.bubbletranslation.feature_bookmark.data.remote.api.WordApiService
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,11 +21,23 @@ abstract class DataModule {
     @Singleton
     abstract fun bindAuthApi(
         impl: AuthApiService
-    ) : AuthApi
+    ): AuthApi
 
     @Binds
     @Singleton
     abstract fun bindUserApi(
         impl: UserApiService
-    ) : UserApi
+    ): UserApi
+
+    @Binds
+    @Singleton
+    abstract fun bindFolderApi(
+        impl: FolderApiService
+    ): FolderApi
+
+    @Binds
+    @Singleton
+    abstract fun bindWordApi(
+        impl: WordApiService
+    ): WordApi
 }
