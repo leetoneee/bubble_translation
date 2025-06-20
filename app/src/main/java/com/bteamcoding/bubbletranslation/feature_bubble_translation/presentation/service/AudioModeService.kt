@@ -36,7 +36,6 @@ import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissionHolder
-import com.bteamcoding.bubbletranslation.core.utils.LanguageManager
 import com.bteamcoding.bubbletranslation.core.utils.MediaProjectionSingleton
 import com.bteamcoding.bubbletranslation.core.utils.SpeechRecognizerHelper
 import com.bteamcoding.bubbletranslation.core.utils.getLastWords
@@ -46,8 +45,8 @@ import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation
 
 class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
-    private val resultCode = MediaProjectionPermissionHolder.resultCode
-    private val resultData = MediaProjectionPermissionHolder.resultData
+    val resultCode = MediaProjectionPermissionHolder.resultCode
+    val resultData = MediaProjectionPermissionHolder.resultData
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
     private lateinit var speechRecognizerHelper: SpeechRecognizerHelper
@@ -125,12 +124,8 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 val state by viewModel.state.collectAsState()
                 val params = layoutParams as WindowManager.LayoutParams
                 val context = LocalContext.current
-                val sourceLanguage by LanguageManager.sourceLang.collectAsState()
 
-                speechRecognizerHelper = SpeechRecognizerHelper(
-                    context,
-                    country = sourceLanguage
-                ) {
+                speechRecognizerHelper = SpeechRecognizerHelper(context) {
                     Log.d("AudioModeService", "Recognized: $it")
                     viewModel.onAction(AudioModeAction.OnChangeText(it))
                 }
@@ -150,7 +145,7 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     },
                     onStartRecognition = {
                         mediaProjectionManager =
-                            getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                         mediaProjection =
                             mediaProjectionManager.getMediaProjection(resultCode, resultData!!)
                         if (state.isTranslateMode) {
@@ -158,9 +153,7 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 mediaProjection
                             )
                         } else {
-                            speechRecognizerHelper.startRecognitionFromMediaProjection(
-                                mediaProjection
-                            )
+                            speechRecognizerHelper.startRecognitionFromMediaProjection(mediaProjection)
                         }
                         viewModel.onAction(AudioModeAction.OnChangeIsRecognizing(true))
                     },
@@ -174,7 +167,7 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                         speechRecognizerHelper.stopRecognition()
 //                        Khởi tạo lại mediaProjection sau khi stop
                         mediaProjectionManager =
-                            getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                            getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
                         mediaProjection =
                             mediaProjectionManager.getMediaProjection(resultCode, resultData!!)
                         stopSelf()
@@ -232,15 +225,15 @@ class AudioModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         Log.i("AudioModeService", "Service started")
 
         if (MediaProjectionSingleton.mediaProjection == null) {
-//            val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED)
-//                ?: return START_NOT_STICKY
-//            val resultData =
-//                intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
+            val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED)
+                ?: return START_NOT_STICKY
+            val resultData =
+                intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
 
             mediaProjectionManager =
-                getSystemService(MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+                getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             mediaProjection =
-                resultData?.let { mediaProjectionManager.getMediaProjection(resultCode, it) }!!
+                mediaProjectionManager.getMediaProjection(resultCode, resultData)
         } else {
             Log.d("AudioModeService", "Using existing MediaProjection instance.")
         }

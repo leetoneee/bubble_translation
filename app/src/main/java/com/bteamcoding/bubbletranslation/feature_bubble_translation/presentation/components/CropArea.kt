@@ -40,7 +40,7 @@ fun CropArea(
     onCaptureRegionChange: (Rect) -> Unit,
     onTap: () -> Unit,
     onResizeStateChanged: (Boolean) -> Unit,
-    onChangeTextVisibility: (Boolean) -> Unit,
+    onChangeTextVisibility: (Boolean) -> Unit
 ) {
     var captureRegion by remember { mutableStateOf(Rect(0f, 0f, 300f, 400f)) }
     var resizeType by remember { mutableStateOf<ResizeType?>(null) }

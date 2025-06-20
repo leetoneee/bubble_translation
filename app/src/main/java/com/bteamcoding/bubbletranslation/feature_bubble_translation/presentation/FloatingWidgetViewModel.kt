@@ -52,7 +52,6 @@ class FloatingWidgetViewModel() : ViewModel() {
                 _state.update { it.copy(targetLanguage = action.newTargetLanguage) }
                 LanguageManager.updateTargetLanguage(action.newTargetLanguage)
             }
-
         }
     }
 }

@@ -6,8 +6,7 @@ enum class TranslateMode {
     FULLSCREEN,
     CROP,
     AUTO,
-    AUDIO,
-    WORD
+    AUDIO
 }
 
 enum class DisplayMode {
@@ -22,5 +21,5 @@ data class FloatingWidgetState(
     val isOn:Boolean = false,
     val sourceLanguage: Country = Country.English,
     val targetLanguage: Country = Country.Vietnamese,
-    val displayMode: DisplayMode = DisplayMode.GLOBAL,
+    val displayMode: DisplayMode = DisplayMode.GLOBAL
 )

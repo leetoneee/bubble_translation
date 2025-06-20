@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bteamcoding.bubbletranslation.app.domain.use_case.GetUserInfoUseCase
 import com.bteamcoding.bubbletranslation.app.domain.use_case.LogoutUseCase
-import com.bteamcoding.bubbletranslation.app.domain.use_case.SaveLastSyncTimeUseCase
 import com.bteamcoding.bubbletranslation.app.domain.use_case.SaveUserInfoUseCase
 import com.bteamcoding.bubbletranslation.feature_auth.domain.model.User
 import com.bteamcoding.bubbletranslation.feature_auth.domain.use_case.DeleteUserUseCase
@@ -26,8 +25,7 @@ class AuthViewModel @Inject constructor(
     private val saveUserInfoUseCase: SaveUserInfoUseCase,
     private val getUserInfoUseCase: GetUserInfoUseCase,
     private val logoutUseCase: LogoutUseCase,
-    private val deleteUserUseCase: DeleteUserUseCase,
-    private val saveLastSyncTimeUseCase: SaveLastSyncTimeUseCase
+    private val deleteUserUseCase: DeleteUserUseCase
 ) : ViewModel() {
     private val _state = MutableStateFlow(AuthState())
     val state = _state.asStateFlow()
@@ -112,14 +110,6 @@ class AuthViewModel @Inject constructor(
                     )
                 }
             }
-        }
-    }
-
-    private suspend fun saveLastSyncTime(time: Long) {
-        runCatching {
-            saveLastSyncTimeUseCase(time)
-        }.onFailure { t ->
-            throw t
         }
     }
 
@@ -270,7 +260,6 @@ class AuthViewModel @Inject constructor(
     private fun logout() {
         viewModelScope.launch {
             logoutUseCase()
-            saveLastSyncTime(0)
         }
     }
 }

@@ -17,14 +17,6 @@ class FullscreenModeViewModel : ViewModel() {
 
             FullscreenModeAction.OnReset ->
                 _state.update { it.copy(visionText = null) }
-
-            is FullscreenModeAction.OnChangeTextVisibility -> {
-                _state.update { it.copy(isTextVisibility = action.newState) }
-            }
-
-            is FullscreenModeAction.OnChangeTranslatedVisionText -> {
-                _state.update { it.copy(translatedVisionText = action.newText) }
-            }
         }
     }
 }

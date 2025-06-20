@@ -48,7 +48,6 @@ import androidx.savedstate.SavedStateRegistryController
 import androidx.savedstate.SavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.bteamcoding.bubbletranslation.R
-import com.bteamcoding.bubbletranslation.app.data.local.MediaProjectionPermissionHolder
 import com.bteamcoding.bubbletranslation.core.utils.MediaProjectionSingleton
 import com.bteamcoding.bubbletranslation.core.utils.VirtualDisplaySingleton
 import com.bteamcoding.bubbletranslation.core.utils.recognizeTextFromImage
@@ -68,8 +67,6 @@ import kotlinx.coroutines.delay
 
 class AutoScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
     SavedStateRegistryOwner {
-    private val resultCode = MediaProjectionPermissionHolder.resultCode
-    private val resultData = MediaProjectionPermissionHolder.resultData
 
     private lateinit var mediaProjectionManager: MediaProjectionManager
 
@@ -167,8 +164,7 @@ class AutoScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 display.getRealMetrics(metrics)
 
                 val density = metrics.density
-                val widthPx =
-                    ((state.captureRegion.right - state.captureRegion.left) * density).toInt()
+                val widthPx = ((state.captureRegion.right - state.captureRegion.left) * density).toInt()
 
                 layoutParamsAutoArea = WindowManager.LayoutParams(
                     widthPx,
@@ -303,8 +299,7 @@ class AutoScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 display.getRealMetrics(metrics)
 
                 val density = metrics.density
-                val widthPx =
-                    ((state.captureRegion.right - state.captureRegion.left) * density).toInt()
+                val widthPx = ((state.captureRegion.right - state.captureRegion.left) * density).toInt()
                 val screenHeightDp = metrics.heightPixels / density
 
                 // Tính toán y theo điều kiện
@@ -317,7 +312,7 @@ class AutoScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                 }
 
                 LaunchedEffect(state.captureRegion) {
-                    // Set LayoutParams for Floating Widget
+                // Set LayoutParams for Floating Widget
                     layoutParamsTextOverlay = WindowManager.LayoutParams(
                         widthPx,
                         WindowManager.LayoutParams.WRAP_CONTENT,
@@ -350,36 +345,34 @@ class AutoScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
 
                             val targetY =
                                 if ((params.y + ((state.captureRegion.bottom - state.captureRegion.top) * density / 2) > (state.captureRegion.top - 40) * density &&
-                                            params.y + ((state.captureRegion.bottom - state.captureRegion.top) * density / 2) <= state.captureRegion.bottom * density)
-                                ) {
-                                    if ((state.captureRegion.top - 40) * density < (state.captureRegion.bottom - state.captureRegion.top) * density / 2) {
-                                        screenHeight - textOverlayView.height - minY
-                                    } else {
-                                        minY
-                                    }
-                                } else if ((params.y >= (state.captureRegion.top + state.captureRegion.bottom) * density / 2 &&
-                                            params.y < state.captureRegion.bottom * density)
-                                ) {
-                                    if (screenHeight - state.captureRegion.bottom * density < (state.captureRegion.bottom - state.captureRegion.top) * density / 2) {
-                                        minY
-                                    } else {
+                                    params.y + ((state.captureRegion.bottom - state.captureRegion.top) * density / 2) <= state.captureRegion.bottom * density))
+                                {
+                                    if((state.captureRegion.top - 40) * density < (state.captureRegion.bottom - state.captureRegion.top) * density / 2) {
                                         screenHeight - textOverlayView.height - minY
                                     }
-                                } else {
+                                    else {
+                                        minY
+                                    }
+                                }
+                                else if ((params.y  >= (state.captureRegion.top + state.captureRegion.bottom) * density / 2 &&
+                                        params.y < state.captureRegion.bottom * density)) {
+                                    if(screenHeight - state.captureRegion.bottom * density < (state.captureRegion.bottom - state.captureRegion.top) * density / 2) {
+                                        minY
+                                    }
+                                    else {
+                                        screenHeight - textOverlayView.height - minY
+                                    }
+                                }
+                                else
+                                {
                                     params.y
                                 }
 
                             params.x += offsetX.toInt()
                             params.y += offsetY.toInt()
 
-                            params.x = params.x.coerceIn(
-                                (state.captureRegion.left * density).toInt(),
-                                (state.captureRegion.left * density).toInt()
-                            )
-                            params.y = layoutParamsTextOverlay.y.coerceIn(
-                                0,
-                                screenHeight - textOverlayView.height
-                            )
+                            params.x = params.x.coerceIn((state.captureRegion.left * density).toInt(), (state.captureRegion.left * density).toInt())
+                            params.y = layoutParamsTextOverlay.y.coerceIn(0, screenHeight - textOverlayView.height)
                             windowManager.updateViewLayout(textOverlayView, layoutParamsTextOverlay)
 
                             // Tạo hiệu ứng trượt mượt (smooth animation)
@@ -455,6 +448,7 @@ class AutoScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         lifecycleRegistry.currentState = Lifecycle.State.RESUMED
 
 
+
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -467,15 +461,15 @@ class AutoScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
         Log.d("AutoScreenModeService", "StatusBar Height received: $statusBarHeight")
 
         if (MediaProjectionSingleton.mediaProjection == null) {
-//            val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED)
-//                ?: return START_NOT_STICKY
-//            val resultData =
-//                intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
+            val resultCode = intent?.getIntExtra("resultCode", Activity.RESULT_CANCELED)
+                ?: return START_NOT_STICKY
+            val resultData =
+                intent.getParcelableExtra<Intent>("resultData") ?: return START_NOT_STICKY
 
             mediaProjectionManager =
                 getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             MediaProjectionSingleton.mediaProjection =
-                resultData?.let { mediaProjectionManager.getMediaProjection(resultCode, it) }
+                mediaProjectionManager.getMediaProjection(resultCode, resultData)
         } else {
             Log.d("AutoScreenModeService", "Using existing MediaProjection instance.")
         }

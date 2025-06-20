@@ -12,10 +12,8 @@ import android.media.projection.MediaProjection
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.compose.ui.text.toLowerCase
 import androidx.core.app.ActivityCompat
 import com.bteamcoding.bubbletranslation.core.model.VoskModelManager
-import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.ccp.Country
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -27,7 +25,6 @@ import org.vosk.Recognizer
 
 class SpeechRecognizerHelper(
     private val context: Context,
-    private val country: Country,
     var onResult: (String) -> Unit
 ) {
     private var modelManager = VoskModelManager(context)
@@ -43,13 +40,6 @@ class SpeechRecognizerHelper(
     fun startRecognition() {
         if (recognizing) return
         recognizing = true
-
-        // Chọn mô hình dựa trên ngôn ngữ
-        val assetModelName = when (country.countryIso.lowercase()) {
-            "cn" -> "model-cn"  // Tiếng Trung
-            "jp" -> "model-jp"  // Tiếng Nhật
-            else -> "model-en"  // Tiếng Anh mặc định
-        }
 
         modelManager.loadModelAsync().whenComplete { model, throwable ->
             if (throwable != null) {
@@ -115,14 +105,7 @@ class SpeechRecognizerHelper(
         if (recognizing) return
         recognizing = true
 
-        // Chọn mô hình dựa trên ngôn ngữ
-        val assetModelName = when (country.countryIso.lowercase()) {
-            "cn" -> "model-cn"  // Tiếng Trung
-            "jp" -> "model-jp"  // Tiếng Nhật
-            else -> "model-en"  // Tiếng Anh mặc định
-        }
-
-        modelManager.loadModelAsync(assetModelName = assetModelName).whenComplete { model, throwable ->
+        modelManager.loadModelAsync().whenComplete { model, throwable ->
             if (throwable != null) {
                 Log.e("SpeechRecognizerHelper", "Error loading model", throwable)
                 recognizing = false
@@ -223,14 +206,7 @@ class SpeechRecognizerHelper(
         if (recognizing) return
         recognizing = true
 
-        // Chọn mô hình dựa trên ngôn ngữ
-        val assetModelName = when (country.countryIso.lowercase()) {
-            "cn" -> "model-cn"  // Tiếng Trung
-            "jp" -> "model-jp"  // Tiếng Nhật
-            else -> "model-en"  // Tiếng Anh mặc định
-        }
-
-        modelManager.loadModelAsync(assetModelName = assetModelName).whenComplete { model, throwable ->
+        modelManager.loadModelAsync().whenComplete { model, throwable ->
             if (throwable != null) {
                 Log.e("SpeechRecognizerHelper", "Error loading model", throwable)
                 recognizing = false
