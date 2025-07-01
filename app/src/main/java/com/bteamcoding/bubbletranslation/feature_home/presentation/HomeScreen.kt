@@ -3,7 +3,6 @@ package com.bteamcoding.bubbletranslation.feature_home.presentation
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.provider.Settings
 import android.util.Log
@@ -20,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PowerOff
 import androidx.compose.material.icons.filled.PowerSettingsNew
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -35,7 +35,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat.startActivityForResult
 import androidx.navigation.NavController
 import com.bteamcoding.bubbletranslation.R
 import com.bteamcoding.bubbletranslation.app.navigation.NavRoutes
@@ -50,8 +49,8 @@ import com.bteamcoding.bubbletranslation.feature_home.component.TransModeButton
 import com.bteamcoding.bubbletranslation.ui.theme.Inter
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.domain.use_case.StopFloatingWidgetUseCase
 import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.DisplayMode
-import kotlinx.coroutines.delay
 import androidx.compose.runtime.State
+import com.bteamcoding.bubbletranslation.feature_bubble_translation.presentation.components.GuideDialog
 
 fun requestOverlayPermission(context: Context) {
     if (!Settings.canDrawOverlays(context)) {
@@ -116,6 +115,16 @@ fun HomeScreen(
     val stopFWUseCase = remember { StopFloatingWidgetUseCase(context) }
 
     var waitingForPermission by remember { mutableStateOf(false) }
+
+    var isShowGuideFullScreen by remember { mutableStateOf(false) }
+    var isShowGuidePartialScreen by remember { mutableStateOf(false) }
+    var isShowGuideAutoScreen by remember { mutableStateOf(false) }
+    var isShowGuideAudioScreen by remember { mutableStateOf(false) }
+    var isShowGuideWordOnScreen by remember { mutableStateOf(false) }
+
+    var isShowGuideGlobal by remember { mutableStateOf(false) }
+    var isShowGuideComic by remember { mutableStateOf(false) }
+    var isShowGuideSubtitle by remember { mutableStateOf(false) }
 
     LaunchedEffect(permissionGranted.value) {
         if (waitingForPermission && permissionGranted.value) {
@@ -192,6 +201,7 @@ fun HomeScreen(
                         color = colorResource(R.color.grey_darkest)
                     )
                     TransModeButton(
+                        onClickIconButton = {isShowGuideFullScreen = true},
                         onClick = {
                             viewModel.onAction(FloatingWidgetAction.OnModeChange(TranslateMode.FULLSCREEN))
                         },
@@ -203,6 +213,7 @@ fun HomeScreen(
                     )
 
                     TransModeButton(
+                        onClickIconButton = {isShowGuidePartialScreen = true},
                         onClick = {
                             viewModel.onAction(FloatingWidgetAction.OnModeChange(TranslateMode.CROP))
                         },
@@ -214,6 +225,7 @@ fun HomeScreen(
                     )
 
                     TransModeButton(
+                        onClickIconButton = {isShowGuideAutoScreen = true},
                         onClick = {
                             viewModel.onAction(FloatingWidgetAction.OnModeChange(TranslateMode.AUTO))
                         },
@@ -225,6 +237,7 @@ fun HomeScreen(
                     )
 
                     TransModeButton(
+                        onClickIconButton = {isShowGuideAudioScreen = true},
                         onClick = {
                             viewModel.onAction(FloatingWidgetAction.OnModeChange(TranslateMode.AUDIO))
                         },
@@ -236,6 +249,7 @@ fun HomeScreen(
                     )
 
                     TransModeButton(
+                        onClickIconButton = {isShowGuideWordOnScreen = true},
                         onClick = {
                             viewModel.onAction(FloatingWidgetAction.OnModeChange(TranslateMode.WORD))
                         },
@@ -266,6 +280,7 @@ fun HomeScreen(
                         color = colorResource(R.color.grey_darkest)
                     )
                     TransModeButton(
+                        onClickIconButton = {isShowGuideGlobal = true},
                         onClick = {
                             viewModel.onAction(FloatingWidgetAction.OnDisplayChange(DisplayMode.GLOBAL))
                         },
@@ -276,6 +291,7 @@ fun HomeScreen(
                         contentColor = colorResource(R.color.blue_dark)
                     )
                     TransModeButton(
+                        onClickIconButton = {isShowGuideComic = true},
                         onClick = {
                             viewModel.onAction(FloatingWidgetAction.OnDisplayChange(DisplayMode.COMIC))
                         },
@@ -286,6 +302,7 @@ fun HomeScreen(
                         contentColor = colorResource(R.color.blue_dark)
                     )
                     TransModeButton(
+                        onClickIconButton = {isShowGuideSubtitle = true},
                         onClick = {
                             viewModel.onAction(FloatingWidgetAction.OnDisplayChange(DisplayMode.SUBTITLE))
                         },
@@ -322,6 +339,95 @@ fun HomeScreen(
                     }
                 )
             }
+        }
+
+        // Checking each flag to show GuideDialog
+        if (isShowGuideFullScreen) {
+            GuideDialog(
+                onDismissRequest = { isShowGuideFullScreen = false },
+                onConfirmation = { isShowGuideFullScreen = false },
+                dialogTitle = "Full Screen Mode",
+                dialogText = "This mode translates all content displayed on the screen.",
+                icon = R.drawable.full_screen,
+                contentColor = colorResource(R.color.blue_dark)
+            )
+        }
+
+        if (isShowGuidePartialScreen) {
+            GuideDialog(
+                onDismissRequest = { isShowGuidePartialScreen = false },
+                onConfirmation = { isShowGuidePartialScreen = false },
+                dialogTitle = "Partial Screen Mode",
+                dialogText = "This mode translates only the selected content within a specified area.",
+                icon = R.drawable.partial_screen,
+                contentColor = colorResource(R.color.blue_dark)
+            )
+        }
+
+        if (isShowGuideAutoScreen) {
+            GuideDialog(
+                onDismissRequest = { isShowGuideAutoScreen = false },
+                onConfirmation = { isShowGuideAutoScreen = false },
+                dialogTitle = "Auto Subtitle Mode",
+                dialogText = "This mode automatically translates subtitles appearing in videos and cutscenes.",
+                icon = R.drawable.autosubtile,
+                contentColor = colorResource(R.color.blue_dark)
+            )
+        }
+
+        if (isShowGuideAudioScreen) {
+            GuideDialog(
+                onDismissRequest = { isShowGuideAudioScreen = false },
+                onConfirmation = { isShowGuideAudioScreen = false },
+                dialogTitle = "Audio Mode",
+                dialogText = "This mode automatically translates audio played from the device speakers.",
+                icon = R.drawable.auto_audio,
+                contentColor = colorResource(R.color.blue_dark)
+            )
+        }
+
+        if (isShowGuideWordOnScreen) {
+            GuideDialog(
+                onDismissRequest = { isShowGuideWordOnScreen = false },
+                onConfirmation = { isShowGuideWordOnScreen = false },
+                dialogTitle = "Dictionary Lookup",
+                dialogText = "This mode looks up the meaning of a word displayed on the screen.",
+                icon = R.drawable.look_word,
+                contentColor = colorResource(R.color.blue_dark)
+            )
+        }
+
+        if (isShowGuideGlobal) {
+            GuideDialog(
+                onDismissRequest = { isShowGuideGlobal = false },
+                onConfirmation = { isShowGuideGlobal = false },
+                dialogTitle = "Global Mode",
+                dialogText = "This mode is suitable for most cases, displaying content in standard format.",
+                icon = R.drawable.global,
+                contentColor = colorResource(R.color.blue_dark)
+            )
+        }
+
+        if (isShowGuideComic) {
+            GuideDialog(
+                onDismissRequest = { isShowGuideComic = false },
+                onConfirmation = { isShowGuideComic = false },
+                dialogTitle = "Comic Mode",
+                dialogText = "This mode optimizes text for comic book-style content.",
+                icon = R.drawable.baseline_menu_book_24,
+                contentColor = colorResource(R.color.blue_dark)
+            )
+        }
+
+        if (isShowGuideSubtitle) {
+            GuideDialog(
+                onDismissRequest = { isShowGuideSubtitle = false },
+                onConfirmation = { isShowGuideSubtitle = false },
+                dialogTitle = "Subtitle Mode",
+                dialogText = "This mode is optimized for subtitles in videos and cutscenes.",
+                icon = R.drawable.subtitles,
+                contentColor = colorResource(R.color.blue_dark)
+            )
         }
     }
 }
