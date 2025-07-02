@@ -47,6 +47,7 @@ import com.bteamcoding.bubbletranslation.ui.theme.Inter
 
 @Composable
 fun TransModeButton(
+    onClickIconButton: () -> Unit,
     onClick: () -> Unit,
     enabled: Boolean = false,
     @DrawableRes icon: Int,
@@ -111,7 +112,7 @@ fun TransModeButton(
                         color = colorResource(R.color.grey_medium)
                     )
                     IconButton(
-                        onClick = {},
+                        onClick = onClickIconButton,
                         modifier = Modifier
                             .padding(0.dp)
                             .size(14.dp), // shrink overall size
@@ -159,7 +160,8 @@ fun TransModeButtonPreview() {
         content = "Toàn màn hình",
         description = "Dịch tất cả nội dung xuất hiện trên màn hình điện thoại",
         enabled = true,
-        contentColor = colorResource(R.color.blue_medium)
+        contentColor = colorResource(R.color.blue_medium),
+        onClickIconButton = {}
     )
 }
 
