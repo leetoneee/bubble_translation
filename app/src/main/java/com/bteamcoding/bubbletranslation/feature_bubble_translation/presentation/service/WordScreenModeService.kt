@@ -149,7 +149,7 @@ class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                     ViewModelProvider(this@WordScreenModeService)[WordScreenModeViewModel::class.java]
                 val state by viewModel.state.collectAsState()
                 if (state.isShowBottomSheet) {
-                    if (state.sourceText != null && state.sourceText != "") {
+                    if (state.sourceText != null) {
                         BottomSheetOnScreen(
                             onDismissRequest = {
                                 viewModel.onAction(
