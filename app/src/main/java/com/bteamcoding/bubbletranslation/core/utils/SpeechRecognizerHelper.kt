@@ -348,5 +348,6 @@ class SpeechRecognizerHelper(
         audioRecord?.stop()
         audioRecord?.release()
         audioRecord = null
+        modelManager.release()
     }
 }

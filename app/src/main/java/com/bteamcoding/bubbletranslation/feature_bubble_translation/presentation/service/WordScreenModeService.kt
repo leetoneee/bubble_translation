@@ -160,15 +160,15 @@ class WordScreenModeService : Service(), LifecycleOwner, ViewModelStoreOwner,
                                 viewModel.onAction(WordScreenModeAction.OnReset)
                                 stopSelf()
                             },
-                            onTap = {
-                                viewModel.onAction(
-                                    WordScreenModeAction.OnShowBottomSheet(
-                                        false
-                                    )
-                                )
-                                viewModel.onAction(WordScreenModeAction.OnReset)
-                                stopSelf()
-                            },
+//                            onTap = {
+//                                viewModel.onAction(
+//                                    WordScreenModeAction.OnShowBottomSheet(
+//                                        false
+//                                    )
+//                                )
+//                                viewModel.onAction(WordScreenModeAction.OnReset)
+//                                stopSelf()
+//                            },
                             sourceText = state.sourceText!!,
 //                            viewModel = dicViewModel,
                         )

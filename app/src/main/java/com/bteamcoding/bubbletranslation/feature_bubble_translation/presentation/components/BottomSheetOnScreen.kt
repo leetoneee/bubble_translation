@@ -88,7 +88,6 @@ fun BottomSheetOnScreen(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
     sourceText: String,
-    onTap: () -> Unit,
     textStyle: TextStyle = TextStyle(),
     itemPadding: Int = 10,
     backgroundColor: Color = MaterialTheme.colorScheme.surface,
@@ -344,6 +343,5 @@ fun BottomSheetOnScreenPreview() {
         itemPadding = 10,
         backgroundColor = MaterialTheme.colorScheme.surface,
         sourceText = "Hello, world!",
-        onTap = { /* handle tap */ },
     )
 }
